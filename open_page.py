@@ -1,4 +1,3 @@
-import urllib3
 from selenium.webdriver.common.by import By
 import logging
 from base import OpenUrl
@@ -11,16 +10,6 @@ class OpenPage(OpenUrl):
         self.url = url
         self.target_block = '.iva-item-title-KE8A9'
         logging.info("url: {}".format(self.url))
-
-    def open_url(self):
-        counter = 3
-        while counter:
-            try:
-                self.driver.get(self.url)
-            except urllib3.exceptions.ReadTimeoutError:
-                counter -= 1
-            else:
-                return
 
     def find_blocks(self):
         blocks = self.driver.find_elements(by=By.CSS_SELECTOR, value=self.target_block)

@@ -6,7 +6,7 @@ from open_pages_manager import OpenPagesManager
 FORMAT = '[%(asctime)s]%(message)s'
 logging.basicConfig(level=logging.INFO, format=FORMAT)
 
-PAGES = 3
+PAGES = 1
 URL = 'https://www.avito.ru/moskva/telefony/mobile-ASgBAgICAUSwwQ2I_Dc'
 
 prep_links_instance = PreparationLinksForPages(url=URL, pages=PAGES)

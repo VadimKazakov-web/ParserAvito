@@ -15,6 +15,6 @@ class PreparationLinksForPages:
         else:
             url = self.url
         while self.pages > 1:
-            self.result.insert(0, self.url + f'&p={self.pages}')
+            self.result.insert(0, url + f'&p={self.pages}')
             self.pages -= 1
-        self.result.insert(0, url)
+        self.result.insert(0, self.url)
