@@ -1,4 +1,3 @@
-from open_page import OpenPage
 import logging
 from preparation_links_for_pages import PreparationLinksForPages
 from open_pages_manager import OpenPagesManager
@@ -15,6 +14,7 @@ prep_links_instance.start()
 links_pages = prep_links_instance.result
 
 with OpenPagesManager(links=links_pages) as manager:
+    manager.start()
     total_data = manager.total_data
     logging.info("\n\n")
     logging.info("+++++++ total data: {}".format(total_data))

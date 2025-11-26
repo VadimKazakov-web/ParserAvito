@@ -22,11 +22,13 @@ class OpenPagesManager:
         self.driver.implicitly_wait(60)
 
     def __enter__(self):
+        return self
+
+    def start(self):
         for url in self.links:
             worker = OpenPage(url=url, driver=self.driver)
             worker.start()
             self.total_data.extend(worker.data)
-        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.driver.quit()

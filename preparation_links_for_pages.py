@@ -11,8 +11,10 @@ class PreparationLinksForPages:
     def start(self):
         res = re.search('\?', self.url)
         if not res:
-            self.url = self.url + '?'
+            url = self.url + '?'
+        else:
+            url = self.url
         while self.pages > 1:
             self.result.insert(0, self.url + f'&p={self.pages}')
             self.pages -= 1
-        self.result.insert(0, self.url)
+        self.result.insert(0, url)
