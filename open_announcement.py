@@ -6,9 +6,8 @@ import re
 
 class OpenAnnouncement(OpenUrl):
 
-    def __init__(self, url, driver):
+    def __init__(self, driver):
         super().__init__(driver)
-        self.url = url
         self.target_block = '.style__contentLeftWrapper___XzU0Nj'
         self.target_block_inner_html = None
         self.pattern = re.compile(r'data-marker="item-view/item-id">\D+?(?P<id>\d+?)</span>'
@@ -21,11 +20,11 @@ class OpenAnnouncement(OpenUrl):
         self.pattern_date = re.compile(r'data-marker="item-view/item-date">.+?-->(?P<date>.+?)</span>')
         self.pattern_total_views = re.compile(r'data-marker="item-view/total-views">(?P<total_views>\d+?)\D+?</span>')
         self.pattern_today_views = re.compile(r'data-marker="item-view/today-views">.+?(?P<today_views>\d+?)\D+?</span>')
-        self.data = {}
-        logging.info("url: {}".format(self.url))
+        self._data = {}
+        logging.info("url: {}".format(self._url))
 
     def find_blocks(self):
-        block = self.driver.find_element(by=By.CSS_SELECTOR, value=self.target_block)
+        block = self._driver.find_element(by=By.CSS_SELECTOR, value=self.target_block)
         self.target_block_inner_html = block.get_attribute('innerHTML')
         return self.target_block_inner_html
 
@@ -40,20 +39,10 @@ class OpenAnnouncement(OpenUrl):
 
         result_total_views = self.pattern_total_views.search(block)
         if result_total_views:
-            self.data['total_views'] = result_total_views.group("total_views")
+            self.data['total_views'] = int(result_total_views.group("total_views"))
 
         result_today_views = self.pattern_today_views.search(block)
         if result_today_views:
-            self.data['today_views'] = result_today_views.group("today_views")
+            self.data['today_views'] = int(result_today_views.group("today_views"))
 
         print(self.data)
-
-    def parser_data(self):
-        block = self.find_blocks()
-        self.collect_data(block)
-
-    def start(self):
-        self.open_url()
-        self.parser_data()
-        # logging.info("data: {}".format(self.data))
-        # logging.info("length data: {}".format(len(self.data)))
