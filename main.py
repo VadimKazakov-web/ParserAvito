@@ -13,7 +13,7 @@ prep_links_instance = PreparationLinksForPages(url=URL, pages=PAGES)
 prep_links_instance.start()
 links_pages = prep_links_instance.result
 
-with OpenPagesManager(links=links_pages) as manager:
+with OpenPagesManager(links=links_pages, test=True) as manager:
     manager.start()
     total_data = manager.total_data
     logging.info("\n\n")

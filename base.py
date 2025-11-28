@@ -4,6 +4,7 @@ import urllib3
 class OpenUrl:
 
     def __init__(self, driver):
+        self.url = None
         self.driver = driver
         self.data = []
         self.url_root = 'https://www.avito.ru'
