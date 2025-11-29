@@ -1,3 +1,4 @@
+import logging
 import time
 
 from open_page import OpenPage
@@ -27,6 +28,7 @@ class OpenPagesManager:
         self.driver = setup_options()
         self.driver.implicitly_wait(60)
         self.timeout = timeout
+        self.counter = 0
 
     def __enter__(self):
         return self
@@ -44,11 +46,16 @@ class OpenPagesManager:
         else:
             data_list = self.total_data
 
+        length_data_list = len(data_list)
+        print("отсканировано объявлений:")
         for elem in data_list:
             url = elem.get("link")
             worker.start(url)
             elem.update(worker.data)
             time.sleep(self.timeout)
+            self.counter += 1
+            print(f'\r{self.counter}/{length_data_list}', end='')
+        print('\n')
 
     def sort_total_data(self):
         self.total_data.sort(key=lambda e: e.get("total_views", 0), reverse=True)

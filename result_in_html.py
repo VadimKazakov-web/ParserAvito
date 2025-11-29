@@ -27,15 +27,22 @@ class ResultInHtml:
                     margin-bottom: 10px;
                 }
                 .elem {
+                    display: flex;
+                    flex-direction: column;
                     border-radius: 5px;
                     margin: 8px;
                     background-color: antiquewhite;
                     padding: 5px;
+                    max-width: 1400px;
+                }
+                .id {
+                    color: gray;
                 }
                 .title {
                     font-size: 20px;
                 }
                 .link {
+                    display: block;
                     font-size: 15px;
                 }
                 .info {
@@ -71,6 +78,7 @@ class ResultInHtml:
             for elem in data:
                 text = """
                 <div class="elem">
+                <span class="id">№ {id}</span>
                 <h3 class="title">
                     {title}
                 </h3>
@@ -89,7 +97,7 @@ class ResultInHtml:
                     </span>
                 </div>
             </div>
-                """.format(title=elem.get("title"), link=elem.get("link"),
+                """.format(id=elem.get("id"), title=elem.get("title"), link=elem.get("link"),
                            date=elem.get("date"), total_views=elem.get("total_views"),
                            today_views=elem.get("today_views"), )
                 file.write(text)

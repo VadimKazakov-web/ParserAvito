@@ -16,13 +16,13 @@ class OpenPage(OpenUrl):
     def collect_data(self, blocks):
         for block in blocks:
             link = block.find_element(by=By.TAG_NAME, value='h2').find_element(by=By.TAG_NAME, value='a')
-            self.data.append({
+            self._data.append({
                 "title": link.get_dom_attribute('title'),
                 "link": self._url_root + link.get_dom_attribute('href'),
             })
 
     def start(self, url):
-        logging.info("url: {}".format(self._url))
+        logging.info("url: {}".format(url))
         super().start(url)
         logging.info("data: {}".format(self.data))
         logging.info("length data: {}".format(len(self.data)))

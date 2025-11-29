@@ -40,6 +40,7 @@ class OpenUrl:
         return self._data
 
     def start(self, url):
+        self._data = []
         self._url = url
         self.open_url()
         while True:
