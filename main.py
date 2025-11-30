@@ -1,12 +1,28 @@
+# -*- coding: utf-8 -*-
+import threading
 import logging
-from open_pages_manager import ParserAvitoManager
+import functools
+from tkinter_frontend.window_root.build import ROOT as tk_interface
+from objects import channel_for_variables
+from tkinter_frontend.main import build_tk_interface
+from utils.main import start_parser_instance
 
-FORMAT = '[%(asctime)s]%(message)s'
-logging.basicConfig(level=logging.INFO, format=FORMAT)
 
-PAGES = 2
-URL = 'https://www.avito.ru/moskva/predlozheniya_uslug/delovye_uslugi/konsultirovanie-ASgBAgICAkSYC7KfAZ4L~J8B?716=10201'
-FILE_NAME = 'result.html'
+FORMAT = '[%(asctime)s] %(message)s'
+formatter = logging.Formatter(FORMAT)
+handler = logging.StreamHandler()
+handler.setFormatter(formatter)
+logging.root.setLevel(logging.INFO)
+logging.root.handlers.clear()
+logging.root.addHandler(handler)
 
-with ParserAvitoManager(file_name=FILE_NAME, url=URL, pages=PAGES, test=False) as manager:
-    manager.start()
+logging.info("start program")
+instance = functools.partial(start_parser_instance, channel_for_variables)
+parser = threading.Thread(target=instance, daemon=True)
+parser.start()
+build_tk_interface()
+tk_interface.mainloop()
+parser.join()
+
+
+
