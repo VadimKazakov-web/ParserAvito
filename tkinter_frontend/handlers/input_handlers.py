@@ -62,6 +62,9 @@ class HandlersClass(ValidationVarClass):
 
     @classmethod
     def valid_all_vars(cls, *args, **kwargs):
+        event = args[0]
+        master = kwargs.get("master")
+        master.event_generate("<<CreateProgress>>")
         if cls.data.get("link") and cls.data.get("filename") and cls.data.get("count_pages"):
             button_custom = kwargs.get("widget")
             master = kwargs.get("master")
@@ -71,6 +74,8 @@ class HandlersClass(ValidationVarClass):
             button.unbind("<ButtonPress-1>")
             button_custom.delete_hover()
             master.event_generate("<<PostData>>")
+            master.event_generate("<<UnbindReturn>>")
+            master.event_generate("<<CreateProgress>>")
             return True
         else:
             return False

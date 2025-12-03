@@ -11,7 +11,7 @@ from tkinter_frontend.handlers.input_handlers import HandlersClass
 label = Label(master=frame, text="Введите количество страниц для сканирования", column=0, row=4)
 label.build()
 
-entry_custom = Entry(master=frame, column=0, row=5)
+entry_custom = Entry(master=frame, column=0, row=5, name="pages_entry")
 entry_custom.build()
 entry_custom.make_hover()
 entry = entry_custom.get_instance()
@@ -24,4 +24,5 @@ entry.bind("<Return>", func=functools.partial(HandlersClass.count_page_handler,
                                               text=textvariable, widget=label.get_instance(),
                                               icon=label_icon))
 logging.info("{}: done".format(__name__))
+
 

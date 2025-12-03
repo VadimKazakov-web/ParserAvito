@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import logging
-
 from tkinter_frontend.window_root.frame_1.build import frame
 from tkinter_frontend.classes.button import Button
 from tkinter_frontend.handlers.input_handlers import HandlersClass

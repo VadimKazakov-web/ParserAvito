@@ -6,9 +6,12 @@ import re
 from parser_avito_manager import CheckTitleClass
 
 
-class OpenUrl:
+class OpenUrl(CheckTitleClass):
 
-    def __init__(self, driver):
+    def __init__(self, driver, widget, data_for_progress):
+        super().__init__(driver, widget, data_for_progress)
+        self.widget = widget
+        self.data_for_progress = data_for_progress
         self._url = None
         self._driver = driver
         self._data = None
@@ -19,21 +22,22 @@ class OpenUrl:
     def data(self):
         return self._data
 
-    def open_url(self):
-        counter = self._counter_timeout_exception
-        while counter:
-            try:
-                self._driver.get(self._url)
-            except urllib3.exceptions.ReadTimeoutError:
-                logging.info("\nReadTimeoutError in self.open_url()")
-                counter -= 1
-            except selenium.common.exceptions.TimeoutException:
-                logging.info("\nTimeoutError in self.open_url()")
-                counter -= 1
-            else:
-                break
-        else:
-            logging.info("\nTimeoutException,  bad connection")
+    def open_url(self, url):
+        self._driver.get(url)
+        # counter = self._counter_timeout_exception
+        # while counter:
+        #     try:
+        #         self._driver.get(url)
+        #     except urllib3.exceptions.ReadTimeoutError:
+        #         logging.info("\nReadTimeoutError in self.open_url()")
+        #         counter -= 1
+        #     except selenium.common.exceptions.TimeoutException:
+        #         logging.info("\nTimeoutError in self.open_url()")
+        #         counter -= 1
+        #     else:
+        #         break
+        # else:
+        #     logging.info("\nTimeoutException,  bad connection")
 
     def find_blocks(self):
         pass
@@ -42,21 +46,28 @@ class OpenUrl:
         pass
 
     def start(self, url):
-        self._url = url
-        counter = self._counter_timeout_exception
-        while counter:
-            self.open_url()
-            check_title = CheckTitleClass()
-            check_title.check_title(self._driver.title)
-            try:
-                blocks = self.find_blocks()
-            except selenium.common.exceptions.TimeoutException:
-                logging.info("\nTimeoutException in self.find_blocks()")
-                counter -= 1
-            else:
-                self.collect_data(blocks)
-                break
-        else:
-            logging.info("\nTimeoutException,  bad connection")
+        check_title = CheckTitleClass(self._driver, self.widget, self.data_for_progress)
+        self.open_url(url)
+        if check_title.check_title() == "404":
+            return
+        blocks = self.find_blocks()
+        self.collect_data(blocks)
+
+        # counter = self._counter_timeout_exception
+        # check_title = CheckTitleClass(self._driver)
+        # while counter:
+        #     self.open_url(url)
+        #     if check_title.check_title() == "404":
+        #         return
+        #     try:
+        #         blocks = self.find_blocks()
+        #     except selenium.common.exceptions.TimeoutException:
+        #         logging.info("\nTimeoutException in self.find_blocks()")
+        #         counter -= 1
+        #     else:
+        #         self.collect_data(blocks)
+        #         break
+        # else:
+        #     logging.info("\nTimeoutException,  bad connection")
 
 

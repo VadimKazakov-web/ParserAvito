@@ -5,8 +5,8 @@ from parser_avito_manager.base import OpenUrl
 
 class OpenPage(OpenUrl):
 
-    def __init__(self, driver):
-        super().__init__(driver)
+    def __init__(self, driver, widget, data_for_progres):
+        super().__init__(driver, widget, data_for_progres)
         self.target_block = '.iva-item-title-KE8A9'
 
     def find_blocks(self):
