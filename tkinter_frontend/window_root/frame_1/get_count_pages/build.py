@@ -21,7 +21,7 @@ label_icon = LabelIcon(column=1, row=5, master=frame, text="❓")
 label_icon.build()
 
 entry.bind("<Return>", func=functools.partial(HandlersClass.count_page_handler,
-                                              text=textvariable, widget=label.get_instance(),
+                                              entry=textvariable, label=label.get_instance(),
                                               icon=label_icon))
 logging.info("{}: done".format(__name__))
 

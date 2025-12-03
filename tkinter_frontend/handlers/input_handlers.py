@@ -9,62 +9,57 @@ class HandlersClass(ValidationVarClass):
 
     @classmethod
     def link_input_handler(cls, *args, **kwargs):
-        link = kwargs.get("text")
-        val = link.get()
-        label = kwargs.get("widget")
+        entry = kwargs.get("entry")
+        val = entry.get()
+        label = kwargs.get("label")
         icon = kwargs.get("icon")
+        entry.set('')
         if ValidationVarClass.validation_url(text=val):
-            link.set(val)
-            icon = icon.make_verified()
-            label["text"] = f'Cсылка введена: \n{link.get()[0:cls.width_text]}\n{link.get()[cls.width_text:]}'
+            icon.make_verified()
+            label["text"] = f'Cсылка введена: \n{val[0:cls.width_text]}\n{val[cls.width_text:]}'
             cls.data["link"] = val
         else:
-            link.set('')
-            icon = icon.make_unchecked()
+            icon.make_unchecked()
             label["text"] = "Недействительная ссылка, введите еще раз"
 
     @classmethod
     def filename_input_handler(cls, *args, **kwargs):
-        filename = kwargs.get("text")
-        val = filename.get()
-        label = kwargs.get("widget")
+        entry = kwargs.get("entry")
+        val = entry.get()
+        label = kwargs.get("label")
         icon = kwargs.get("icon")
+        entry.set('')
         val = ValidationVarClass.validation_file_name(text=val)
-        filename.set(val)
-        icon = icon.make_verified()
-        label["text"] = f'Название файла: {filename.get()}'
+        icon.make_verified()
+        label["text"] = f'Название файла: {val}'
         cls.data["filename"] = val
 
     @classmethod
     def count_page_handler(cls, *args, **kwargs):
-        count = kwargs.get("text")
-        val = count.get()
-        label = kwargs.get("widget")
+        entry = kwargs.get("entry")
+        val = entry.get()
+        label = kwargs.get("label")
         icon = kwargs.get("icon")
+        entry.set('')
         result = ValidationVarClass.validation_pages(text=val)
         match result:
             case True:
-                icon = icon.make_verified()
+                icon.make_verified()
                 label["text"] = f'Количество страниц для сканирования: {val}'
-                cls.data["count_pages"] = count.get()
+                cls.data["count_pages"] = val
             case 'ValueError':
-                count.set('')
-                icon = icon.make_unchecked()
+                icon.make_unchecked()
                 label["text"] = "Значение не является целым числом, введите еще раз"
             case 'Limit':
-                count.set('')
-                icon = icon.make_unchecked()
+                icon.make_unchecked()
                 label["text"] = (f'Количество страниц превышает \nмаксимальное значение '
                                  f'{cls.max_pages}, введите еще раз')
             case 0:
-                icon = icon.make_unchecked()
+                icon.make_unchecked()
                 label["text"] = "Недопустимое количество"
 
     @classmethod
     def valid_all_vars(cls, *args, **kwargs):
-        event = args[0]
-        master = kwargs.get("master")
-        master.event_generate("<<CreateProgress>>")
         if cls.data.get("link") and cls.data.get("filename") and cls.data.get("count_pages"):
             button_custom = kwargs.get("widget")
             master = kwargs.get("master")

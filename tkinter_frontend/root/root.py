@@ -20,5 +20,6 @@ class WindowRoot:
         self.root.rowconfigure(0, weight=1)
 
     def start(self):
+        self.root.protocol("WM_DELETE_WINDOW", lambda : exit())
         self.root.mainloop()
 
