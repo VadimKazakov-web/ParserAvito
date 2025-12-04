@@ -16,11 +16,12 @@ def create_progress(*args):
 def update(*args):
     from tkinter_frontend.window_root.frame_1.progress_bar.build import label_origin, label_title_page_origin
     chunk = 55
-    title = data_for_prog.get("page_title")
+    title = data_for_prog.get(key="page_title")
+    progress = data_for_prog.get(key="text")
     if len(title) >= chunk:
-        result = title[0:chunk] + "\n" + title[chunk:]
+        title_chunk = title[0:chunk] + "\n" + title[chunk:]
     else:
-        result = title
-    label_title_page_origin["text"] = result
-    label_origin["text"] = data_for_prog.get("text")
+        title_chunk = title
+    label_title_page_origin["text"] = title_chunk
+    label_origin["text"] = progress
 

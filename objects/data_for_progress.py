@@ -1,4 +1,6 @@
+# -*- coding: utf-8 -*-
 import threading
+from exceptions import NamedParametersError
 
 
 class DataForProgress:
@@ -10,13 +12,22 @@ class DataForProgress:
     def __str__(self):
         return self.data
 
-    def set(self, key, val):
+    def set(self, **kwargs):
         self.lock.acquire()
-        self.data[key] = val
+        key = kwargs.get("key")
+        val = kwargs.get("val")
+        if key and val:
+            self.data[key] = val
+        else:
+            raise NamedParametersError("check parameters key or val")
         self.lock.release()
 
-    def get(self, key):
+    def get(self, **kwargs):
         self.lock.acquire()
-        val = self.data.get(key, "")
+        key = kwargs.get("key")
+        if key:
+            val = self.data.get(key, "")
+        else:
+            raise NamedParametersError("check parameters key")
         self.lock.release()
         return val

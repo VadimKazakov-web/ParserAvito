@@ -15,7 +15,7 @@ class CheckTitleClass:
 
     def check_title(self):
         while True:
-            self.data_for_progress.set("page_title", self._driver.title)
+            self.data_for_progress.set(key="page_title", val=self._driver.title)
             self.widget.event_generate("<<UpdateProgress>>")
             if self._pattern_problem_ip.search(self._driver.title):
 

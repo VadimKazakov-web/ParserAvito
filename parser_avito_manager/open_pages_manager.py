@@ -86,7 +86,7 @@ class ParserAvitoManager:
                 time.sleep(self.timeout)
                 self.counter += 1
                 progress_text = f'отсканировано объявлений: {self.counter}/{length_data_list}'
-                self.data_for_progress.set("text", progress_text)
+                self.data_for_progress.set(key="text", val=progress_text)
                 self.widget_tk.event_generate("<<UpdateProgress>>")
         print('\n')
 
