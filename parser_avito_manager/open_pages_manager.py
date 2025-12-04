@@ -1,6 +1,7 @@
 import logging
 import time
 import webbrowser
+import selenium.common
 from parser_avito_manager import PreparationLinksForPages, ResultInHtml
 from parser_avito_manager.open_page import OpenPage
 from parser_avito_manager.open_announcement import OpenAnnouncement
@@ -24,7 +25,7 @@ def setup_options():
 class ParserAvitoManager:
 
     def __init__(self, channel_for_variables: queue,
-                 data_for_progress, test=None, timeout=2):
+                 data_for_progress, test=None, timeout=0):
         self.test = test
         self.url = None
         self.pages = None
@@ -39,6 +40,7 @@ class ParserAvitoManager:
         self.driver.implicitly_wait(60)
         self.timeout = timeout
         self.counter = 0
+        self.timeout_exceptions_counter = 4
 
     def accepting_variables(self):
         data = self.channel_for_variables.get()
@@ -62,8 +64,16 @@ class ParserAvitoManager:
     def open_pages(self):
         worker = OpenPage(self.driver, self.widget_tk, self.data_for_progress)
         for url in self.links:
-            worker.start(url)
-            self.total_data.extend(worker.data)
+            counter = self.timeout_exceptions_counter
+            while counter:
+                try:
+                    worker.start(url)
+                except selenium.common.exceptions.TimeoutException:
+                    logging.info("TimeoutException in open_pages(self)")
+                    counter -= 1
+                else:
+                    self.total_data.extend(worker.data)
+                    break
 
     def open_announcement(self):
         worker = OpenAnnouncement(driver=self.driver, widget=self.widget_tk,

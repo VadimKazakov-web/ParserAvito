@@ -1,2 +1,2 @@
 # -*- coding: utf-8 -*-
-from objects.main import config, channel_for_variables, data_for_prog
+from objects.main import config, channel_for_variables, progress

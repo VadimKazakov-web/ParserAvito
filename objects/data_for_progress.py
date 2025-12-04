@@ -26,7 +26,7 @@ class DataForProgress:
         self.lock.acquire()
         key = kwargs.get("key")
         if key:
-            val = self.data.get(key, "")
+            val = self.data.get(key, "...")
         else:
             raise NamedParametersError("check parameters key")
         self.lock.release()

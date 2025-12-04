@@ -6,4 +6,4 @@ from objects.data_for_progress import DataForProgress
 config = dotenv_values(".env.interface")
 
 channel_for_variables = queue.Queue()
-data_for_prog = DataForProgress()
+progress = DataForProgress()
