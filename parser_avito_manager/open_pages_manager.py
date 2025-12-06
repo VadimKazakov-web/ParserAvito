@@ -35,6 +35,7 @@ class ParserAvitoManager:
         self.data_for_progress = data_for_progress
         self.data_from_tk = None
         self.widget_tk = None
+        self.sorting = None
         self.total_data = []
         self.driver = setup_options()
         self.driver.implicitly_wait(60)
@@ -52,6 +53,7 @@ class ParserAvitoManager:
         self.file_name = self.data_from_tk.get("filename")
         self.pages = int(self.data_from_tk.get("count_pages"))
         self.widget_tk = self.data_from_tk.get("widget_tk")
+        self.sorting = self.data_from_tk.get("sorting")
 
     def preparation_links(self):
         prep_links_instance = PreparationLinksForPages(url=self.url, pages=self.pages)
@@ -101,7 +103,10 @@ class ParserAvitoManager:
         print('\n')
 
     def sort_total_data(self):
-        self.total_data.sort(key=lambda e: e.get("total_views", 0), reverse=True)
+        if self.sorting == "total_views":
+            self.total_data.sort(key=lambda e: e.get("total_views", 0), reverse=True)
+        elif self.sorting == "today_views":
+            self.total_data.sort(key=lambda e: e.get("today_views", 0), reverse=True)
 
     def start(self):
         self.accepting_variables()

@@ -5,7 +5,7 @@ from tkinter_frontend.classes.button import Button
 from tkinter_frontend.handlers.input_handlers import HandlersClass
 import functools
 
-button_custom = Button(master=frame, text="Start", column=0, row=6)
+button_custom = Button(master=frame, text="Start", column=0, row=7)
 button_custom.build()
 button_custom.make_hover()
 button_instance = button_custom.get_instance()

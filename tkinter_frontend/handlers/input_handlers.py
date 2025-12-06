@@ -61,6 +61,8 @@ class HandlersClass(ValidationVarClass):
     @classmethod
     def valid_all_vars(cls, *args, **kwargs):
         if cls.data.get("link") and cls.data.get("filename") and cls.data.get("count_pages"):
+            from tkinter_frontend.window_root.frame_1.frame_for_options.radio_buttons.build import choice
+            cls.data["sorting"] = choice.get()
             button_custom = kwargs.get("widget")
             master = kwargs.get("master")
             button = button_custom.get_instance()
