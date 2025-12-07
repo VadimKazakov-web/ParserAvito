@@ -62,14 +62,17 @@ class HandlersClass(ValidationVarClass):
     def valid_all_vars(cls, *args, **kwargs):
         if cls.data.get("link") and cls.data.get("filename") and cls.data.get("count_pages"):
             from tkinter_frontend.window_root.frame_1.frame_for_options.radio_buttons.build import choice
+            from tkinter_frontend.window_root.frame_1.start_button.utils import make_inactive_start_button
+
             cls.data["sorting"] = choice.get()
-            button_custom = kwargs.get("widget")
+            # button_custom = kwargs.get("widget")
             master = kwargs.get("master")
-            button = button_custom.get_instance()
-            button["background"] = "#808080"
-            button["cursor"] = "arrow"
-            button.unbind("<ButtonPress-1>")
-            button_custom.delete_hover()
+            # button = button_custom.get_instance()
+            # button["background"] = "#808080"
+            # button["cursor"] = "arrow"
+            # button.unbind("<ButtonPress-1>")
+            # button_custom.delete_hover()
+            make_inactive_start_button()
             master.event_generate("<<PostData>>")
             master.event_generate("<<UnbindReturn>>")
             master.event_generate("<<CreateProgress>>")

@@ -7,6 +7,8 @@ from parser_avito_manager.open_page import OpenPage
 from parser_avito_manager.open_announcement import OpenAnnouncement
 from selenium import webdriver
 import queue
+from exceptions import BadInternetConnection
+import math
 
 
 def setup_options():
@@ -25,7 +27,7 @@ def setup_options():
 class ParserAvitoManager:
 
     def __init__(self, channel_for_variables: queue,
-                 data_for_progress, test=None, timeout=0):
+                 data_for_progress, test=None, timeout=6):
         self.test = test
         self.url = None
         self.pages = None
@@ -37,8 +39,7 @@ class ParserAvitoManager:
         self.widget_tk = None
         self.sorting = None
         self.total_data = []
-        self.driver = setup_options()
-        self.driver.implicitly_wait(60)
+        self.driver = None
         self.timeout = timeout
         self.counter = 0
         self.timeout_exceptions_counter = 4
@@ -60,9 +61,6 @@ class ParserAvitoManager:
         prep_links_instance.start()
         self.links = prep_links_instance.result
 
-    def __enter__(self):
-        return self
-
     def open_pages(self):
         worker = OpenPage(self.driver, self.widget_tk, self.data_for_progress)
         for url in self.links:
@@ -75,7 +73,12 @@ class ParserAvitoManager:
                     counter -= 1
                 else:
                     self.total_data.extend(worker.data)
+                    time.sleep(4)
                     break
+            else:
+                self.data_for_progress.set(key="page_title", val="Плохое соединение с www.avito.ru")
+                self.widget_tk.event_generate("<<UpdateProgress>>")
+                raise BadInternetConnection
 
     def open_announcement(self):
         worker = OpenAnnouncement(driver=self.driver, widget=self.widget_tk,
@@ -88,19 +91,29 @@ class ParserAvitoManager:
         length_data_list = len(data_list)
         for elem in data_list:
             url = elem.get("link")
-            try:
-                worker.start(url)
-            except Exception as err:
-                logging.info(err.__traceback__.tb_frame)
-                worker.start(url)
+            counter = self.timeout_exceptions_counter
+            while counter:
+                try:
+                    worker.start(url)
+                except selenium.common.exceptions.TimeoutException as err:
+                    logging.info("TimeoutException in open_announcement(self)")
+                    counter -= 1
+                else:
+                    elem.update(worker.data)
+                    self.counter += 1
+                    progress_text = f'отсканировано объявлений: {self.counter}/{length_data_list} ({round(self.counter / length_data_list * 100)}%)'
+                    # key=text - прогресс выполнения
+                    # key=page_title - заголовок страницы
+                    self.data_for_progress.set(key="text", val=progress_text)
+                    self.widget_tk.event_generate("<<UpdateProgress>>")
+                    time.sleep(4)
+                    if self.counter % 10 == 0:
+                        time.sleep(self.timeout)
+                    break
             else:
-                elem.update(worker.data)
-                time.sleep(self.timeout)
-                self.counter += 1
-                progress_text = f'отсканировано объявлений: {self.counter}/{length_data_list}'
-                self.data_for_progress.set(key="text", val=progress_text)
+                self.data_for_progress.set(key="page_title", val="Плохое соединение с www.avito.ru")
                 self.widget_tk.event_generate("<<UpdateProgress>>")
-        print('\n')
+                raise BadInternetConnection
 
     def sort_total_data(self):
         if self.sorting == "total_views":
@@ -109,16 +122,25 @@ class ParserAvitoManager:
             self.total_data.sort(key=lambda e: e.get("today_views", 0), reverse=True)
 
     def start(self):
+        self.driver = setup_options()
+        self.driver.implicitly_wait(60)
         self.accepting_variables()
         logging.info("data from tk: {}".format(self.data_from_tk))
         self.preparation_links()
-        self.open_pages()
-        self.open_announcement()
-        self.sort_total_data()
+        try:
+            self.open_pages()
+            self.open_announcement()
+        except selenium.common.exceptions.WebDriverException as err:
+            logging.warning(err)
+            self.data_for_progress.set(key="page_title", val="Проверьте интернет соединение")
+            self.widget_tk.event_generate("<<UpdateProgress>>")
+            raise BadInternetConnection
+        finally:
+            self.sort_total_data()
+            self.exit()
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def exit(self):
         self.driver.quit()
-        logging.info("+++ total data: {}".format(self.total_data))
         logging.info("+++ length total data: {}".format(len(self.total_data)))
         pattern = ResultInHtml()
         pattern.write_result(file_name=self.file_name, data=self.total_data)

@@ -13,7 +13,7 @@ class ValidationVarClass:
     url = 'https://www.avito.ru/moskva/avtomobili?radius=0&searchRadius=0'
     file_name = 'result.html'
     pages = 2
-    max_pages = 10
+    max_pages = 20
     pattern_for_check_url = re.compile(pattern='^https://www.avito.ru/.+')
     pattern_for_check_file_name = re.compile(pattern='\s')
 

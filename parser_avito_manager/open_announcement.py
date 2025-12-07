@@ -20,7 +20,6 @@ class OpenAnnouncement(OpenUrl):
         self.pattern_today_views = re.compile(r'data-marker="item-view/today-views">.+?(?P<today_views>\d+?)\D+?</span>')
 
     def find_blocks(self):
-        logging.info("in find_blocks(self)")
         block = self._driver.find_element(by=By.CSS_SELECTOR, value=self.target_block)
         self.target_block_inner_html = block.get_attribute('innerHTML')
         return self.target_block_inner_html

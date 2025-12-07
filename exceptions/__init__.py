@@ -1,1 +1,1 @@
-from exceptions.main import NamedParametersError
+from exceptions.main import NamedParametersError, BadInternetConnection
