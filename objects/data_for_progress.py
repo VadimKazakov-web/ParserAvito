@@ -12,7 +12,7 @@ class DataForProgress:
     def __str__(self):
         return self.data
 
-    def set(self, **kwargs):
+    def set(self, *args, **kwargs):
         self.lock.acquire()
         key = kwargs.get("key")
         val = kwargs.get("val")

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from tkinter_frontend.window_root.frame_1.build import frame
+from tkinter_frontend.objects import frame
+
 from tkinter_frontend.classes.label import Label
 from tkinter_frontend.classes.entry import Entry
 from tkinter_frontend.classes.label_icon import LabelIcon

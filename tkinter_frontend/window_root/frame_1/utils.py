@@ -25,3 +25,22 @@ def update(*args):
     label_title_page_origin["text"] = title_chunk
     label_origin["text"] = progr
 
+
+class ActiveInactiveButton:
+
+    def __init__(self, button_custom, button_instance, callback):
+        self.button_custom = button_custom
+        self.button_instance = button_instance
+        self.callback = callback
+
+    def make_inactive_button(self):
+        self.button_instance["background"] = "#808080"
+        self.button_instance["cursor"] = "arrow"
+        self.button_instance.unbind("<ButtonPress-1>")
+        self.button_custom.delete_hover()
+
+    def make_active_button(self):
+        self.button_instance["background"] = "white"
+        self.button_instance["cursor"] = "hand2"
+        self.button_custom.make_hover()
+        self.button_instance.bind("<ButtonPress-1>", self.callback)

@@ -67,12 +67,12 @@ class ResultInHtml:
         """
 
     @staticmethod
-    def preparation_title(data):
+    def preparation_title(counter):
         title = """
         <h1 class="main_title">
             Oтсканировано: {length} объявлений
         </h1>
-        """.format(length=len(data))
+        """.format(length=counter)
         return title
 
     @staticmethod
@@ -103,10 +103,10 @@ class ResultInHtml:
                today_views=elem.get("today_views"))
         return text
 
-    def write_result(self, file_name, data):
+    def write_result(self, file_name, data, count):
         with open(file_name, 'w', encoding='utf-8') as file:
             file.write(self.part_1)
-            title = self.preparation_title(data)
+            title = self.preparation_title(count)
             file.write(title)
             for elem in data:
                 text = self.preparation_text(elem)

@@ -6,9 +6,11 @@ from parser_avito_manager import PreparationLinksForPages, ResultInHtml
 from parser_avito_manager.open_page import OpenPage
 from parser_avito_manager.open_announcement import OpenAnnouncement
 from selenium import webdriver
-import queue
 from exceptions import BadInternetConnection
-import math
+from tkinter_frontend.window_root.frame_1.start_button.build import active_inactive_start_button
+from tkinter_frontend.window_root.frame_1.stop_button.build import active_inactive_stop_button
+import queue
+from exceptions import PushStopButton
 
 
 def setup_options():
@@ -17,7 +19,6 @@ def setup_options():
     options.timeouts = {"pageLoad": 30000}
     options.page_load_strategy = 'eager'
     options.browser_version = 'stable'
-    # options.browser_version = '142'
     # assert options.capabilities['browserVersion'] == 'stable'
     # assert options.capabilities['browserVersion'] == '142'
     driver = webdriver.Chrome(options=options)
@@ -45,9 +46,17 @@ class ParserAvitoManager:
         self.timeout_exceptions_counter = 4
 
     def accepting_variables(self):
-        data = self.channel_for_variables.get()
-        self.data_from_tk = data
+        self.data_from_tk = self.channel_for_variables.get()
         self.setup_variables()
+
+    def check_chanel(self):
+        try:
+            data = self.channel_for_variables.get(block=False)
+        except queue.Empty:
+            return
+        else:
+            if data == "push_stop_button":
+                raise PushStopButton
 
     def setup_variables(self):
         self.url = self.data_from_tk.get("link")
@@ -81,6 +90,7 @@ class ParserAvitoManager:
                 raise BadInternetConnection
 
     def open_announcement(self):
+        active_inactive_stop_button.make_active_button()
         worker = OpenAnnouncement(driver=self.driver, widget=self.widget_tk,
                                   data_for_progress=self.data_for_progress)
         if self.test:
@@ -90,6 +100,11 @@ class ParserAvitoManager:
 
         length_data_list = len(data_list)
         for elem in data_list:
+            try:
+                self.check_chanel()
+            except PushStopButton:
+                logging.info("push stop button")
+                return
             url = elem.get("link")
             counter = self.timeout_exceptions_counter
             while counter:
@@ -127,6 +142,7 @@ class ParserAvitoManager:
         self.accepting_variables()
         logging.info("data from tk: {}".format(self.data_from_tk))
         self.preparation_links()
+        active_inactive_start_button.make_inactive_button()
         try:
             self.open_pages()
             self.open_announcement()
@@ -136,12 +152,14 @@ class ParserAvitoManager:
             self.widget_tk.event_generate("<<UpdateProgress>>")
             raise BadInternetConnection
         finally:
-            self.sort_total_data()
             self.exit()
 
     def exit(self):
         self.driver.quit()
+        self.sort_total_data()
         logging.info("+++ length total data: {}".format(len(self.total_data)))
         pattern = ResultInHtml()
-        pattern.write_result(file_name=self.file_name, data=self.total_data)
+        pattern.write_result(file_name=self.file_name, data=self.total_data, count=self.counter)
+        self.data_for_progress.set(key="page_title", val="Результаты готовы")
+        self.widget_tk.event_generate("<<UpdateProgress>>")
         webbrowser.open(self.file_name)
