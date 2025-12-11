@@ -5,8 +5,8 @@ from parser_avito_manager.base import OpenUrl
 
 class OpenPage(OpenUrl):
 
-    def __init__(self, driver, widget, data_for_progres):
-        super().__init__(driver, widget, data_for_progres)
+    def __init__(self, driver):
+        super().__init__(driver)
         self.target_block = '.iva-item-title-KE8A9'
 
     def find_blocks(self):
@@ -21,10 +21,9 @@ class OpenPage(OpenUrl):
                 "link": self._url_root + link.get_dom_attribute('href'),
             })
 
-    def start(self, url):
+    def start(self):
         self._data = []
-        logging.info("url: {}".format(url))
-        super().start(url)
+        super().start()
         logging.info("data: {}".format(self.data))
         logging.info("length data: {}".format(len(self.data)))
 

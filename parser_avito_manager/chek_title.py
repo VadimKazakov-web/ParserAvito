@@ -3,29 +3,24 @@ import logging
 import time
 
 
-class CheckTitleClass:
+class CheckTitleMixin:
 
-    def __init__(self, driver, widget, data_for_progress):
-        self.widget = widget
-        self.data_for_progress = data_for_progress
-        self._driver = driver
-        self._pattern_404 = re.compile(r'\b404\b')
-        self._pattern_problem_ip = re.compile(r'Доступ ограничен')
-        self._show_problem_ip_title = False
+    _pattern_404 = re.compile(r'\b404\b')
+    _pattern_problem_ip = re.compile(r'Доступ ограничен')
+    _show_problem_ip_title = False
 
-    def check_title(self):
+    @classmethod
+    def check_title(cls, driver):
         while True:
-            self.data_for_progress.set(key="page_title", val=self._driver.title)
-            self.widget.event_generate("<<UpdateProgress>>")
-            if self._pattern_problem_ip.search(self._driver.title):
+            if cls._pattern_problem_ip.search(driver.title):
 
-                if not self._show_problem_ip_title:
-                    logging.info("\npage title: {}".format(self._driver.title))
-                    self._show_problem_ip_title = True
+                if not cls._show_problem_ip_title:
+                    logging.info("\npage title: {}".format(driver.title))
+                    cls._show_problem_ip_title = True
                 time.sleep(3)
 
-            elif self._pattern_404.search(self._driver.title):
-                logging.info("\npage title: {}".format(self._driver.title))
+            elif cls._pattern_404.search(driver.title):
+                logging.info("\npage title: {}".format(driver.title))
                 return "404"
             else:
                 break

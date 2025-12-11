@@ -1,21 +1,18 @@
 # -*- coding: utf-8 -*-
-import threading
-import logging
-from tkinter_frontend.window_root.build import ROOT as tk_interface
-from objects import channel_for_variables
-from tkinter_frontend.main import build_tk_interface
+class Connector:
+    def __init__(self, data):
+        self.data = data
+        self.update_info_event = "<<UpdateInfo>>"
+        self.update_progress_event = "<<UpdateProgress>>"
 
-FORMAT = '[%(asctime)s]%(message)s'
-logging.basicConfig(level=logging.INFO, format=FORMAT)
-log = logging.getLogger(__name__)
+    def update_info(self, widget, text):
+        self.data.set(key="info", val=text)
+        widget.event_generate(self.update_info_event)
 
-asyncio_loop = asyncio.new_event_loop()
-parser = ParserAvito(channel_for_variables=channel_for_variables)
+    def update_progress(self, widget, text):
+        self.data.set(key="progress", val=text)
+        widget.event_generate(self.update_progress_event)
 
-asyncio.run_coroutine_threadsafe(parser.start(), asyncio_loop)
-thread_asyncio_loop = threading.Thread(daemon=True, target=lambda: asyncio_loop.run_forever())
-
-thread_asyncio_loop.start()
-build_tk_interface()
-tk_interface.mainloop()
-
+    def update_title(self, widget, text):
+        self.data.set(key="page_title", val=text)
+        widget.event_generate(self.update_progress_event)

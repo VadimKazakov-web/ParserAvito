@@ -1,5 +1,4 @@
 import logging
-
 from selenium.webdriver.common.by import By
 from parser_avito_manager.base import OpenUrl
 import re
@@ -7,11 +6,9 @@ import re
 
 class OpenAnnouncement(OpenUrl):
 
-    def __init__(self, driver, widget, data_for_progress):
-        super().__init__(driver, widget, data_for_progress)
+    def __init__(self, driver):
+        super().__init__(driver)
         self.target_block = '.style__contentLeftWrapper___XzU0Nj'
-        self.widget = widget
-        self.data_for_progress = data_for_progress
         self.target_block_inner_html = None
         self.pattern_id = re.compile(r'data-marker="item-view/item-id">\D+?(?P<id>\d+?)</span>',
                                      flags=re.DOTALL)
@@ -41,6 +38,6 @@ class OpenAnnouncement(OpenUrl):
         if result_today_views:
             self._data['today_views'] = int(result_today_views.group("today_views"))
 
-    def start(self, url):
+    def start(self):
         self._data = {}
-        super().start(url)
+        super().start()
