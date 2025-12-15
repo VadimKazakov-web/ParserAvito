@@ -20,4 +20,5 @@ class OpenUrl:
 
     def start(self):
         blocks = self.find_blocks()
-        self.collect_data(blocks)
+        if blocks:
+            self.collect_data(blocks)

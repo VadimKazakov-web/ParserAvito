@@ -7,16 +7,13 @@ from exceptions import BadInternetConnection
 
 def start_parser_instance(channel_for_variables, data_for_progress, test=False):
     logging.info("start parser")
-    try:
-        manager = ParserAvitoManager(channel_for_variables=channel_for_variables,
-                                     data_for_progress=data_for_progress, test=test)
-        while True:
-            try:
-                manager.start()
-            except BadInternetConnection:
-                logging.warning("bad connections in avito.ru")
-            finally:
-                active_inactive_start_button.make_active_button()
-                active_inactive_stop_button.make_inactive_button()
-    except Exception as err:
-        logging.info(err.__traceback__.stack)
+
+    while True:
+        try:
+            manager = ParserAvitoManager(channel_for_variables=channel_for_variables,
+                                         data_for_progress=data_for_progress, test=test)
+            manager.start()
+        except BadInternetConnection:
+            logging.warning("bad connections in avito.ru")
+        except Exception as err:
+            logging.info(err.__traceback__.tb_frame)

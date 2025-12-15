@@ -1,4 +1,6 @@
 import logging
+
+import selenium.common
 from selenium.webdriver.common.by import By
 from parser_avito_manager.base import OpenUrl
 import re
@@ -17,9 +19,15 @@ class OpenAnnouncement(OpenUrl):
         self.pattern_today_views = re.compile(r'data-marker="item-view/today-views">.+?(?P<today_views>\d+?)\D+?</span>')
 
     def find_blocks(self):
-        block = self._driver.find_element(by=By.CSS_SELECTOR, value=self.target_block)
-        self.target_block_inner_html = block.get_attribute('innerHTML')
-        return self.target_block_inner_html
+        try:
+            block = self._driver.find_element(by=By.CSS_SELECTOR, value=self.target_block)
+            self.target_block_inner_html = block.get_attribute('innerHTML')
+        except selenium.common.exceptions.StaleElementReferenceException as err:
+            logging.warning(err)
+            logging.warning("in find_blocks(self)")
+            return None
+        else:
+            return self.target_block_inner_html
 
     def collect_data(self, block):
         result_id = self.pattern_id.search(block)

@@ -72,13 +72,6 @@ class ParserAvitoManager(CheckTitleMixin):
         prep_links_instance.start()
         self.links = prep_links_instance.result
 
-    def _work(self, worker, url):
-        self.driver.get(url)
-        connector.update_title(widget=self.widget_tk, text=self.driver.title)
-        if self.check_title(self.driver) == "404":
-            return "404"
-        worker.start()
-
     def open_pages(self):
         worker = OpenPage(self.driver)
         for url in self.links:
@@ -86,10 +79,14 @@ class ParserAvitoManager(CheckTitleMixin):
             connector.update_info(widget=self.widget_tk, text="Открываются страницы")
             while timeout_exceptions_counter:
                 try:
-                    if self._work(worker, url) == "404":
-                        return
+                    self.driver.get(url)
+                    connector.update_title(widget=self.widget_tk, text=self.driver.title)
+                    if self.check_title(self.driver) == CheckTitleMixin.not_found:
+                        break
+                    else:
+                        worker.start()
                 except selenium.common.exceptions.TimeoutException:
-                    logging.info("TimeoutException in open_pages(self)")
+                    logging.warning("TimeoutException in open_pages(self)")
                     timeout_exceptions_counter -= 1
                     connector.update_info(widget=self.widget_tk, text="Плохое соединение, перезагружаю страницу,\n"
                                                                       "осталось попыток: {}".format(timeout_exceptions_counter))
@@ -117,10 +114,14 @@ class ParserAvitoManager(CheckTitleMixin):
             timeout_exceptions_counter = self.timeout_exceptions_counter
             while timeout_exceptions_counter:
                 try:
-                    if self._work(worker, url) == "404":
-                        return
+                    self.driver.get(url)
+                    connector.update_title(widget=self.widget_tk, text=self.driver.title)
+                    if self.check_title(self.driver) == CheckTitleMixin.not_found:
+                        break
+                    else:
+                        worker.start()
                 except selenium.common.exceptions.TimeoutException:
-                    logging.info("TimeoutException in open_announcement(self)")
+                    logging.warning("TimeoutException in open_announcement(self)")
                     timeout_exceptions_counter -= 1
                     connector.update_info(widget=self.widget_tk, text="Плохое соединение, перезагружаю страницу,\n"
                                                                       "осталось попыток: {}".format(timeout_exceptions_counter))
@@ -145,7 +146,6 @@ class ParserAvitoManager(CheckTitleMixin):
             self.total_data.sort(key=lambda e: e.get("today_views", 0), reverse=True)
 
     def start(self):
-        self.counter = 0
         self.driver = setup_options()
         self.driver.implicitly_wait(60)
         self.accepting_variables()
@@ -166,6 +166,8 @@ class ParserAvitoManager(CheckTitleMixin):
             raise BadInternetConnection
         finally:
             self.exit()
+            active_inactive_start_button.make_active_button()
+            active_inactive_stop_button.make_inactive_button()
 
     def exit(self):
         self.driver.quit()
