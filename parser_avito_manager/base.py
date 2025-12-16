@@ -7,6 +7,7 @@ class OpenUrl:
         self._driver = driver
         self._data = None
         self._url_root = 'https://www.avito.ru'
+        self._url = None
 
     @property
     def data(self):
@@ -18,7 +19,8 @@ class OpenUrl:
     def collect_data(self, blocks):
         pass
 
-    def start(self):
+    def start(self, url):
+        self._url = url
         blocks = self.find_blocks()
         if blocks:
             self.collect_data(blocks)

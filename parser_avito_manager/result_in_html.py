@@ -84,7 +84,7 @@ class ResultInHtml:
             {title}
         </h3>
         <a class="link" href="{link}">
-            {link}
+            {link_short}
         </a>
         <div class="info">
             <span class="date">
@@ -99,6 +99,7 @@ class ResultInHtml:
         </div>
     </div>
     """.format(id=elem.get("id"), title=elem.get("title"), link=elem.get("link"),
+               link_short=elem.get("link")[0:100]+"...",
                date=elem.get("date"), total_views=elem.get("total_views"),
                today_views=elem.get("today_views"))
         return text

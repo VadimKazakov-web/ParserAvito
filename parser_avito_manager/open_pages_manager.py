@@ -1,3 +1,4 @@
+import functools
 import logging
 import time
 import webbrowser
@@ -72,71 +73,62 @@ class ParserAvitoManager(CheckTitleMixin):
         prep_links_instance.start()
         self.links = prep_links_instance.result
 
-    def open_pages(self):
-        worker = OpenPage(self.driver)
-        for url in self.links:
+    def update_progress(self, links):
+        length = len(links)
+        self.counter += 1
+        progress_text = f'отсканировано объявлений: {self.counter}/{length} ({round(self.counter / length * 100)}%)'
+        connector.update_progress(widget=self.widget_tk, text=progress_text)
+
+    def worker(self, instance, links, callback=None):
+        if callback:
+            callback_func = callback
+        else:
+            callback_func = lambda a=None: a
+        for url in links:
+            try:
+                self.check_chanel()
+            except PushStopButton:
+                logging.info("push stop button")
+                return
             timeout_exceptions_counter = self.timeout_exceptions_counter
-            connector.update_info(widget=self.widget_tk, text="Открываются страницы")
             while timeout_exceptions_counter:
                 try:
                     self.driver.get(url)
-                    connector.update_title(widget=self.widget_tk, text=self.driver.title)
-                    if self.check_title(self.driver) == CheckTitleMixin.not_found:
-                        break
-                    else:
-                        worker.start()
                 except selenium.common.exceptions.TimeoutException:
-                    logging.warning("TimeoutException in open_pages(self)")
+                    self.bad_connection_audio()
+                    logging.warning("TimeoutException")
                     timeout_exceptions_counter -= 1
                     connector.update_info(widget=self.widget_tk, text="Плохое соединение, перезагружаю страницу,\n"
                                                                       "осталось попыток: {}".format(timeout_exceptions_counter))
+                    self.bad_connection_audio()
+                except Exception as err:
+                    print(err)
                 else:
-                    connector.update_info(widget=self.widget_tk, text="Открываются страницы")
-                    self.total_data.extend(worker.data)
+                    connector.update_title(widget=self.widget_tk, text=self.driver.title)
+                    if self.check_title(self.driver) == CheckTitleMixin.not_found:
+                        self.page_not_found_audio()
+                        break
+                    else:
+                        instance.start(url)
+                    callback_func(links)
                     time.sleep(self.timeout)
                     break
             else:
                 connector.update_info(widget=self.widget_tk, text="Плохое соединение с www.avito.ru")
                 raise BadInternetConnection
 
-    def open_announcement(self):
+    def open_pages(self):
+        connector.update_info(widget=self.widget_tk, text="Открываются страницы")
+        instance = OpenPage(self.driver)
+        self.worker(instance=instance, links=self.links)
+        return instance.data
+
+    def open_announcement(self, links):
+        connector.update_info(widget=self.widget_tk, text="Открываются объявления")
         active_inactive_stop_button.make_active_button()
-        worker = OpenAnnouncement(driver=self.driver)
-        length_data_list = len(self.total_data)
-        for elem in self.total_data:
-            url = elem.get("link")
-            try:
-                self.check_chanel()
-            except PushStopButton:
-                logging.info("push stop button")
-                return
-            connector.update_info(widget=self.widget_tk, text="Открываются объявления")
-            timeout_exceptions_counter = self.timeout_exceptions_counter
-            while timeout_exceptions_counter:
-                try:
-                    self.driver.get(url)
-                    connector.update_title(widget=self.widget_tk, text=self.driver.title)
-                    if self.check_title(self.driver) == CheckTitleMixin.not_found:
-                        break
-                    else:
-                        worker.start()
-                except selenium.common.exceptions.TimeoutException:
-                    logging.warning("TimeoutException in open_announcement(self)")
-                    timeout_exceptions_counter -= 1
-                    connector.update_info(widget=self.widget_tk, text="Плохое соединение, перезагружаю страницу,\n"
-                                                                      "осталось попыток: {}".format(timeout_exceptions_counter))
-                else:
-                    elem.update(worker.data)
-                    self.counter += 1
-                    progress_text = f'отсканировано объявлений: {self.counter}/{length_data_list} ({round(self.counter / length_data_list * 100)}%)'
-                    connector.update_progress(widget=self.widget_tk, text=progress_text)
-                    time.sleep(self.timeout)
-                    if self.counter % 10 == 0:
-                        time.sleep(self.timeout)
-                    break
-            else:
-                connector.update_info(widget=self.widget_tk, text="Плохое соединение с www.avito.ru")
-                raise BadInternetConnection
+        instance = OpenAnnouncement(self.driver)
+        self.worker(instance=instance, links=links, callback=self.update_progress)
+        self.total_data = instance.data
 
     def sort_total_data(self):
         connector.update_info(widget=self.widget_tk, text="Выполняется сортировка")
@@ -155,8 +147,8 @@ class ParserAvitoManager(CheckTitleMixin):
         connector.update_progress(widget=self.widget_tk, text="...")
         connector.update_title(widget=self.widget_tk, text="...")
         try:
-            self.open_pages()
-            self.open_announcement()
+            links = self.open_pages()
+            self.open_announcement(links)
         except selenium.common.exceptions.WebDriverException as err:
             logging.warning(err)
             connector.update_info(widget=self.widget_tk, text="WebDriverException, Проверьте интернет соединение")
@@ -172,8 +164,9 @@ class ParserAvitoManager(CheckTitleMixin):
     def exit(self):
         self.driver.quit()
         self.sort_total_data()
-        logging.info("+++ length total data: {}".format(len(self.total_data)))
+        logging.info("+++ scanned: {} +++".format(self.counter))
         pattern = ResultInHtml()
         pattern.write_result(file_name=self.file_name, data=self.total_data, count=self.counter)
         connector.update_info(widget=self.widget_tk, text="Результаты готовы")
         webbrowser.open(self.file_name)
+        self.complete_audio()
