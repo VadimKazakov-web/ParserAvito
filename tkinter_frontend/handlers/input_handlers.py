@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from tkinter_frontend.handlers.validation import ValidationVarClass
 from objects import config
-from objects import progress, connector
+from objects import connector
+import datetime
 
 
 class HandlersClass(ValidationVarClass):
@@ -31,9 +32,15 @@ class HandlersClass(ValidationVarClass):
         icon = kwargs.get("icon")
         entry.set('')
         val = ValidationVarClass.validation_file_name(text=val)
+        val = f'{val}_{cls.date_time_now()}.html'
         icon.make_verified()
         label["text"] = f'Название файла: {val}'
         cls.data["filename"] = val
+
+    @staticmethod
+    def date_time_now():
+        datetime_now = str(datetime.datetime.today().strftime("%d-%m-%Y-%Hч-%Mмин"))
+        return datetime_now
 
     @classmethod
     def count_page_handler(cls, *args, **kwargs):
@@ -67,8 +74,8 @@ class HandlersClass(ValidationVarClass):
             cls.data["widget_tk"] = master
             cls.data["sorting"] = choice.get()
             connector.update_info(widget=master, text="все данные введены")
-            master.event_generate("<<PostData>>")
-            master.event_generate("<<CreateProgress>>")
+            master.event_generate(connector.post_data_event)
+            master.event_generate(connector.create_progress_event)
             return True
         else:
             connector.update_info(widget=master, text="не все данные введены")

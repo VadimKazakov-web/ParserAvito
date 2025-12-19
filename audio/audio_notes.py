@@ -21,6 +21,7 @@ class AudioNotesMixin:
 
     @classmethod
     def complete_audio(cls):
+        winsound.PlaySound('SystemExclamation', winsound.SND_ALIAS)
         winsound.PlaySound(cls._complete, winsound.SND_FILENAME)
 
 

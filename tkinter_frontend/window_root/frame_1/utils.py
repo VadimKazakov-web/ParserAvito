@@ -38,13 +38,13 @@ class ActiveInactiveButton:
         self.button_instance = button_instance
         self.callback = callback
 
-    def make_inactive_button(self):
+    def make_inactive_button(self, *args, **kwargs):
         self.button_instance["background"] = "#808080"
         self.button_instance["cursor"] = "arrow"
         self.button_instance.unbind("<ButtonPress-1>")
         self.button_custom.delete_hover()
 
-    def make_active_button(self):
+    def make_active_button(self, *args, **kwargs):
         self.button_instance["background"] = "white"
         self.button_instance["cursor"] = "hand2"
         self.button_custom.make_hover()

@@ -11,7 +11,7 @@ class ValidationVarClass:
     Класс проверяет необходимые переменные для парсера
     """
     url = 'https://www.avito.ru/moskva/avtomobili?radius=0&searchRadius=0'
-    file_name = 'result.html'
+    file_name = 'result'
     pages = 2
     max_pages = 25
     pattern_for_check_url = re.compile(pattern='^https://www.avito.ru/.+')
@@ -31,7 +31,7 @@ class ValidationVarClass:
             return cls.file_name
         match = ValidationVarClass.pattern_for_check_file_name.sub(string=text, repl="_")
         match = ValidationVarClass.pattern_for_2_dot.sub(string=match, repl="_")
-        return match + ".html"
+        return match
 
     @classmethod
     def validation_pages(cls, text: str) -> Any:

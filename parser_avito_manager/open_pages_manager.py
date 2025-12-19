@@ -85,12 +85,13 @@ class ParserAvitoManager(CheckTitleMixin):
         else:
             callback_func = lambda a=None: a
         for url in links:
+            timeout_exceptions_counter = self.timeout_exceptions_counter
             try:
                 self.check_chanel()
             except PushStopButton:
-                logging.info("push stop button")
-                return
-            timeout_exceptions_counter = self.timeout_exceptions_counter
+                if isinstance(instance, OpenAnnouncement):
+                    self.total_data = instance.data
+                raise PushStopButton
             while timeout_exceptions_counter:
                 try:
                     self.driver.get(url)
@@ -125,7 +126,6 @@ class ParserAvitoManager(CheckTitleMixin):
 
     def open_announcement(self, links):
         connector.update_info(widget=self.widget_tk, text="Открываются объявления")
-        active_inactive_stop_button.make_active_button()
         instance = OpenAnnouncement(self.driver)
         self.worker(instance=instance, links=links, callback=self.update_progress)
         self.total_data = instance.data
@@ -147,6 +147,7 @@ class ParserAvitoManager(CheckTitleMixin):
         connector.update_progress(widget=self.widget_tk, text="...")
         connector.update_title(widget=self.widget_tk, text="...")
         try:
+            active_inactive_stop_button.make_active_button()
             links = self.open_pages()
             self.open_announcement(links)
         except selenium.common.exceptions.WebDriverException as err:
@@ -156,17 +157,22 @@ class ParserAvitoManager(CheckTitleMixin):
         except BadInternetConnection:
             connector.update_info(widget=self.widget_tk, text="Плохое соединение с www.avito.ru")
             raise BadInternetConnection
+        except PushStopButton:
+            logging.info("push stop button")
+            connector.update_info(widget=self.widget_tk, text="Выполнена остановка")
         finally:
             self.exit()
+            connector.update_title(widget=self.widget_tk, text="...")
             active_inactive_start_button.make_active_button()
             active_inactive_stop_button.make_inactive_button()
 
     def exit(self):
         self.driver.quit()
-        self.sort_total_data()
-        logging.info("+++ scanned: {} +++".format(self.counter))
-        pattern = ResultInHtml()
-        pattern.write_result(file_name=self.file_name, data=self.total_data, count=self.counter)
-        connector.update_info(widget=self.widget_tk, text="Результаты готовы")
-        webbrowser.open(self.file_name)
-        self.complete_audio()
+        if self.total_data:
+            self.sort_total_data()
+            logging.info("+++ scanned: {} +++".format(self.counter))
+            pattern = ResultInHtml()
+            pattern.write_result(file_name=self.file_name, data=self.total_data, count=self.counter)
+            connector.update_info(widget=self.widget_tk, text="Результаты готовы")
+            webbrowser.open(self.file_name)
+            self.complete_audio()

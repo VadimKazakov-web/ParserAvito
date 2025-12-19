@@ -2,8 +2,11 @@
 class Connector:
     def __init__(self, data):
         self.data = data
+        self.post_data_event = "<<PostData>>"
+        self.create_progress_event = "<<CreateProgress>>"
         self.update_info_event = "<<UpdateInfo>>"
         self.update_progress_event = "<<UpdateProgress>>"
+        self.push_button_event = "<<PushButton>>"
 
     def update_info(self, widget, text):
         self.data.set(key="info", val=text)
