@@ -95,6 +95,7 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
             while timeout_exceptions_counter:
                 try:
                     self.driver.get(url)
+                    time.sleep(self.timeout)
                 except selenium.common.exceptions.TimeoutException:
                     self.bad_connection_audio()
                     logging.warning("TimeoutException")
@@ -112,7 +113,6 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
                     else:
                         instance.start(url)
                     callback_func(links)
-                    time.sleep(self.timeout)
                     break
             else:
                 connector.update_info(widget=self.widget_tk, text="Плохое соединение с www.avito.ru")

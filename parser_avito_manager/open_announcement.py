@@ -1,5 +1,4 @@
 import logging
-
 import selenium.common
 from selenium.webdriver.common.by import By
 from parser_avito_manager.base import OpenUrl
@@ -13,13 +12,22 @@ class OpenAnnouncement(OpenUrl):
         self._data = []
         self.target_block = '.style__contentLeftWrapper___XzU0Nj'
         self.target_block_inner_html = None
+        self.target_block_seller = '.style__contentRightWrapper___XzU0Nj'
+        self.target_block_seller_html = None
         self.pattern = re.compile(r'data-marker="item-view/item-id">\D+?(?P<id>\d+?)</span>'
                                   r'.+?data-marker="item-view/item-date">.+?-->(?P<date>.+?)</span>'
                                   r'.*?<span(.+?data-marker="item-view/total-views">(?P<total_views>\d+?)\D+?</span>)?'
                                   r'.*?<span(.+?data-marker="item-view/today-views">.+?'
                                   r'(?P<today_views>\d+?)\D+?</span>)?', flags=re.DOTALL)
-        self.pattern_title = re.compile(r'<h1.+?data-marker="item-view/title-info">(?P<title>.+?)</h1>')
-        self.counter_stale_element_exception = 3
+        self.pattern_id = re.compile(r'data-marker="item-view/item-id">\D+?(?P<id>\d+?)\D', flags=re.DOTALL)
+        self.pattern_date = re.compile(r'data-marker="item-view/item-date">.*?·.*?(?P<date>.+?)</span>', flags=re.DOTALL)
+        self.pattern_total_views = re.compile(r'data-marker="item-view/total-views">(?P<total_views>\d+?)\D+?</span>', flags=re.DOTALL)
+        self.pattern_today_views = re.compile(r'data-marker="item-view/today-views">.+?(?P<today_views>\d+?)\D+?</span>', flags=re.DOTALL)
+        self.pattern_title = re.compile(r'<h1.+?data-marker="item-view/title-info">(?P<title>.+?)</h1>', flags=re.DOTALL)
+        self.pattern_rating = re.compile(r'<meta.+?"ratingValue" content="(?P<rating>.+?)">', flags=re.DOTALL)
+        self.pattern_reviews = re.compile(r'<a data-marker="rating-caption/rating" role="button".+?>'
+                                          r'(?P<reviews>\d*?)\D*?</a>', flags=re.DOTALL)
+        self.counter_stale_element_exception = 6
 
     def find_blocks(self):
         counter = self.counter_stale_element_exception
@@ -28,34 +36,57 @@ class OpenAnnouncement(OpenUrl):
                 block = self._driver.find_element(by=By.CSS_SELECTOR, value=self.target_block)
                 self.target_block_inner_html = block.get_attribute('innerHTML')
             except selenium.common.exceptions.StaleElementReferenceException:
-                logging.warning("selenium.common.exceptions.StaleElementReferenceExceptionin\nfind_blocks(self)")
+                logging.warning("StaleElementReferenceExceptionin\nfind_blocks(self) block")
                 counter -= 1
             else:
-                return self.target_block_inner_html
-        return None
+                break
 
-    def collect_data(self, block):
+        while counter:
+            try:
+                block_seller = self._driver.find_element(by=By.CSS_SELECTOR, value=self.target_block_seller)
+                self.target_block_seller_html = block_seller.get_attribute('innerHTML')
+            except selenium.common.exceptions.StaleElementReferenceException:
+                logging.warning("StaleElementReferenceExceptionin\nfind_blocks(self) block_seller")
+                counter -= 1
+            else:
+                break
+
+        return self.target_block_inner_html, self.target_block_seller_html
+
+    def collect_data(self, blocks):
+        block, block_seller = blocks
         data = {}
         result_title = self.pattern_title.search(block)
         if result_title:
             title = result_title.group("title")
             data["title"] = title
-        result = self.pattern.search(block)
-        if result:
-            result_id = result.group("id")
-            if result_id:
-                data['id'] = result_id
-            result_date = result.group("date")
-            if result_date:
-                data['date'] = result_date
-            result_total_views = result.group("total_views")
-            if result_total_views:
-                data['total_views'] = int(result_total_views)
-            result_today_views = result.group("today_views")
-            if result_today_views:
-                data['today_views'] = int(result_today_views)
-            data["link"] = self._url
-            self._data.append(data)
+
+        result_id = self.pattern_id.search(block)
+        if result_id:
+            data['id'] = result_id.group("id")
+
+        result_date = self.pattern_date.search(block)
+        if result_date:
+            data['date'] = result_date.group("date")
+
+        result_total_views = self.pattern_total_views.search(block)
+        if result_total_views:
+            data['total_views'] = int(result_total_views.group("total_views"))
+
+        result_today_views = self.pattern_today_views.search(block)
+        if result_today_views:
+            data['today_views'] = int(result_today_views.group("today_views"))
+
+        result_rating = self.pattern_rating.search(block_seller)
+        if result_rating:
+            data["rating"] = float(result_rating.group("rating"))
+
+        result_reviews = self.pattern_reviews.search(block_seller)
+        if result_reviews:
+            data["reviews"] = result_reviews.group("reviews")
+
+        data["link"] = self._url
+        self._data.append(data)
 
     def start(self, url: str):
         self._url = url

@@ -33,7 +33,6 @@ class ResultInHtml:
             margin: 8px;
             background-color: antiquewhite;
             padding: 5px;
-            max-width: 1400px;
         }
         .id {
             color: gray;
@@ -43,17 +42,16 @@ class ResultInHtml:
         }
         .link {
             display: block;
+            width: 100%;
             font-size: 15px;
             word-break: break-all;
         }
         .info {
-            display: flex;
-            align-items: center;
+            padding: 10px 0;
+            max-width: 700px;
         }
-        .info span {
-            margin-right: 10px;
-            padding: 5px;
-            font-size: 15px;
+        .info td {
+            padding: 0 3px;
         }
     </style>
 </head>
@@ -86,22 +84,32 @@ class ResultInHtml:
         <a class="link" href="{link}">
             {link_short}
         </a>
-        <div class="info">
-            <span class="date">
+        <table class="info">
+            <tr>
+            <td class="date">
                 {date}
-            </span>
-            <span class="total_views">
+            </td>
+            <td class="total_views">
                 просмотров всего: {total_views}
-            </span>
-            <span class="today_views">
+            </td>
+            <td class="today_views">
                 просмотров сегодня: {today_views}
-            </span>
-        </div>
+            </td>
+            </tr>
+            <tr>
+            <td class="rating">
+                рейтинг: {rating}
+            </td>
+            <td class="reviews">
+                кол-во отзывов: {reviews}
+            </td>
+            </tr>
+        </table>
     </div>
     """.format(id=elem.get("id"), title=elem.get("title"), link=elem.get("link"),
-               link_short=elem.get("link")[0:100]+"...",
+               link_short=elem.get("link", lambda _: "link" * 30)[0:100]+"...",
                date=elem.get("date"), total_views=elem.get("total_views"),
-               today_views=elem.get("today_views"))
+               today_views=elem.get("today_views"), rating=elem.get("rating"), reviews=elem.get("reviews"))
         return text
 
     def write_result(self, file_name, data, count):
