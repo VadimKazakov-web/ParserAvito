@@ -3,7 +3,7 @@ import logging
 import time
 import webbrowser
 import selenium.common
-from parser_avito_manager import PreparationLinksForPages, ResultInHtml, CheckTitleMixin
+from parser_avito_manager import PreparationLinksForPages, ResultInHtml, CheckTitleMixin, TimeMeasurementMixin
 from parser_avito_manager.open_page import OpenPage
 from parser_avito_manager.open_announcement import OpenAnnouncement
 from selenium import webdriver
@@ -27,7 +27,7 @@ def setup_options():
     return driver
 
 
-class ParserAvitoManager(CheckTitleMixin):
+class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
 
     def __init__(self, channel_for_variables: queue,
                  data_for_progress, test=None, timeout=3):
@@ -147,6 +147,7 @@ class ParserAvitoManager(CheckTitleMixin):
         connector.update_progress(widget=self.widget_tk, text="...")
         connector.update_title(widget=self.widget_tk, text="...")
         try:
+            self.time_measurement_start()
             active_inactive_stop_button.make_active_button()
             links = self.open_pages()
             self.open_announcement(links)
@@ -162,7 +163,9 @@ class ParserAvitoManager(CheckTitleMixin):
             connector.update_info(widget=self.widget_tk, text="Выполнена остановка")
         finally:
             self.exit()
-            connector.update_title(widget=self.widget_tk, text="...")
+            self.time_measurement_end()
+            connector.update_title(widget=self.widget_tk,
+                                   text="Время работы программы {}".format(self.time_measurement_result()))
             active_inactive_start_button.make_active_button()
             active_inactive_stop_button.make_inactive_button()
 
