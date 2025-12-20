@@ -136,6 +136,8 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
             self.total_data.sort(key=lambda e: e.get("total_views", 0), reverse=True)
         elif self.sorting == "today_views":
             self.total_data.sort(key=lambda e: e.get("today_views", 0), reverse=True)
+        elif self.sorting == "reviews":
+            self.total_data.sort(key=lambda e: e.get("reviews", 0), reverse=True)
 
     def start(self):
         self.driver = setup_options()
@@ -161,6 +163,8 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
         except PushStopButton:
             logging.info("push stop button")
             connector.update_info(widget=self.widget_tk, text="Выполнена остановка")
+        except Exception as err:
+            connector.update_info(widget=self.widget_tk, text=err)
         finally:
             self.exit()
             self.time_measurement_end()

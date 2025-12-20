@@ -89,7 +89,7 @@ class OpenAnnouncement(OpenUrl):
 
         result_reviews = self.pattern_reviews.search(block_seller[end_point:])
         if result_reviews:
-            data["reviews"] = result_reviews.group("reviews")
+            data["reviews"] = int(result_reviews.group("reviews"))
 
         data["link"] = self._url
         self._data.append(data)

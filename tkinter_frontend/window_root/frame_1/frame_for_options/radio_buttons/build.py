@@ -21,10 +21,10 @@ button_2 = ttk.Radiobutton(frame_for_options, text="Сортировать по 
 button_2.grid(column=1, row=2, sticky=W)
 button_2.grid_configure(padx=5, pady=5)
 
-# button_3 = ttk.Radiobutton(frame_for_options, text="Другое", variable=choice,
-#                            value="ofter", cursor="hand2",)
-# button_3.grid(column=1, row=3, sticky=W)
-# button_3.grid_configure(padx=5, pady=5)
+button_3 = ttk.Radiobutton(frame_for_options, text="Сортировать по количеству отзывов", variable=choice,
+                           value="reviews", cursor="hand2",)
+button_3.grid(column=1, row=3, sticky=W)
+button_3.grid_configure(padx=5, pady=5)
 #
 # button_4 = ttk.Radiobutton(frame_for_options, text="Другое_2", variable=choice,
 #                            value="ofter_2", cursor="hand2",)
