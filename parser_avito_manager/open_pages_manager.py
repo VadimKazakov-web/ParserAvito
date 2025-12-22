@@ -129,13 +129,20 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
         self.total_data = instance.data
 
     def sort_total_data(self):
+        result = [
+            sorted(self.total_data, key=lambda e: e.get("total_views", 0), reverse=True),
+            sorted(self.total_data, key=lambda e: e.get("today_views", 0), reverse=True),
+            sorted(self.total_data, key=lambda e: e.get("reviews", 0), reverse=True),
+        ]
+        self.total_data = result
         connector.update_info(widget=self.widget_tk, text="Выполняется сортировка")
-        if self.sorting == "total_views":
-            self.total_data.sort(key=lambda e: e.get("total_views", 0), reverse=True)
-        elif self.sorting == "today_views":
-            self.total_data.sort(key=lambda e: e.get("today_views", 0), reverse=True)
-        elif self.sorting == "reviews":
-            self.total_data.sort(key=lambda e: e.get("reviews", 0), reverse=True)
+
+        # if self.sorting == "total_views":
+        #     self.total_data.sort(key=lambda e: e.get("total_views", 0), reverse=True)
+        # elif self.sorting == "today_views":
+        #     self.total_data.sort(key=lambda e: e.get("today_views", 0), reverse=True)
+        # elif self.sorting == "reviews":
+        #     self.total_data.sort(key=lambda e: e.get("reviews", 0), reverse=True)
 
     def start(self):
         self.driver = setup_options()
@@ -177,7 +184,7 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
             self.sort_total_data()
             logging.info("+++ scanned: {} +++".format(self.counter))
             pattern = ResultInHtml()
-            pattern.write_result(file_name=self.file_name, data=self.total_data, count=self.counter)
+            pattern.write_result(file_name=self.file_name, data_list=self.total_data, count=self.counter)
             connector.update_info(widget=self.widget_tk, text="Результаты готовы")
             webbrowser.open(self.file_name)
             self.complete_audio()

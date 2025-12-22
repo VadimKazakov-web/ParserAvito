@@ -7,7 +7,7 @@ class ResultInHtml:
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Result</title>
+    <title>Document</title>
     <style>
         * {
             box-sizing: border-box;
@@ -16,21 +16,34 @@ class ResultInHtml:
             font-family: Arial, Helvetica, sans-serif;
         }
         .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
             width: 97%;
             margin: 0 auto;
         }
         .main_title {
-            margin-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .options {
+            margin-bottom: 20px;
+        }
+        .btn {
+            margin-right: 15px;
+            margin-bottom: 15px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        .result {
+            display: none !important;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         .elem {
             display: flex;
             flex-direction: column;
             width: 100%;
             border-radius: 5px;
-            margin: 8px;
+            margin-bottom: 8px;
             background-color: antiquewhite;
             padding: 5px;
         }
@@ -53,6 +66,9 @@ class ResultInHtml:
         .info td {
             padding: 0 3px;
         }
+        .display-block {
+            display: block !important;
+        }
     </style>
 </head>
 <body>
@@ -60,6 +76,37 @@ class ResultInHtml:
         """
         self.part_2 = """
     </div>
+    <script>
+        let btn_total_view = document.querySelector('#btn_total_view');
+        let btn_today_view = document.querySelector('#btn_today_view');
+        let btn_review = document.querySelector('#btn_review');
+        let results = document.querySelectorAll('.result');
+
+        btn_total_view.addEventListener("click", () => {
+            results.forEach((elem) => {
+                elem.classList.remove('display-block');
+            })
+            block_total_views.classList.add('display-block');
+        })
+
+        btn_today_view.addEventListener("click", () => {
+            results.forEach((elem) => {
+                elem.classList.remove('display-block');
+            })
+            block_today_views.classList.add('display-block');
+        })
+
+        btn_review.addEventListener("click", () => {
+            results.forEach((elem) => {
+                elem.classList.remove('display-block');
+            })
+            block_review_count.classList.add('display-block');
+        })
+
+        let block_total_views = document.querySelector('#block_total_views');
+        let block_today_views = document.querySelector('#block_today_views');
+        let block_review_count = document.querySelector('#block_review_count');
+    </script>
 </body>
 </html>
         """
@@ -70,6 +117,17 @@ class ResultInHtml:
         <h1 class="main_title">
             Oтсканировано: {length} объявлений
         </h1>
+        <div class="options">
+            <button id="btn_total_view" class="btn">
+                по просмотрам за всё время
+            </button>
+            <button id="btn_today_view" class="btn">
+                по просмотрам за сегодня
+            </button>
+            <button id="btn_review" class="btn">
+                по отзывам
+            </button>
+        </div>
         """.format(length=counter)
         return title
 
@@ -112,12 +170,22 @@ class ResultInHtml:
                today_views=elem.get("today_views"), rating=elem.get("rating"), reviews=elem.get("reviews"))
         return text
 
-    def write_result(self, file_name, data, count):
+    def write_result(self, file_name, data_list, count):
+        data_list = enumerate(data_list)
+        block_list = ['<div id="block_total_views" class="result display-block">',
+                      '<div id="block_today_views" class="result">',
+                      '<div id="block_review_count" class="result">'
+                      ]
         with open(file_name, 'w', encoding='utf-8') as file:
             file.write(self.part_1)
             title = self.preparation_title(count)
             file.write(title)
-            for elem in data:
-                text = self.preparation_text(elem)
-                file.write(text)
+            for index, data in data_list:
+                file.write(block_list[index])
+                for elem in data:
+                    text = self.preparation_text(elem)
+                    file.write(text)
+                file.write("""
+                            </div>
+                            """)
             file.write(self.part_2)

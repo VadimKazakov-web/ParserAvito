@@ -31,7 +31,6 @@ class OpenAnnouncement(OpenUrl):
                 logging.warning("StaleElementReferenceExceptionin\nfind_block(self)")
                 counter -= 1
             else:
-                logging.warning("resolved StaleElementReferenceExceptionin")
                 return html
 
     def find_blocks(self):
