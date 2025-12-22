@@ -103,8 +103,6 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
                     connector.update_info(widget=self.widget_tk, text="Плохое соединение, перезагружаю страницу,\n"
                                                                       "осталось попыток: {}".format(timeout_exceptions_counter))
                     self.bad_connection_audio()
-                except Exception as err:
-                    print(err)
                 else:
                     connector.update_title(widget=self.widget_tk, text=self.driver.title)
                     if self.check_title(self.driver) == CheckTitleMixin.not_found:
