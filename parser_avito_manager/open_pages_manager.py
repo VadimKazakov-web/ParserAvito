@@ -1,4 +1,3 @@
-import functools
 import logging
 import time
 import webbrowser
@@ -97,13 +96,13 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
                     self.driver.get(url)
                     time.sleep(self.timeout)
                 except selenium.common.exceptions.TimeoutException:
-                    self.bad_connection_audio()
                     logging.warning("TimeoutException")
                     timeout_exceptions_counter -= 1
                     connector.update_info(widget=self.widget_tk, text="Плохое соединение, перезагружаю страницу,\n"
                                                                       "осталось попыток: {}".format(timeout_exceptions_counter))
                     self.bad_connection_audio()
                 else:
+                    connector.update_info(widget=self.widget_tk, text="Продолжаю открывать вэб-страницы")
                     connector.update_title(widget=self.widget_tk, text=self.driver.title)
                     if self.check_title(self.driver) == CheckTitleMixin.not_found:
                         self.page_not_found_audio()

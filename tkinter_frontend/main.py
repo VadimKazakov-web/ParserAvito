@@ -8,8 +8,8 @@ def build_tk_interface():
     import tkinter_frontend.objects
     import tkinter_frontend.window_root.frame_1.get_filename_block.build
     import tkinter_frontend.window_root.frame_1.get_count_pages.build
-    import tkinter_frontend.window_root.frame_1.frame_for_options.build
-    import tkinter_frontend.window_root.frame_1.frame_for_options.radio_buttons.build
+    # import tkinter_frontend.window_root.frame_1.frame_for_options.build
+    # import tkinter_frontend.window_root.frame_1.frame_for_options.radio_buttons.build
     import tkinter_frontend.window_root.frame_1.frame_for_info.build
     import tkinter_frontend.window_root.frame_1.start_button.build
     import tkinter_frontend.window_root.frame_1.stop_button.build
