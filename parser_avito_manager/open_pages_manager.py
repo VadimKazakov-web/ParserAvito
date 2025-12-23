@@ -30,7 +30,7 @@ def setup_options():
 class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
 
     def __init__(self, channel_for_variables: queue,
-                 data_for_progress, test=None, timeout=3):
+                 data_for_progress, test=None, timeout=4):
         self.test = test
         self.url = None
         self.pages = None
@@ -129,11 +129,11 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
         self.total_data = instance.data
 
     def sort_total_data(self):
-        result = [
-            sorted(self.total_data, key=lambda e: e.get("total_views", 0), reverse=True),
-            sorted(self.total_data, key=lambda e: e.get("today_views", 0), reverse=True),
-            sorted(self.total_data, key=lambda e: e.get("reviews", 0), reverse=True),
-        ]
+        result = {
+            "total_views": sorted(self.total_data, key=lambda e: e.get("total_views", 0), reverse=True),
+            "today_views": sorted(self.total_data, key=lambda e: e.get("today_views", 0), reverse=True),
+            "reviews": sorted(self.total_data, key=lambda e: e.get("reviews", 0), reverse=True),
+        }
         self.total_data = result
         connector.update_info(widget=self.widget_tk, text="Выполняется сортировка")
 
@@ -184,7 +184,7 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
             self.sort_total_data()
             logging.info("+++ scanned: {} +++".format(self.counter))
             pattern = ResultInHtml()
-            pattern.write_result(file_name=self.file_name, data_list=self.total_data, count=self.counter)
+            pattern.write_result(file_name=self.file_name, data=self.total_data, count=self.counter)
             connector.update_info(widget=self.widget_tk, text="Результаты готовы")
             webbrowser.open(self.file_name)
             self.complete_audio()
