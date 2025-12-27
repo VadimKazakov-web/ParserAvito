@@ -29,7 +29,7 @@ def setup_options():
 class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
 
     def __init__(self, channel_for_variables: queue,
-                 data_for_progress, test=None, timeout=4):
+                 data_for_progress, test=None, timeout=1):
         self.test = test
         self.url = None
         self.pages = None

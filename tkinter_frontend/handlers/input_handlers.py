@@ -16,9 +16,10 @@ class HandlersClass(ValidationVarClass):
         label = kwargs.get("label")
         icon = kwargs.get("icon")
         entry.set('')
-        if ValidationVarClass.validation_url(text=val):
+        check = ValidationVarClass.validation_url(text=val)
+        if check:
             icon.make_verified()
-            label["text"] = f'Cсылка введена: \n{val[0:cls.width_text]}\n{val[cls.width_text:]}'
+            label["text"] = f'Cсылка введена: \n{check[0:cls.width_text]}\n{check[cls.width_text:]}'
             cls.data["link"] = val
         else:
             icon.make_unchecked()

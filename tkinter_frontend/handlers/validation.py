@@ -10,7 +10,7 @@ class ValidationVarClass:
     """
     Класс проверяет необходимые переменные для парсера
     """
-    url = 'https://www.avito.ru/moskva/avtomobili?radius=0&searchRadius=0'
+    url = 'https://www.avito.ru/moskva/knigi_i_zhurnaly?cd=1'
     file_name = 'result'
     pages = 2
     max_pages = 25
@@ -20,6 +20,8 @@ class ValidationVarClass:
 
     @classmethod
     def validation_url(cls, text: str) -> bool | str:
+        if text == '':
+            return cls.url
         if ValidationVarClass.pattern_for_check_url.match(string=text):
             return text
         else:
