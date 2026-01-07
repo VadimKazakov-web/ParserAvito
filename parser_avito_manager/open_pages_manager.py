@@ -28,15 +28,13 @@ def setup_options():
 
 class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
 
-    def __init__(self, channel_for_variables: queue,
-                 data_for_progress, test=None, timeout=1):
+    def __init__(self, channel_for_variables: queue, test=None, timeout=5):
         self.test = test
         self.url = None
         self.pages = None
         self.links = None
         self.file_name = None
         self.channel_for_variables = channel_for_variables
-        self.data_for_progress = data_for_progress
         self.data_from_tk = None
         self.widget_tk = None
         self.sorting = None

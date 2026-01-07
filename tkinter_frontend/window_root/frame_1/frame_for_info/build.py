@@ -4,7 +4,7 @@ from tkinter_frontend.classes.frame import Frame
 from tkinter_frontend.classes.label import Label
 from tkinter import ttk, font
 from tkinter_frontend.window_root.frame_1.build import frame
-from tkinter_frontend.window_root.frame_1.frame_for_info.label_info.utils import update_info
+# from tkinter_frontend.window_root.frame_1.frame_for_info.label_info.utils import update_info
 
 frame_custom = Frame(column=0, row=7, master=frame)
 frame_custom.build()

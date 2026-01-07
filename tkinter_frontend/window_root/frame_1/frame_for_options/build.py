@@ -9,6 +9,8 @@ frame_custom.build()
 frame_for_options = frame_custom.get_instance()
 frame_for_options["padding"] = (0, 10)
 frame_for_options["borderwidth"] = 4
+
+
 # эффект утопленности
 # frame_for_options["relief"] = "sunken"
 # эффект выступа

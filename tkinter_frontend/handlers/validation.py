@@ -32,7 +32,7 @@ class ValidationVarClass:
         if text == '':
             return cls.file_name
         match = ValidationVarClass.pattern_for_check_file_name.sub(string=text, repl="_")
-        match = ValidationVarClass.pattern_for_2_dot.sub(string=match, repl="_")
+        match = ValidationVarClass.pattern_for_2_dot.sub(string=match, repl="·")
         return match
 
     @classmethod

@@ -25,9 +25,12 @@ class DataForProgress:
     def get(self, **kwargs):
         self.lock.acquire()
         key = kwargs.get("key")
-        if key:
-            val = self.data.get(key, "...")
-        else:
-            raise NamedParametersError("check parameters key")
-        self.lock.release()
-        return val
+        try:
+            if key:
+                val = self.data.get(key, "...")
+                return val
+
+            else:
+                raise NamedParametersError("check parameters key")
+        finally:
+            self.lock.release()

@@ -20,7 +20,7 @@ class HandlersClass(ValidationVarClass):
         if check:
             icon.make_verified()
             label["text"] = f'Cсылка введена: \n{check[0:cls.width_text]}\n{check[cls.width_text:]}'
-            cls.data["link"] = val
+            cls.data["link"] = check
         else:
             icon.make_unchecked()
             label["text"] = "Недействительная ссылка, введите еще раз"
@@ -40,7 +40,7 @@ class HandlersClass(ValidationVarClass):
 
     @staticmethod
     def date_time_now():
-        datetime_now = str(datetime.datetime.today().strftime("%d-%m-%Y-%Hч-%Mмин"))
+        datetime_now = str(datetime.datetime.today().strftime("%d·%m·%Y·%Hч·%Mмин"))
         return datetime_now
 
     @classmethod
@@ -71,9 +71,9 @@ class HandlersClass(ValidationVarClass):
     def valid_all_vars(cls, *args, **kwargs):
         master = kwargs.get("master")
         if cls.data.get("link") and cls.data.get("filename") and cls.data.get("count_pages"):
-            from tkinter_frontend.window_root.frame_1.frame_for_options.radio_buttons.build import choice
+            # from tkinter_frontend.window_root.frame_1.frame_for_options.radio_buttons.build import choice
+            # cls.data["sorting"] = choice.get()
             cls.data["widget_tk"] = master
-            cls.data["sorting"] = choice.get()
             connector.update_info(widget=master, text="все данные введены")
             master.event_generate(connector.post_data_event)
             master.event_generate(connector.create_progress_event)
