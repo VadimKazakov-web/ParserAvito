@@ -29,6 +29,13 @@ def setup_options():
 class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
 
     def __init__(self, channel_for_variables: queue, test=None, timeout=5):
+        """
+
+        :param channel_for_variables:
+        :param test:
+        :param timeout:
+        """
+
         self.test = test
         self.url = None
         self.pages = None
@@ -70,7 +77,7 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
         prep_links_instance.start()
         self.links = prep_links_instance.result
 
-    def update_progress(self, links):
+    def update_progress(self, links: list) -> None:
         length = len(links)
         self.counter += 1
         progress_text = f'отсканировано объявлений: {self.counter}/{length} ({round(self.counter / length * 100)}%)'
@@ -101,6 +108,7 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
                     self.bad_connection_audio()
                 else:
                     connector.update_info(widget=self.widget_tk, text="Продолжаю открывать вэб-страницы")
+                    # connector.update_info(widget=self.widget_tk, text=self.file_name)
                     connector.update_title(widget=self.widget_tk, text=self.driver.title)
                     if self.check_title(self.driver) == CheckTitleMixin.not_found:
                         self.page_not_found_audio()
@@ -179,6 +187,7 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
         self.driver.quit()
         if self.total_data:
             self.sort_total_data()
+            # connector.update_info(widget=self.widget_tk, text="+++ scanned: {} +++".format(self.counter))
             logging.info("+++ scanned: {} +++".format(self.counter))
             pattern = ResultInHtml()
             pattern.write_result(file_name=self.file_name, data=self.total_data, count=self.counter)

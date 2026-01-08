@@ -11,7 +11,7 @@ class Label(Base):
         self.instance = ttk.Label(master=self.master, text=self.text, font=Base.font,
                                   background=self.config.get("BACKGROUND_COLOR", "blue"),
                                   foreground=self.config.get("FOREGROUND_COLOR", "white"),
-                                  width=int(self.config.get("WIDTH_LABEL")))
+                                  width=int(self.config.get("WIDTH_LABEL", 50)))
 
     def build(self):
         self.instance.grid(column=self.column, row=self.row, sticky=W)

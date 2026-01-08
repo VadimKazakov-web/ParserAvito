@@ -1,4 +1,5 @@
 import re
+from parser_avito_manager.index import base
 
 
 class ResultInHtml:
@@ -8,12 +9,7 @@ class ResultInHtml:
         self.total_views_pattern = re.compile(r'[{]total_views_content[}]')
         self.today_views_pattern = re.compile(r'[{]today_views_content[}]')
         self.review_count_pattern = re.compile(r'[{]review_count_content[}]')
-        self.path_of_base_html = 'parser_avito_manager/index.html'
-        self.str_base_html = self.read_base_html()
-
-    def read_base_html(self):
-        with open(self.path_of_base_html, 'r', encoding='utf-8') as file:
-            return file.read()
+        self.str_base_html = base
 
     @staticmethod
     def preparation_title(counter):

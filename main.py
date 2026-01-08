@@ -19,10 +19,13 @@ logging.root.addHandler(handler)
 logging.info("start program")
 instance = functools.partial(start_parser_instance, channel_for_variables)
 parser = threading.Thread(target=instance, daemon=True)
-parser.start()
-build_tk_interface()
-tk_interface.start()
-parser.join()
+try:
+    parser.start()
+    build_tk_interface()
+    tk_interface.start()
+    parser.join()
+except KeyboardInterrupt:
+    exit()
 
 
 

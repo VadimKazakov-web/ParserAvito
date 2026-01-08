@@ -3,6 +3,8 @@ from tkinter_frontend.handlers.validation import ValidationVarClass
 from objects import config
 from objects import connector
 import datetime
+import os
+from pathlib import Path
 
 
 class HandlersClass(ValidationVarClass):
@@ -36,7 +38,8 @@ class HandlersClass(ValidationVarClass):
         val = f'{val}_{cls.date_time_now()}.html'
         icon.make_verified()
         label["text"] = f'Название файла: {val}'
-        cls.data["filename"] = val
+        abs_path = Path(os.getcwd()) / Path(val)
+        cls.data["filename"] = abs_path
 
     @staticmethod
     def date_time_now():

@@ -21,5 +21,6 @@ class WindowRoot:
 
     def start(self):
         self.root.protocol("WM_DELETE_WINDOW", lambda : exit())
+        self.root.protocol("WM_DELETE_WINDOW", self.root.destroy)
         self.root.mainloop()
 

@@ -2,3 +2,5 @@
 *test.py
 *test.txt
 *.html
+/build
+/dist
