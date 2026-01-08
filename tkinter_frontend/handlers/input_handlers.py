@@ -38,8 +38,8 @@ class HandlersClass(ValidationVarClass):
         val = f'{val}_{cls.date_time_now()}.html'
         icon.make_verified()
         label["text"] = f'Название файла: {val}'
-        abs_path = Path(os.getcwd()) / Path(val)
-        cls.data["filename"] = abs_path
+        # abs_path = Path(os.getcwd()) / Path(val)
+        cls.data["filename"] = val
 
     @staticmethod
     def date_time_now():

@@ -1,6 +1,8 @@
 .idea
+.venv
 *test.py
 *test.txt
 *.html
 /build
 /dist
+/ParserAvitoOutput

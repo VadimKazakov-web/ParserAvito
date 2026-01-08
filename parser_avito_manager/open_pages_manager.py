@@ -12,6 +12,8 @@ from tkinter_frontend.window_root.frame_1.stop_button.build import active_inacti
 import queue
 from exceptions import PushStopButton
 from objects import connector
+from pathlib import Path
+import os
 
 
 def setup_options():
@@ -28,7 +30,7 @@ def setup_options():
 
 class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
 
-    def __init__(self, channel_for_variables: queue, test=None, timeout=5):
+    def __init__(self, channel_for_variables: queue, base_dir, test=None, timeout=5):
         """
 
         :param channel_for_variables:
@@ -50,6 +52,7 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
         self.timeout = timeout
         self.counter = 0
         self.timeout_exceptions_counter = 4
+        self.base_dir = base_dir
 
     def accepting_variables(self):
         self.data_from_tk = self.channel_for_variables.get()
@@ -65,9 +68,10 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
                 raise PushStopButton
 
     def setup_variables(self):
-        if not isinstance(self.data_from_tk, str):
+        if isinstance(self.data_from_tk, dict):
             self.url = self.data_from_tk.get("link")
-            self.file_name = self.data_from_tk.get("filename")
+            filename = self.data_from_tk.get("filename")
+            self.file_name = self.base_dir / Path(filename)
             self.pages = int(self.data_from_tk.get("count_pages"))
             self.widget_tk = self.data_from_tk.get("widget_tk")
             self.sorting = self.data_from_tk.get("sorting")
@@ -102,10 +106,17 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
                     time.sleep(self.timeout)
                 except selenium.common.exceptions.TimeoutException:
                     logging.warning("TimeoutException")
-                    timeout_exceptions_counter -= 1
                     connector.update_info(widget=self.widget_tk, text="Плохое соединение, перезагружаю страницу,\n"
-                                                                      "осталось попыток: {}".format(timeout_exceptions_counter))
+                                                                      "осталось попыток: {}"
+                                          .format(timeout_exceptions_counter))
+                except Exception as err:
+                    logging.info(err)
+                    timeout_exceptions_counter -= 1
+                    connector.update_info(widget=self.widget_tk, text="{}, перезагружаю страницу,\n"
+                                                                      "осталось попыток: {}"
+                                          .format(err, timeout_exceptions_counter))
                     self.bad_connection_audio()
+
                 else:
                     connector.update_info(widget=self.widget_tk, text="Продолжаю открывать вэб-страницы")
                     # connector.update_info(widget=self.widget_tk, text=self.file_name)
@@ -190,7 +201,11 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
             # connector.update_info(widget=self.widget_tk, text="+++ scanned: {} +++".format(self.counter))
             logging.info("+++ scanned: {} +++".format(self.counter))
             pattern = ResultInHtml()
-            pattern.write_result(file_name=self.file_name, data=self.total_data, count=self.counter)
+            try:
+                pattern.write_result(file_name=self.file_name, data=self.total_data, count=self.counter)
+            except FileNotFoundError:
+                self.base_dir.mkdir(parents=True, exist_ok=True)
+                pattern.write_result(file_name=self.file_name, data=self.total_data, count=self.counter)
             connector.update_info(widget=self.widget_tk, text="Результаты готовы")
             webbrowser.open(self.file_name)
             self.complete_audio()
