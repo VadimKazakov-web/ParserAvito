@@ -28,7 +28,7 @@ logging.root.addHandler(handler)
 
 logging.info("start program")
 instance = functools.partial(start_parser_instance, channel_for_variables, base_dir)
-parser = threading.Thread(target=instance, daemon=True)
+parser = threading.Thread(target=instance)
 try:
     parser.start()
     build_tk_interface()
