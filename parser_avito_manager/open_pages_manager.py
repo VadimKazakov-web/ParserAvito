@@ -13,7 +13,6 @@ import queue
 from exceptions import PushStopButton
 from objects import connector
 from pathlib import Path
-import os
 
 
 def setup_options():
@@ -118,7 +117,7 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
                     self.bad_connection_audio()
 
                 else:
-                    connector.update_info(widget=self.widget_tk, text="Продолжаю открывать вэб-страницы")
+                    connector.update_info(widget=self.widget_tk, text="Продолжаю открывать web-страницы")
                     # connector.update_info(widget=self.widget_tk, text=self.file_name)
                     connector.update_title(widget=self.widget_tk, text=self.driver.title)
                     if self.check_title(self.driver) == CheckTitleMixin.not_found:

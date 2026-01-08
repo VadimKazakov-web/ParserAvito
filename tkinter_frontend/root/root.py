@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+import os
 from tkinter import *
+import sys
 
 
 class WindowRoot:
@@ -25,5 +27,6 @@ class WindowRoot:
 
     def exit(self):
         self.root.destroy()
-        exit()
+        # программа завершается корректно только так
+        os._exit(0)
 
