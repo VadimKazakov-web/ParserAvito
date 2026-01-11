@@ -29,10 +29,9 @@ def setup_options():
 
 class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
 
-    def __init__(self, channel_for_variables: queue, base_dir, test=None, timeout=5):
+    def __init__(self, base_dir, test=None, timeout=5):
         """
 
-        :param channel_for_variables:
         :param test:
         :param timeout:
         """
@@ -42,7 +41,6 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
         self.pages = None
         self.links = None
         self.file_name = None
-        self.channel_for_variables = channel_for_variables
         self.data_from_tk = None
         self.widget_tk = None
         self.sorting = None
@@ -54,12 +52,12 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
         self.base_dir = base_dir
 
     def accepting_variables(self):
-        self.data_from_tk = self.channel_for_variables.get()
+        self.data_from_tk = connector.channel_for_variables.get()
         self.setup_variables()
 
     def check_chanel(self):
         try:
-            data = self.channel_for_variables.get(block=False)
+            data = connector.channel_for_variables.get(block=False)
         except queue.Empty:
             return
         else:

@@ -7,7 +7,6 @@ import functools
 from pathlib import Path
 
 from tkinter_frontend.window_root.build import window as tk_interface
-from objects import channel_for_variables
 from tkinter_frontend.main import build_tk_interface
 from utils.main import start_parser_instance
 
@@ -28,7 +27,7 @@ logging.root.handlers.clear()
 logging.root.addHandler(handler)
 
 logging.info("start program")
-instance = functools.partial(start_parser_instance, channel_for_variables, base_dir)
+instance = functools.partial(start_parser_instance, base_dir)
 parser = threading.Thread(target=instance)
 parser.start()
 build_tk_interface()

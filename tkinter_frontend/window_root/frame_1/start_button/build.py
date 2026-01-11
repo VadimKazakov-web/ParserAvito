@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-
+from objects import connector
 from tkinter_frontend.window_root.frame_1.utils import ActiveInactiveButton
 from tkinter_frontend.window_root.frame_1.frame_for_buttons.build import frame_for_buttons
 from tkinter_frontend.classes.button import Button
@@ -17,4 +17,5 @@ active_inactive_start_button = ActiveInactiveButton(button_custom, button_instan
                                                                       widget=button_custom,
                                                                       master=frame))
 active_inactive_start_button.make_active_button()
+button_instance.bind(connector.push_button_event, active_inactive_start_button.make_inactive_button)
 logging.info("{}: done".format(__name__))

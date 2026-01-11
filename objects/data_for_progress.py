@@ -5,6 +5,10 @@ from exceptions import NamedParametersError
 
 class DataForProgress:
 
+    """
+    Объект для чтения и записи данных из двух потоков: "бэкенда" и интерфейса tkinter
+    """
+
     def __init__(self):
         self.data = {}
         self.lock = threading.Lock()

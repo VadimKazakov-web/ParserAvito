@@ -1,8 +1,17 @@
 # -*- coding: utf-8 -*-
+from connector.client import ClientMixin
 from objects.data_for_progress import DataForProgress
+from tkinter import Widget
 
 
-class Connector:
+class Connector(ClientMixin):
+
+    """
+    Класс, который реализует в основном логику взаимодействия между "бэкендом" и интерфейсом tkinter.
+    В классе ParserAvitoManager записываются данные в объект DataForProgress и генерируются пользовательские события
+    на виджете, а в интерфейсе tkinter обрабатываются события, читаются и отображаются данные.
+    """
+
     def __init__(self):
         self.data = DataForProgress()
         self.post_data_event = "<<PostData>>"
@@ -11,23 +20,28 @@ class Connector:
         self.update_progress_event = "<<UpdateProgress>>"
         self.push_button_event = "<<PushButton>>"
 
-    def update_info(self, widget, text):
+    def update_info(self, widget: Widget, text: str) -> None:
         self.data.set(key="info", val=text)
         widget.event_generate(self.update_info_event)
 
-    def update_progress(self, widget, text):
+    def update_progress(self, widget: Widget, text: str) -> None:
         self.data.set(key="progress", val=text)
         widget.event_generate(self.update_progress_event)
 
-    def update_title(self, widget, text):
+    def update_title(self, widget: Widget, text: str) -> None:
         self.data.set(key="page_title", val=text)
         widget.event_generate(self.update_progress_event)
 
-    def get_info(self):
+    def get_info(self) -> None:
         return self.data.get(key="info")
 
-    def get_progress(self):
+    def get_progress(self) -> None:
         return self.data.get(key="progress")
 
-    def get_title(self):
+    def get_title(self) -> None:
         return self.data.get(key="page_title")
+
+    def post_data(self, *args, **kwargs):
+        super().post_data(*args, **kwargs)
+        widget = args[0].widget
+        widget.event_generate(self.push_button_event)

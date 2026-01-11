@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+"""
+Пользовательские исключения
+"""
+
 
 class NamedParametersError(Exception):
     def __init__(self, *args):

@@ -1,29 +1,59 @@
+# -*- coding: utf-8 -*-
 import winsound
 
 
 class AudioNotesMixin:
+
+    """
+    Воспроизведение звуковых сигналов.
+    """
+
     _page_not_found_path = "audio/page_not_found.wav"
     _access_restricted_path = "audio/access_restricted.wav"
     _bad_connection_path = "audio/bad_connection.wav"
     _complete = "audio/complete.wav"
 
     @classmethod
-    def page_not_found_audio(cls):
+    def page_not_found_audio(cls) -> None:
+
+        """
+        Звук при ошибке 404
+        :return:
+        """
+
         winsound.PlaySound('SystemHand', winsound.SND_ALIAS)
         # winsound.PlaySound(cls._page_not_found_path, winsound.SND_FILENAME)
 
     @classmethod
-    def access_restricted_audio(cls):
+    def access_restricted_audio(cls) -> None:
+
+        """
+        Звук при ограничении ip
+        :return:
+        """
+
         winsound.PlaySound('SystemHand', winsound.SND_ALIAS)
         # winsound.PlaySound(cls._access_restricted_path, winsound.SND_FILENAME)
 
     @classmethod
-    def bad_connection_audio(cls):
+    def bad_connection_audio(cls) -> None:
+
+        """
+        Звук при перезагрузке страницы, если данные не загрузились
+        :return:
+        """
+
         winsound.PlaySound('SystemHand', winsound.SND_ALIAS)
         # winsound.PlaySound(cls._bad_connection_path, winsound.SND_FILENAME)
 
     @classmethod
-    def complete_audio(cls):
+    def complete_audio(cls) -> None:
+
+        """
+        Звук когда результаты готовы
+        :return:
+        """
+
         winsound.Beep(300, 300)
         winsound.Beep(500, 300)
         winsound.Beep(400, 300)

@@ -1,2 +1,2 @@
 # -*- coding: utf-8 -*-
-from objects.main import config, channel_for_variables, client, connector
+from objects.main import config, connector
