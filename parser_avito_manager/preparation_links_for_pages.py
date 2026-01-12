@@ -3,6 +3,10 @@ import re
 
 class PreparationLinksForPages:
 
+    """
+    Класс из базового url создаёт ссылки на страницы
+    """
+
     def __init__(self, url, pages):
         self._url = url
         self._pages = pages

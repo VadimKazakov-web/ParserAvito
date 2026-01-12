@@ -118,7 +118,7 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
                     connector.update_info(widget=self.widget_tk, text="Продолжаю открывать web-страницы")
                     # connector.update_info(widget=self.widget_tk, text=self.file_name)
                     connector.update_title(widget=self.widget_tk, text=self.driver.title)
-                    if self.check_title(self.driver) == CheckTitleMixin.not_found:
+                    if self.check_title(self.driver):
                         self.page_not_found_audio()
                         break
                     else:

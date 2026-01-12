@@ -16,11 +16,11 @@ class OpenUrl:
     def find_blocks(self):
         pass
 
-    def collect_data(self, blocks):
+    def _collect_data(self, blocks):
         pass
 
     def start(self, url):
         self._url = url
         blocks = self.find_blocks()
         if blocks:
-            self.collect_data(blocks)
+            self._collect_data(blocks)

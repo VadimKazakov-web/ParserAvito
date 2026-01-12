@@ -6,10 +6,14 @@ from audio.audio_notes import AudioNotesMixin
 
 class CheckTitleMixin(AudioNotesMixin):
 
+    """
+    Класс для проверки заголовка страницы
+    """
+
     _pattern_404 = re.compile(r'\b404\b')
     _pattern_problem_ip = re.compile(r'Доступ ограничен')
     _show_problem_ip_title = False
-    not_found = "404"
+    _not_found = 404
 
     @classmethod
     def check_title(cls, driver):
@@ -24,6 +28,6 @@ class CheckTitleMixin(AudioNotesMixin):
 
             elif cls._pattern_404.search(driver.title):
                 logging.info("\npage title: {}".format(driver.title))
-                return cls.not_found
+                return cls._not_found
             else:
-                break
+                return None
