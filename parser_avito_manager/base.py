@@ -23,4 +23,5 @@ class OpenUrl:
         self._url = url
         blocks = self.find_blocks()
         if blocks:
-            self._collect_data(blocks)
+            data = self.collect_data(blocks)
+            return data

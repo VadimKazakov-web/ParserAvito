@@ -15,12 +15,12 @@ log_dir = base_dir / Path("log")
 
 FORMAT = '[%(asctime)s] %(message)s'
 formatter = logging.Formatter(FORMAT)
-# handler = logging.StreamHandler()
-try:
-    handler = logging.handlers.RotatingFileHandler(filename=log_dir / Path("logbook.log"), maxBytes=6000, backupCount=4)
-except FileNotFoundError:
-    log_dir.mkdir(parents=True, exist_ok=True)
-    handler = logging.FileHandler(filename=log_dir / Path("logbook.log"))
+handler = logging.StreamHandler()
+# try:
+#     handler = logging.handlers.RotatingFileHandler(filename=log_dir / Path("logbook.log"), maxBytes=6000, backupCount=4)
+# except FileNotFoundError:
+#     log_dir.mkdir(parents=True, exist_ok=True)
+#     handler = logging.FileHandler(filename=log_dir / Path("logbook.log"))
 handler.setFormatter(formatter)
 logging.root.setLevel(logging.INFO)
 logging.root.handlers.clear()

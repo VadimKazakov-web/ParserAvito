@@ -73,14 +73,23 @@ class OpenAnnouncement(OpenUrl):
         if result_rating:
             data["rating"] = float(result_rating.group("rating"))
             end_point = result_rating.end()
+        else:
+            data["rating"] = 0.0
+            end_point = 0
 
         result_reviews = self.pattern_reviews.search(block_seller[end_point:])
         if result_reviews:
             data["reviews"] = int(result_reviews.group("reviews"))
+        else:
+            data["reviews"] = 0
 
         data["link"] = self._url
         self._data.append(data)
+        return data
 
     def start(self, url: str):
         self._url = url
-        super().start(url)
+        blocks = self.find_blocks()
+        if blocks:
+            data = self.collect_data(blocks)
+            return data

@@ -1,5 +1,6 @@
 import logging
 import time
+import traceback
 import webbrowser
 import selenium.common
 from parser_avito_manager import PreparationLinksForPages, ResultInHtml, CheckTitleMixin, TimeMeasurementMixin
@@ -13,6 +14,7 @@ import queue
 from exceptions import PushStopButton
 from objects import connector
 from pathlib import Path
+import sqlite3
 
 
 def setup_options():
@@ -50,10 +52,50 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
         self.counter = 0
         self.timeout_exceptions_counter = 4
         self.base_dir = base_dir
+        self.database_dir = self.base_dir / Path('database')
+        if not self.database_dir.exists():
+            self.database_dir.mkdir()
+        self.cursor = None
+        self.connection = None
+        self._count_row_in_database = 0
 
     def accepting_variables(self):
         self.data_from_tk = connector.channel_for_variables.get()
         self.setup_variables()
+
+    def connect_database(self):
+        self.connection = sqlite3.connect(self.database_dir / Path('data.db'))
+        self.cursor = self.connection.cursor()
+
+    def create_database(self):
+        self.connect_database()
+        self.cursor.execute("CREATE TABLE IF NOT EXISTS announcement(id INTEGER, title TEXT, link TEXT, total_views, rating, reviews)")
+        self.connection.commit()
+        self.connection.close()
+
+    def count_row_in_database(self):
+        self.connect_database()
+        res = self.cursor.execute("SELECT count(*) FROM announcement")
+        result = res.fetchone()
+        count = int(result[0])
+        logging.info("count row in database: {}".format(count))
+        if self._count_row_in_database != 0:
+            delta = self._count_row_in_database - count
+            self._count_row_in_database = count
+            logging.info("new row in database: +{}".format(delta))
+        self._count_row_in_database = count
+
+    def record_in_database(self, data):
+        self.connect_database()
+        res = self.cursor.execute("SELECT * FROM announcement WHERE id = :id;", data)
+        result = res.fetchone()
+        if not result:
+            self.cursor.execute("INSERT INTO announcement VALUES(:id, :title, :link, :total_views, :rating, :reviews);", data)
+        else:
+            self.cursor.execute("UPDATE announcement SET title=:title, link=:link, total_views=:total_views, rating=:rating, reviews=:reviews WHERE id=:id", data)
+        self.connection.commit()
+        self.connection.close()
+
 
     def check_chanel(self):
         try:
@@ -122,7 +164,9 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
                         self.page_not_found_audio()
                         break
                     else:
-                        instance.start(url)
+                        data = instance.start(url)
+                        if isinstance(instance, OpenAnnouncement):
+                            self.record_in_database(data)
                     callback_func(links)
                     break
             else:
@@ -158,6 +202,8 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
         #     self.total_data.sort(key=lambda e: e.get("reviews", 0), reverse=True)
 
     def start(self):
+        self.create_database()
+        self.count_row_in_database()
         self.driver = setup_options()
         self.driver.implicitly_wait(60)
         self.accepting_variables()
@@ -183,6 +229,7 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
             connector.update_info(widget=self.widget_tk, text="Выполнена остановка")
         except Exception as err:
             connector.update_info(widget=self.widget_tk, text=err)
+            traceback.print_exception(err)
         finally:
             self.exit()
             self.time_measurement_end()
