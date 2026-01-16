@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
+import logging
 import os
+import time
 from tkinter import *
-import sys
+from objects import connector
 
 
 class WindowRoot:
@@ -26,6 +28,7 @@ class WindowRoot:
         self.root.mainloop()
 
     def exit(self):
+        connector.post_data(data="exit")
         self.root.destroy()
         # программа завершается корректно только так
         os._exit(0)

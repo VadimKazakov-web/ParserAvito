@@ -7,7 +7,7 @@ from parser_avito_manager import PreparationLinksForPages, ResultInHtml, CheckTi
 from parser_avito_manager.open_page import OpenPage
 from parser_avito_manager.open_announcement import OpenAnnouncement
 from selenium import webdriver
-from exceptions import BadInternetConnection
+from exceptions import BadInternetConnection, PushExit
 from tkinter_frontend.window_root.frame_1.start_button.build import active_inactive_start_button
 from tkinter_frontend.window_root.frame_1.stop_button.build import active_inactive_stop_button
 import queue
@@ -61,7 +61,19 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
 
     def accepting_variables(self):
         self.data_from_tk = connector.channel_for_variables.get()
-        self.setup_variables()
+        if isinstance(self.data_from_tk, dict):
+            self.setup_variables()
+        elif self.data_from_tk == "exit":
+            self.driver.quit()
+            raise PushExit
+
+    def setup_variables(self):
+        self.url = self.data_from_tk.get("link")
+        filename = self.data_from_tk.get("filename")
+        self.file_name = self.base_dir / Path(filename)
+        self.pages = int(self.data_from_tk.get("count_pages"))
+        self.widget_tk = self.data_from_tk.get("widget_tk")
+        self.sorting = self.data_from_tk.get("sorting")
 
     def connect_database(self):
         self.connection = sqlite3.connect(self.database_dir / Path('data.db'))
@@ -105,15 +117,6 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
         else:
             if data == "push_stop_button":
                 raise PushStopButton
-
-    def setup_variables(self):
-        if isinstance(self.data_from_tk, dict):
-            self.url = self.data_from_tk.get("link")
-            filename = self.data_from_tk.get("filename")
-            self.file_name = self.base_dir / Path(filename)
-            self.pages = int(self.data_from_tk.get("count_pages"))
-            self.widget_tk = self.data_from_tk.get("widget_tk")
-            self.sorting = self.data_from_tk.get("sorting")
 
     def preparation_links(self):
         prep_links_instance = PreparationLinksForPages(url=self.url, pages=self.pages)

@@ -1,7 +1,7 @@
 import traceback
 from parser_avito_manager.open_pages_manager import ParserAvitoManager
 import logging
-from exceptions import BadInternetConnection
+from exceptions import BadInternetConnection, PushExit
 
 
 def start_parser_instance(base_dir, test=False):
@@ -14,5 +14,7 @@ def start_parser_instance(base_dir, test=False):
             manager.start()
         except BadInternetConnection:
             logging.warning("bad connections in avito.ru")
+        except PushExit as err:
+            logging.info(err)
         except Exception as err:
             traceback.print_exception(err)

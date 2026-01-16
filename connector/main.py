@@ -19,6 +19,7 @@ class Connector(ClientMixin):
         self.update_info_event = "<<UpdateInfo>>"
         self.update_progress_event = "<<UpdateProgress>>"
         self.push_button_event = "<<PushButton>>"
+        self.exit_flag = False
 
     def update_info(self, widget: Widget, text: str) -> None:
         self.data.set(key="info", val=text)
@@ -43,5 +44,9 @@ class Connector(ClientMixin):
 
     def post_data(self, *args, **kwargs):
         super().post_data(*args, **kwargs)
-        widget = args[0].widget
-        widget.event_generate(self.push_button_event)
+        try:
+            widget = args[0].widget
+        except IndexError:
+            pass
+        else:
+            widget.event_generate(self.push_button_event)

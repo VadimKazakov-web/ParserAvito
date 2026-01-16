@@ -33,7 +33,3 @@ parser.start()
 build_tk_interface()
 tk_interface.start()
 parser.join()
-
-
-
-
