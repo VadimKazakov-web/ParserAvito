@@ -57,7 +57,9 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
             self.database_dir.mkdir()
         self.cursor = None
         self.connection = None
-        self._count_row_in_database = 0
+        self._count_new_row_in_database = 0
+        self._count_update_row_in_database = 0
+
 
     def accepting_variables(self):
         self.data_from_tk = connector.channel_for_variables.get()
@@ -91,11 +93,6 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
         result = res.fetchone()
         count = int(result[0])
         logging.info("count row in database: {}".format(count))
-        if self._count_row_in_database != 0:
-            delta = self._count_row_in_database - count
-            self._count_row_in_database = count
-            logging.info("new row in database: +{}".format(delta))
-        self._count_row_in_database = count
 
     def record_in_database(self, data):
         self.connect_database()
@@ -103,11 +100,13 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
         result = res.fetchone()
         if not result:
             self.cursor.execute("INSERT INTO announcement VALUES(:id, :title, :link, :total_views, :rating, :reviews);", data)
+            self._count_new_row_in_database += 1
+
         else:
             self.cursor.execute("UPDATE announcement SET title=:title, link=:link, total_views=:total_views, rating=:rating, reviews=:reviews WHERE id=:id", data)
+            self._count_update_row_in_database += 1
         self.connection.commit()
         self.connection.close()
-
 
     def check_chanel(self):
         try:
@@ -245,8 +244,9 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
         self.driver.quit()
         if self.total_data:
             self.sort_total_data()
-            # connector.update_info(widget=self.widget_tk, text="+++ scanned: {} +++".format(self.counter))
             logging.info("+++ scanned: {} +++".format(self.counter))
+            logging.info("new row in database: {}".format(self._count_new_row_in_database))
+            logging.info("update row in database: {}".format(self._count_update_row_in_database))
             pattern = ResultInHtml()
             try:
                 pattern.write_result(file_name=self.file_name, data=self.total_data, count=self.counter)
