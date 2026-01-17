@@ -1,7 +1,9 @@
+# -*- coding: utf-8 -*-
 import re
 import logging
 import time
 from audio.audio_notes import AudioNotesMixin
+from exceptions import BreakWhile
 
 
 class CheckTitleMixin(AudioNotesMixin):
@@ -28,6 +30,7 @@ class CheckTitleMixin(AudioNotesMixin):
 
             elif cls._pattern_404.search(driver.title):
                 logging.info("\npage title: {}".format(driver.title))
-                return cls._not_found
+                cls.page_not_found_audio()
+                raise BreakWhile
             else:
                 return None

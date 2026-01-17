@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import logging
 import time
 import traceback
@@ -7,14 +8,14 @@ from parser_avito_manager import PreparationLinksForPages, ResultInHtml, CheckTi
 from parser_avito_manager.open_page import OpenPage
 from parser_avito_manager.open_announcement import OpenAnnouncement
 from selenium import webdriver
-from exceptions import BadInternetConnection, PushExit
+from exceptions import BadInternetConnection, PushExit, BreakWhile
 from tkinter_frontend.window_root.frame_1.start_button.build import active_inactive_start_button
 from tkinter_frontend.window_root.frame_1.stop_button.build import active_inactive_stop_button
 import queue
 from exceptions import PushStopButton
 from objects import connector
-from pathlib import Path
-import sqlite3
+from settings import *
+from parser_avito_manager.database import DataBaseMixin
 
 
 def setup_options():
@@ -29,14 +30,19 @@ def setup_options():
     return driver
 
 
-class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
+def check_chanel():
+    try:
+        data = connector.channel_for_variables.get(block=False)
+    except queue.Empty:
+        return
+    else:
+        if data == "push_stop_button":
+            raise PushStopButton
 
-    def __init__(self, base_dir, test=None, timeout=5):
-        """
 
-        :param test:
-        :param timeout:
-        """
+class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin, DataBaseMixin):
+
+    def __init__(self, test=None):
 
         self.test = test
         self.url = None
@@ -48,13 +54,10 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
         self.sorting = None
         self.total_data = []
         self.driver = None
-        self.timeout = timeout
+        self.timeout = TIMEOUT
         self.counter = 0
-        self.timeout_exceptions_counter = 4
-        self.base_dir = base_dir
-        self.database_dir = self.base_dir / Path('database')
-        if not self.database_dir.exists():
-            self.database_dir.mkdir()
+        self.timeout_exceptions_counter = TIMEOUT_EXCEPTIONS_COUNTER
+        self.base_dir = BASE_DIR
         self.cursor = None
         self.connection = None
         self._count_new_row_in_database = 0
@@ -76,46 +79,6 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
         self.widget_tk = self.data_from_tk.get("widget_tk")
         self.sorting = self.data_from_tk.get("sorting")
 
-    def connect_database(self):
-        self.connection = sqlite3.connect(self.database_dir / Path('data.db'))
-        self.cursor = self.connection.cursor()
-
-    def create_database(self):
-        self.connect_database()
-        self.cursor.execute("CREATE TABLE IF NOT EXISTS announcement(id INTEGER, title TEXT, link TEXT, total_views, rating, reviews)")
-        self.connection.commit()
-        self.connection.close()
-
-    def count_row_in_database(self):
-        self.connect_database()
-        res = self.cursor.execute("SELECT count(*) FROM announcement")
-        result = res.fetchone()
-        count = int(result[0])
-        logging.info("count row in database: {}".format(count))
-
-    def record_in_database(self, data):
-        self.connect_database()
-        res = self.cursor.execute("SELECT * FROM announcement WHERE id = :id;", data)
-        result = res.fetchone()
-        if not result:
-            self.cursor.execute("INSERT INTO announcement VALUES(:id, :title, :link, :total_views, :rating, :reviews);", data)
-            self._count_new_row_in_database += 1
-
-        else:
-            self.cursor.execute("UPDATE announcement SET title=:title, link=:link, total_views=:total_views, rating=:rating, reviews=:reviews WHERE id=:id", data)
-            self._count_update_row_in_database += 1
-        self.connection.commit()
-        self.connection.close()
-
-    def check_chanel(self):
-        try:
-            data = connector.channel_for_variables.get(block=False)
-        except queue.Empty:
-            return
-        else:
-            if data == "push_stop_button":
-                raise PushStopButton
-
     def preparation_links(self):
         prep_links_instance = PreparationLinksForPages(url=self.url, pages=self.pages)
         prep_links_instance.start()
@@ -128,47 +91,32 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
         connector.update_progress(widget=self.widget_tk, text=progress_text)
 
     def worker(self, instance, links, callback=None):
-        if callback:
-            callback_func = callback
-        else:
-            callback_func = lambda a=None: a
         for url in links:
             timeout_exceptions_counter = self.timeout_exceptions_counter
-            try:
-                self.check_chanel()
-            except PushStopButton:
-                if isinstance(instance, OpenAnnouncement):
-                    self.total_data = instance.data
-                raise PushStopButton
             while timeout_exceptions_counter:
                 try:
+                    check_chanel()
                     self.driver.get(url)
-                    time.sleep(self.timeout)
+                    check_chanel()
+                    time.sleep(self.timeout / 2)
+                    check_chanel()
+                    time.sleep(self.timeout / 2)
+                    self.check_title(self.driver)
                 except selenium.common.exceptions.TimeoutException:
                     logging.warning("TimeoutException")
-                    connector.update_info(widget=self.widget_tk, text="Плохое соединение, перезагружаю страницу,\n"
+                    connector.update_info(widget=self.widget_tk, text="Плохое соединение, "
+                                                                      "перезагружаю страницу,\n"
                                                                       "осталось попыток: {}"
                                           .format(timeout_exceptions_counter))
-                except Exception as err:
-                    logging.info(err)
                     timeout_exceptions_counter -= 1
-                    connector.update_info(widget=self.widget_tk, text="{}, перезагружаю страницу,\n"
-                                                                      "осталось попыток: {}"
-                                          .format(err, timeout_exceptions_counter))
-                    self.bad_connection_audio()
-
+                except BreakWhile as err:
+                    logging.info(err)
+                    break
                 else:
                     connector.update_info(widget=self.widget_tk, text="Продолжаю открывать web-страницы")
-                    # connector.update_info(widget=self.widget_tk, text=self.file_name)
                     connector.update_title(widget=self.widget_tk, text=self.driver.title)
-                    if self.check_title(self.driver):
-                        self.page_not_found_audio()
-                        break
-                    else:
-                        data = instance.start(url)
-                        if isinstance(instance, OpenAnnouncement):
-                            self.record_in_database(data)
-                    callback_func(links)
+                    instance.start(url)
+                    callback(links)
                     break
             else:
                 connector.update_info(widget=self.widget_tk, text="Плохое соединение с www.avito.ru")
@@ -177,14 +125,16 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
     def open_pages(self):
         connector.update_info(widget=self.widget_tk, text="Открываются страницы")
         instance = OpenPage(self.driver)
-        self.worker(instance=instance, links=self.links)
+        self.worker(instance=instance, links=self.links, callback=lambda a=None: a)
         return instance.data
 
     def open_announcement(self, links):
         connector.update_info(widget=self.widget_tk, text="Открываются объявления")
         instance = OpenAnnouncement(self.driver)
-        self.worker(instance=instance, links=links, callback=self.update_progress)
-        self.total_data = instance.data
+        try:
+            self.worker(instance=instance, links=links, callback=self.update_progress)
+        finally:
+            self.total_data = instance.data
 
     def sort_total_data(self):
         result = {
@@ -194,13 +144,6 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
         }
         self.total_data = result
         connector.update_info(widget=self.widget_tk, text="Выполняется сортировка")
-
-        # if self.sorting == "total_views":
-        #     self.total_data.sort(key=lambda e: e.get("total_views", 0), reverse=True)
-        # elif self.sorting == "today_views":
-        #     self.total_data.sort(key=lambda e: e.get("today_views", 0), reverse=True)
-        # elif self.sorting == "reviews":
-        #     self.total_data.sort(key=lambda e: e.get("reviews", 0), reverse=True)
 
     def start(self):
         self.create_database()
@@ -225,9 +168,9 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
         except BadInternetConnection:
             connector.update_info(widget=self.widget_tk, text="Плохое соединение с www.avito.ru")
             raise BadInternetConnection
-        except PushStopButton:
-            logging.info("push stop button")
-            connector.update_info(widget=self.widget_tk, text="Выполнена остановка")
+        except PushStopButton as err:
+            logging.info(err)
+            connector.update_info(widget=self.widget_tk, text="Остановка")
         except Exception as err:
             connector.update_info(widget=self.widget_tk, text=err)
             traceback.print_exception(err)
@@ -244,14 +187,10 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
         if self.total_data:
             self.sort_total_data()
             logging.info("+++ scanned: {} +++".format(self.counter))
-            logging.info("new row in database: {}".format(self._count_new_row_in_database))
-            logging.info("update row in database: {}".format(self._count_update_row_in_database))
+            logging.info("new row in database: {}".format(DataBaseMixin._count_new_row_in_database))
+            logging.info("update row in database: {}".format(DataBaseMixin._count_update_row_in_database))
             pattern = ResultInHtml()
-            try:
-                pattern.write_result(file_name=self.file_name, data=self.total_data, count=self.counter)
-            except FileNotFoundError:
-                self.base_dir.mkdir(parents=True, exist_ok=True)
-                pattern.write_result(file_name=self.file_name, data=self.total_data, count=self.counter)
+            pattern.write_result(file_name=self.file_name, data=self.total_data, count=self.counter)
             connector.update_info(widget=self.widget_tk, text="Результаты готовы")
             webbrowser.open(self.file_name)
             self.complete_audio()

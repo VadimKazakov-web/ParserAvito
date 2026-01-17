@@ -4,13 +4,12 @@ import logging
 from exceptions import BadInternetConnection, PushExit
 
 
-def start_parser_instance(base_dir, test=False):
+def start_parser_instance(test=False):
     logging.info("start parser")
 
     while True:
         try:
-            manager = ParserAvitoManager(base_dir=base_dir,
-                                         test=test)
+            manager = ParserAvitoManager(test=test)
             manager.start()
         except BadInternetConnection:
             logging.warning("bad connections in avito.ru")

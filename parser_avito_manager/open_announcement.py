@@ -3,9 +3,10 @@ import selenium.common
 from selenium.webdriver.common.by import By
 from parser_avito_manager.base import OpenUrl
 import re
+from parser_avito_manager.database import DataBaseMixin
 
 
-class OpenAnnouncement(OpenUrl):
+class OpenAnnouncement(OpenUrl, DataBaseMixin):
 
     def __init__(self, driver):
         super().__init__(driver)
@@ -92,4 +93,5 @@ class OpenAnnouncement(OpenUrl):
         blocks = self.find_blocks()
         if blocks:
             data = self.collect_data(blocks)
+            DataBaseMixin.record_in_database(data)
             return data

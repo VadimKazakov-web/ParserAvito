@@ -14,9 +14,10 @@ class ValidationVarClass:
     file_name = 'result'
     pages = 2
     max_pages = 25
-    pattern_for_check_url = re.compile(pattern='^https://www.avito.ru/.+')
-    pattern_for_check_file_name = re.compile(pattern='\s')
-    pattern_for_2_dot = re.compile(pattern=':')
+    pattern_for_check_url = re.compile(pattern=r'^https://www.avito.ru/.+')
+    pattern_for_check_file_name = re.compile(pattern=r'\s')
+    pattern_for_2_dot = re.compile(pattern=r':')
+    pattern_reverse_feature = re.compile(r'[\\]')
 
     @classmethod
     def validation_url(cls, text: str) -> bool | str:
@@ -33,6 +34,7 @@ class ValidationVarClass:
             return cls.file_name
         match = ValidationVarClass.pattern_for_check_file_name.sub(string=text, repl="_")
         match = ValidationVarClass.pattern_for_2_dot.sub(string=match, repl="·")
+        match = ValidationVarClass.pattern_reverse_feature.sub(string=match, repl="_")
         return match
 
     @classmethod
