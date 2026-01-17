@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
-import os
 import threading
-import logging
 import logging.handlers
 import functools
-from pathlib import Path
 from settings import *
 from tkinter_frontend.window_root.build import window as tk_interface
 from tkinter_frontend.main import build_tk_interface
@@ -16,7 +13,7 @@ file_handler = False
 if not file_handler:
     handler = logging.StreamHandler()
 else:
-    handler = logging.handlers.RotatingFileHandler(filename=LOG_DIR / Path("logbook.log"), maxBytes=6000, backupCount=4)
+    handler = logging.handlers.RotatingFileHandler(filename=LOG_DIR / LOG_FILE, maxBytes=6000, backupCount=4)
 handler.setFormatter(formatter)
 logging.root.setLevel(logging.INFO)
 logging.root.handlers.clear()

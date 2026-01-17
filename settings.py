@@ -10,6 +10,8 @@ LOG_DIR = BASE_DIR / Path("log")
 if not LOG_DIR.exists():
     LOG_DIR.mkdir(parents=True, exist_ok=True)
 
+LOG_FILE = Path("logbook.log")
+
 DATABASE_DIR = BASE_DIR / Path('database')
 if not DATABASE_DIR.exists():
     DATABASE_DIR.mkdir(parents=True, exist_ok=True)

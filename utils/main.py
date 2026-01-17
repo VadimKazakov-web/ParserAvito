@@ -6,7 +6,6 @@ from exceptions import BadInternetConnection, PushExit
 
 def start_parser_instance(test=False):
     logging.info("start parser")
-
     while True:
         try:
             manager = ParserAvitoManager(test=test)
