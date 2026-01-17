@@ -16,5 +16,6 @@ def start_parser_instance(base_dir, test=False):
             logging.warning("bad connections in avito.ru")
         except PushExit as err:
             logging.info(err)
+            break
         except Exception as err:
             traceback.print_exception(err)

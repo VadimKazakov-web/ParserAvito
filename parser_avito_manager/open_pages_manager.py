@@ -60,7 +60,6 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
         self._count_new_row_in_database = 0
         self._count_update_row_in_database = 0
 
-
     def accepting_variables(self):
         self.data_from_tk = connector.channel_for_variables.get()
         if isinstance(self.data_from_tk, dict):
