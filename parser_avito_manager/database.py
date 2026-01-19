@@ -10,6 +10,11 @@ class DataBaseMixin:
     _count_update_row_in_database = 0
 
     @classmethod
+    def reset_counter(cls):
+        cls._count_new_row_in_database = 0
+        cls._count_update_row_in_database = 0
+
+    @classmethod
     def connect_database(cls):
         cls.connection = sqlite3.connect(cls._db)
         cls.cursor = cls.connection.cursor()

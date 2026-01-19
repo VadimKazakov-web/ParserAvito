@@ -18,18 +18,6 @@ from settings import *
 from parser_avito_manager.database import DataBaseMixin
 
 
-def setup_options():
-    options = webdriver.ChromeOptions()
-    options.add_argument("--no-sandbox")
-    options.timeouts = {"pageLoad": 30000}
-    options.page_load_strategy = 'eager'
-    options.browser_version = 'stable'
-    # assert options.capabilities['browserVersion'] == 'stable'
-    # assert options.capabilities['browserVersion'] == '142'
-    driver = webdriver.Chrome(options=options)
-    return driver
-
-
 def check_chanel():
     try:
         data = connector.channel_for_variables.get(block=False)
@@ -42,9 +30,7 @@ def check_chanel():
 
 class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin, DataBaseMixin):
 
-    def __init__(self, test=None):
-
-        self.test = test
+    def __init__(self):
         self.url = None
         self.pages = None
         self.links = None
@@ -53,7 +39,7 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin, DataBaseMixin):
         self.widget_tk = None
         self.sorting = None
         self.total_data = []
-        self.driver = None
+        self.driver = self.setup_options()
         self.timeout = TIMEOUT
         self.counter = 0
         self.timeout_exceptions_counter = TIMEOUT_EXCEPTIONS_COUNTER
@@ -63,8 +49,22 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin, DataBaseMixin):
         self._count_new_row_in_database = 0
         self._count_update_row_in_database = 0
 
+    @staticmethod
+    def setup_options():
+        options = webdriver.ChromeOptions()
+        options.add_argument("--no-sandbox")
+        options.timeouts = {"pageLoad": 30000}
+        options.page_load_strategy = 'eager'
+        options.browser_version = 'stable'
+        # assert options.capabilities['browserVersion'] == 'stable'
+        # assert options.capabilities['browserVersion'] == '142'
+        driver = webdriver.Chrome(options=options)
+        driver.implicitly_wait(60)
+        return driver
+
     def accepting_variables(self):
         self.data_from_tk = connector.channel_for_variables.get()
+        logging.info("data from tk: {}".format(self.data_from_tk))
         if isinstance(self.data_from_tk, dict):
             self.setup_variables()
         elif self.data_from_tk == "exit":
@@ -115,7 +115,7 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin, DataBaseMixin):
                 else:
                     connector.update_info(widget=self.widget_tk, text="Продолжаю открывать web-страницы")
                     connector.update_title(widget=self.widget_tk, text=self.driver.title)
-                    instance.start(url)
+                    data = instance.start(url)
                     callback(links)
                     break
             else:
@@ -145,20 +145,15 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin, DataBaseMixin):
         self.total_data = result
         connector.update_info(widget=self.widget_tk, text="Выполняется сортировка")
 
-    def start(self):
-        self.create_database()
+    def bond_methods(self):
         self.count_row_in_database()
-        self.driver = setup_options()
-        self.driver.implicitly_wait(60)
         self.accepting_variables()
-        logging.info("data from tk: {}".format(self.data_from_tk))
         self.preparation_links()
-        active_inactive_start_button.make_inactive_button()
         connector.update_progress(widget=self.widget_tk, text="...")
         connector.update_title(widget=self.widget_tk, text="...")
+        active_inactive_start_button.make_inactive_button()
+        active_inactive_stop_button.make_active_button()
         try:
-            self.time_measurement_start()
-            active_inactive_stop_button.make_active_button()
             links = self.open_pages()
             self.open_announcement(links)
         except selenium.common.exceptions.WebDriverException as err:
@@ -171,14 +166,8 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin, DataBaseMixin):
         except PushStopButton as err:
             logging.info(err)
             connector.update_info(widget=self.widget_tk, text="Остановка")
-        except Exception as err:
-            connector.update_info(widget=self.widget_tk, text=err)
-            traceback.print_exception(err)
         finally:
             self.exit()
-            self.time_measurement_end()
-            connector.update_title(widget=self.widget_tk,
-                                   text="Время работы программы {}".format(self.time_measurement_result()))
             active_inactive_start_button.make_active_button()
             active_inactive_stop_button.make_inactive_button()
 
@@ -191,6 +180,37 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin, DataBaseMixin):
             logging.info("update row in database: {}".format(DataBaseMixin._count_update_row_in_database))
             pattern = ResultInHtml()
             pattern.write_result(file_name=self.file_name, data=self.total_data, count=self.counter)
+            DataBaseMixin.reset_counter()
             connector.update_info(widget=self.widget_tk, text="Результаты готовы")
             webbrowser.open(self.file_name)
             self.complete_audio()
+
+    @staticmethod
+    def initial_text():
+        logging.info("")
+        logging.info("")
+        logging.info("-" * 20)
+        logging.info("start parser")
+
+    def start(self):
+        self.create_database()
+        while True:
+            self.time_measurement_start()
+            self.initial_text()
+            try:
+                self.bond_methods()
+                self.time_measurement_end()
+                connector.update_title(widget=self.widget_tk,
+                                       text="Время работы программы {}".format(self.time_measurement_result()))
+                self.__init__()
+            except BadInternetConnection:
+                logging.warning("bad connections in avito.ru")
+            except PushExit as err:
+                logging.info(err)
+                break
+            except Exception as err:
+                connector.update_info(widget=self.widget_tk, text=err)
+                traceback.print_exception(err)
+
+
+

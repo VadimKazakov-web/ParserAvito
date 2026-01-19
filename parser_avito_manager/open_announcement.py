@@ -43,55 +43,59 @@ class OpenAnnouncement(OpenUrl, DataBaseMixin):
 
     def collect_data(self, blocks):
         block, block_seller = blocks.get("left"), blocks.get("right")
-        data = {}
+        result = {}
         end_point = None
         result_title = self.pattern_title.search(block)
         if result_title:
             title = result_title.group("title")
-            data["title"] = title
+            result["title"] = title
             end_point = result_title.end()
 
         result_id = self.pattern_id.search(block[end_point:])
         if result_id:
-            data['id'] = result_id.group("id")
+            result['id'] = result_id.group("id")
             end_point = result_id.end()
+        else:
+            logging.info("url without id: {}".format(self._url))
+            return
 
         result_date = self.pattern_date.search(block[end_point:])
         if result_date:
-            data['date'] = result_date.group("date")
+            result['date'] = result_date.group("date")
             end_point = result_date.end()
 
         result_total_views = self.pattern_total_views.search(block[end_point:])
         if result_total_views:
-            data['total_views'] = int(result_total_views.group("total_views"))
+            result['total_views'] = int(result_total_views.group("total_views"))
             end_point = result_total_views.end()
 
         result_today_views = self.pattern_today_views.search(block[end_point:])
         if result_today_views:
-            data['today_views'] = int(result_today_views.group("today_views"))
+            result['today_views'] = int(result_today_views.group("today_views"))
 
         result_rating = self.pattern_rating.search(block_seller)
         if result_rating:
-            data["rating"] = float(result_rating.group("rating"))
+            result["rating"] = float(result_rating.group("rating"))
             end_point = result_rating.end()
         else:
-            data["rating"] = 0.0
+            result["rating"] = 0.0
             end_point = 0
 
         result_reviews = self.pattern_reviews.search(block_seller[end_point:])
         if result_reviews:
-            data["reviews"] = int(result_reviews.group("reviews"))
+            result["reviews"] = int(result_reviews.group("reviews"))
         else:
-            data["reviews"] = 0
+            result["reviews"] = 0
 
-        data["link"] = self._url
-        self._data.append(data)
-        return data
+        result["link"] = self._url
+        self._data.append(result)
+        return result
 
     def start(self, url: str):
         self._url = url
         blocks = self.find_blocks()
         if blocks:
             data = self.collect_data(blocks)
-            DataBaseMixin.record_in_database(data)
-            return data
+            if data:
+                DataBaseMixin.record_in_database(data)
+                return data
