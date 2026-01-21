@@ -76,11 +76,10 @@ class HandlersClass(ValidationVarClass):
         if cls.data.get("link") and cls.data.get("filename") and cls.data.get("count_pages"):
             # from tkinter_frontend.window_root.frame_1.frame_for_options.radio_buttons.build import choice
             # cls.data["sorting"] = choice.get()
-            cls.data["widget_tk"] = master
-            connector.update_info(widget=master, text="все данные введены")
+            connector.update_info(text="все данные введены")
             master.event_generate(connector.post_data_event)
             master.event_generate(connector.create_progress_event)
             return True
         else:
-            connector.update_info(widget=master, text="не все данные введены")
+            connector.update_info(text="не все данные введены")
             return False

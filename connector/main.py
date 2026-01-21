@@ -20,18 +20,22 @@ class Connector(ClientMixin):
         self.update_progress_event = "<<UpdateProgress>>"
         self.push_button_event = "<<PushButton>>"
         self.exit_flag = False
+        self.widget = None
 
-    def update_info(self, widget: Widget, text: str) -> None:
+    def add_widget(self, widget: Widget):
+        self.widget = widget
+
+    def update_info(self, text: str) -> None:
         self.data.set(key="info", val=text)
-        widget.event_generate(self.update_info_event)
+        self.widget.event_generate(self.update_info_event)
 
-    def update_progress(self, widget: Widget, text: str) -> None:
+    def update_progress(self, text: str) -> None:
         self.data.set(key="progress", val=text)
-        widget.event_generate(self.update_progress_event)
+        self.widget.event_generate(self.update_progress_event)
 
-    def update_title(self, widget: Widget, text: str) -> None:
+    def update_title(self, text: str) -> None:
         self.data.set(key="page_title", val=text)
-        widget.event_generate(self.update_progress_event)
+        self.widget.event_generate(self.update_progress_event)
 
     def get_info(self) -> None:
         return self.data.get(key="info")

@@ -17,6 +17,7 @@ frame.bind(connector.post_data_event, func=functools.partial(connector.post_data
 frame.bind(connector.create_progress_event, create_progress)
 frame.bind(connector.update_progress_event, update_progress)
 frame.bind(connector.update_info_event, update_info)
+connector.add_widget(frame)
 
 logging.info("{}: done".format(__name__))
 

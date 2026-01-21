@@ -37,7 +37,6 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin, DataBaseMixin):
         self.links = None
         self.file_name = None
         self.data_from_tk = None
-        self.widget_tk = None
         self.sorting = None
         self.total_data = []
         self.driver = self.setup_options()
@@ -75,7 +74,6 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin, DataBaseMixin):
         filename = self.data_from_tk.get("filename")
         self.file_name = self.base_dir / Path(filename)
         self.pages = int(self.data_from_tk.get("count_pages"))
-        self.widget_tk = self.data_from_tk.get("widget_tk")
         self.sorting = self.data_from_tk.get("sorting")
 
     def preparation_links(self):
@@ -87,7 +85,7 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin, DataBaseMixin):
         length = len(links)
         self.counter += 1
         progress_text = f'отсканировано объявлений: {self.counter}/{length} ({round(self.counter / length * 100)}%)'
-        connector.update_progress(widget=self.widget_tk, text=progress_text)
+        connector.update_progress(text=progress_text)
 
     def driver_and_timeout(self, url):
         check_chanel()
@@ -106,7 +104,7 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin, DataBaseMixin):
                     self.check_title(self.driver)
                 except selenium.common.exceptions.TimeoutException:
                     logging.warning("TimeoutException")
-                    connector.update_info(widget=self.widget_tk, text="Плохое соединение, "
+                    connector.update_info(text="Плохое соединение, "
                                                                       "перезагружаю страницу,\n"
                                                                       "осталось попыток: {}"
                                           .format(timeout_exceptions_counter))
@@ -115,23 +113,23 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin, DataBaseMixin):
                     logging.info(err)
                     break
                 else:
-                    connector.update_info(widget=self.widget_tk, text="Продолжаю открывать web-страницы")
-                    connector.update_title(widget=self.widget_tk, text=self.driver.title)
+                    connector.update_info(text="Продолжаю открывать web-страницы")
+                    connector.update_title(text=self.driver.title)
                     data = instance.start(url)
                     callback(links)
                     break
             else:
-                connector.update_info(widget=self.widget_tk, text="Плохое соединение с www.avito.ru")
+                connector.update_info(text="Плохое соединение с www.avito.ru")
                 raise BadInternetConnection
 
     def open_pages(self):
-        connector.update_info(widget=self.widget_tk, text="Открываются страницы")
+        connector.update_info(text="Открываются страницы")
         instance = OpenPage(self.driver)
         self.worker(instance=instance, links=self.links, callback=lambda a=None: a)
         return instance.data
 
     def open_announcement(self, links):
-        connector.update_info(widget=self.widget_tk, text="Открываются объявления")
+        connector.update_info(text="Открываются объявления")
         instance = OpenAnnouncement(self.driver)
         try:
             self.worker(instance=instance, links=links, callback=self.update_progress)
@@ -150,7 +148,7 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin, DataBaseMixin):
             "reviews": sorted(self.total_data, key=lambda e: e.get("reviews", 0), reverse=True)[0:top],
         }
         self.total_data = result
-        connector.update_info(widget=self.widget_tk, text="Выполняется сортировка")
+        connector.update_info(text="Выполняется сортировка")
 
     def bond_methods(self):
         self.count_row_in_database()
@@ -158,20 +156,20 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin, DataBaseMixin):
         active_inactive_start_button.make_inactive_button()
         active_inactive_stop_button.make_active_button()
         self.preparation_links()
-        connector.update_progress(widget=self.widget_tk, text="...")
-        connector.update_title(widget=self.widget_tk, text="...")
+        connector.update_progress(text="...")
+        connector.update_title(text="...")
         try:
             links = self.open_pages()
             self.open_announcement(links)
         except selenium.common.exceptions.WebDriverException as err:
             logging.warning(err)
-            connector.update_info(widget=self.widget_tk, text="WebDriverException, Проверьте интернет соединение")
+            connector.update_info(text="WebDriverException, Проверьте интернет соединение")
         except BadInternetConnection:
             logging.warning("bad connections in avito.ru")
-            connector.update_info(widget=self.widget_tk, text="Плохое соединение с www.avito.ru")
+            connector.update_info(text="Плохое соединение с www.avito.ru")
         except PushStopButton as err:
             logging.info(err)
-            connector.update_info(widget=self.widget_tk, text="Остановка")
+            connector.update_info(text="Остановка")
         except Exception as err:
             logging.warning("err in bond_methods()")
             logging.warning(err)
@@ -189,7 +187,7 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin, DataBaseMixin):
             logging.info("update row in database: {}".format(self.count_update_row_in_database))
             result_in_html = ResultInHtml()
             result_in_html.write_result(file_name=self.file_name, data=self.total_data, count=self.counter)
-            connector.update_info(widget=self.widget_tk, text="Результаты готовы")
+            connector.update_info(text="Результаты готовы")
             webbrowser.open(self.file_name)
             self.complete_audio()
 
@@ -210,12 +208,11 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin, DataBaseMixin):
                 logging.info(err)
                 break
             except Exception as err:
-                connector.update_info(widget=self.widget_tk, text=err)
+                connector.update_info(text=err)
                 traceback.print_exception(err)
             else:
                 self.time_measurement_end()
-                connector.update_title(widget=self.widget_tk,
-                                       text="Время работы программы {}".format(self.time_measurement_result()))
+                connector.update_title(text="Время работы программы {}".format(self.time_measurement_result()))
             finally:
                 self.__init__()
 
