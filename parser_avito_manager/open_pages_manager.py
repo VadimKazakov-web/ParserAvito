@@ -1,33 +1,23 @@
 # -*- coding: utf-8 -*-
 import logging
-import time
 import traceback
 import webbrowser
 import selenium.common
-from parser_avito_manager import PreparationLinksForPages, ResultInHtml, CheckTitleMixin, TimeMeasurementMixin
+from parser_avito_manager import PreparationLinksForPages, ResultInHtml, TimeMeasurementMixin
 from parser_avito_manager.open_page import OpenPage
 from parser_avito_manager.open_announcement import OpenAnnouncement
+from parser_avito_manager.worker import Worker
 from selenium import webdriver
 from exceptions import BadInternetConnection, PushExit, BreakWhile
 from tkinter_frontend.window_root.frame_1.start_button.build import active_inactive_start_button
 from tkinter_frontend.window_root.frame_1.stop_button.build import active_inactive_stop_button
-import queue
 from exceptions import PushStopButton
 from objects import connector
 from settings import *
+from audio.audio_notes import AudioNotesMixin
 
 
-def check_chanel():
-    try:
-        data = connector.channel_for_variables.get(block=False)
-    except queue.Empty:
-        return
-    else:
-        if data == "push_stop_button":
-            raise PushStopButton
-
-
-class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
+class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin):
 
     def __init__(self):
         self.driver = self.setup_options()
@@ -38,8 +28,6 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
         self._file_name = None
         self._data_from_tk = None
         self._total_data = []
-        self._timeout = TIMEOUT
-        self._timeout_exceptions_counter = TIMEOUT_EXCEPTIONS_COUNTER
         self._base_dir = BASE_DIR
         self._count_new_row_in_database = 0
         self._count_update_row_in_database = 0
@@ -78,51 +66,19 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
         prep_links_instance.start()
         self._links_pages = prep_links_instance.result
 
-    def _driver_and_timeout(self, url):
-        check_chanel()
-        self.driver.get(url)
-        check_chanel()
-        time.sleep(self._timeout / 2)
-        check_chanel()
-        time.sleep(self._timeout / 2)
-
-    def _worker(self, instance, links):
-        for url in links:
-            timeout_exceptions_counter = self._timeout_exceptions_counter
-            while timeout_exceptions_counter:
-                try:
-                    self._driver_and_timeout(url)
-                    self.check_title(self.driver)
-                except selenium.common.exceptions.TimeoutException:
-                    logging.warning("TimeoutException")
-                    connector.update_info(text="Плохое соединение, "
-                                                                      "перезагружаю страницу,\n"
-                                                                      "осталось попыток: {}"
-                                          .format(timeout_exceptions_counter))
-                    timeout_exceptions_counter -= 1
-                except BreakWhile as err:
-                    logging.info(err)
-                    break
-                else:
-                    connector.update_info(text="Продолжаю открывать web-страницы")
-                    connector.update_title(text=self.driver.title)
-                    data = instance.start(url)
-                    break
-            else:
-                connector.update_info(text="Плохое соединение с www.avito.ru")
-                raise BadInternetConnection
-
     def _open_pages(self):
         connector.update_info(text="Открываются страницы")
         instance = OpenPage(self.driver)
-        self._worker(instance=instance, links=self._links_pages)
+        worker = Worker(driver=self.driver, instance=instance, links=self._links_pages)
+        instance = worker.start()
         return instance.data
 
     def _open_announcement(self, links):
         connector.update_info(text="Открываются объявления")
         instance = OpenAnnouncement(self.driver, links)
         try:
-            self._worker(instance=instance, links=links)
+            worker = Worker(driver=self.driver, instance=instance, links=self._links_pages)
+            instance = worker.start()
         finally:
             self._total_data = instance.data
             self._counter = instance.counter
