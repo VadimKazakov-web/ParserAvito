@@ -31,6 +31,7 @@ def check_chanel():
 class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin, DataBaseMixin):
 
     def __init__(self):
+        DataBaseMixin.__init__(self)
         self.url = None
         self.pages = None
         self.links = None
@@ -46,9 +47,6 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin, DataBaseMixin):
         self.base_dir = BASE_DIR
         self.cursor = None
         self.connection = None
-        self._count_new_row_in_database = 0
-        self._count_update_row_in_database = 0
-        self.create_database()
 
     @staticmethod
     def setup_options():
@@ -91,17 +89,20 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin, DataBaseMixin):
         progress_text = f'отсканировано объявлений: {self.counter}/{length} ({round(self.counter / length * 100)}%)'
         connector.update_progress(widget=self.widget_tk, text=progress_text)
 
+    def driver_and_timeout(self, url):
+        check_chanel()
+        self.driver.get(url)
+        check_chanel()
+        time.sleep(self.timeout / 2)
+        check_chanel()
+        time.sleep(self.timeout / 2)
+
     def worker(self, instance, links, callback=None):
         for url in links:
             timeout_exceptions_counter = self.timeout_exceptions_counter
             while timeout_exceptions_counter:
                 try:
-                    check_chanel()
-                    self.driver.get(url)
-                    check_chanel()
-                    time.sleep(self.timeout / 2)
-                    check_chanel()
-                    time.sleep(self.timeout / 2)
+                    self.driver_and_timeout(url)
                     self.check_title(self.driver)
                 except selenium.common.exceptions.TimeoutException:
                     logging.warning("TimeoutException")
@@ -136,6 +137,8 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin, DataBaseMixin):
             self.worker(instance=instance, links=links, callback=self.update_progress)
         finally:
             self.total_data = instance.data
+            self.count_new_row_in_database = instance.count_new_row_in_database
+            self.count_update_row_in_database = instance.count_update_row_in_database
 
     def sort_total_data(self, top):
         length = len(self.total_data)
@@ -182,11 +185,10 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin, DataBaseMixin):
         if self.total_data:
             self.sort_total_data(top=TOP_ANNOUNCEMENT)
             logging.info("+++ scanned: {} +++".format(self.counter))
-            logging.info("new row in database: {}".format(DataBaseMixin._count_new_row_in_database))
-            logging.info("update row in database: {}".format(DataBaseMixin._count_update_row_in_database))
+            logging.info("new row in database: {}".format(self.count_new_row_in_database))
+            logging.info("update row in database: {}".format(self.count_update_row_in_database))
             result_in_html = ResultInHtml()
             result_in_html.write_result(file_name=self.file_name, data=self.total_data, count=self.counter)
-            DataBaseMixin.reset_counter()
             connector.update_info(widget=self.widget_tk, text="Результаты готовы")
             webbrowser.open(self.file_name)
             self.complete_audio()

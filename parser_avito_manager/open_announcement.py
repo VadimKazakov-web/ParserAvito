@@ -10,6 +10,7 @@ class OpenAnnouncement(OpenUrl, DataBaseMixin):
 
     def __init__(self, driver):
         super().__init__(driver)
+        DataBaseMixin.__init__(self)
         self._data = []
         self.target_block = {"block": '.style__contentLeftWrapper___XzU0Nj', "name": "left"}
         self.target_block_seller = {"block": '.style__contentRightWrapper___XzU0Nj', "name": "right"}
@@ -97,5 +98,5 @@ class OpenAnnouncement(OpenUrl, DataBaseMixin):
         if blocks:
             data = self.collect_data(blocks)
             if data:
-                DataBaseMixin.record_in_database(data)
+                self.record_in_database(data)
                 return data
