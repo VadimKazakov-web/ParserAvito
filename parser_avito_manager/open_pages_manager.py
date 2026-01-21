@@ -48,6 +48,7 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin, DataBaseMixin):
         self.connection = None
         self._count_new_row_in_database = 0
         self._count_update_row_in_database = 0
+        self.create_database()
 
     @staticmethod
     def setup_options():
@@ -136,11 +137,14 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin, DataBaseMixin):
         finally:
             self.total_data = instance.data
 
-    def sort_total_data(self):
+    def sort_total_data(self, top):
+        length = len(self.total_data)
+        if length < top:
+            top = length
         result = {
-            "total_views": sorted(self.total_data, key=lambda e: e.get("total_views", 0), reverse=True),
-            "today_views": sorted(self.total_data, key=lambda e: e.get("today_views", 0), reverse=True),
-            "reviews": sorted(self.total_data, key=lambda e: e.get("reviews", 0), reverse=True),
+            "total_views": sorted(self.total_data, key=lambda e: e.get("total_views", 0), reverse=True)[0:top],
+            "today_views": sorted(self.total_data, key=lambda e: e.get("today_views", 0), reverse=True)[0:top],
+            "reviews": sorted(self.total_data, key=lambda e: e.get("reviews", 0), reverse=True)[0:top],
         }
         self.total_data = result
         connector.update_info(widget=self.widget_tk, text="Выполняется сортировка")
@@ -148,24 +152,26 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin, DataBaseMixin):
     def bond_methods(self):
         self.count_row_in_database()
         self.accepting_variables()
+        active_inactive_start_button.make_inactive_button()
+        active_inactive_stop_button.make_active_button()
         self.preparation_links()
         connector.update_progress(widget=self.widget_tk, text="...")
         connector.update_title(widget=self.widget_tk, text="...")
-        active_inactive_start_button.make_inactive_button()
-        active_inactive_stop_button.make_active_button()
         try:
             links = self.open_pages()
             self.open_announcement(links)
         except selenium.common.exceptions.WebDriverException as err:
             logging.warning(err)
             connector.update_info(widget=self.widget_tk, text="WebDriverException, Проверьте интернет соединение")
-            raise BadInternetConnection
         except BadInternetConnection:
+            logging.warning("bad connections in avito.ru")
             connector.update_info(widget=self.widget_tk, text="Плохое соединение с www.avito.ru")
-            raise BadInternetConnection
         except PushStopButton as err:
             logging.info(err)
             connector.update_info(widget=self.widget_tk, text="Остановка")
+        except Exception as err:
+            logging.warning("err in bond_methods()")
+            logging.warning(err)
         finally:
             self.exit()
             active_inactive_start_button.make_active_button()
@@ -174,12 +180,12 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin, DataBaseMixin):
     def exit(self):
         self.driver.quit()
         if self.total_data:
-            self.sort_total_data()
+            self.sort_total_data(top=TOP_ANNOUNCEMENT)
             logging.info("+++ scanned: {} +++".format(self.counter))
             logging.info("new row in database: {}".format(DataBaseMixin._count_new_row_in_database))
             logging.info("update row in database: {}".format(DataBaseMixin._count_update_row_in_database))
-            pattern = ResultInHtml()
-            pattern.write_result(file_name=self.file_name, data=self.total_data, count=self.counter)
+            result_in_html = ResultInHtml()
+            result_in_html.write_result(file_name=self.file_name, data=self.total_data, count=self.counter)
             DataBaseMixin.reset_counter()
             connector.update_info(widget=self.widget_tk, text="Результаты готовы")
             webbrowser.open(self.file_name)
@@ -193,24 +199,24 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin, DataBaseMixin):
         logging.info("start parser")
 
     def start(self):
-        self.create_database()
         while True:
             self.time_measurement_start()
             self.initial_text()
             try:
                 self.bond_methods()
-                self.time_measurement_end()
-                connector.update_title(widget=self.widget_tk,
-                                       text="Время работы программы {}".format(self.time_measurement_result()))
-                self.__init__()
-            except BadInternetConnection:
-                logging.warning("bad connections in avito.ru")
             except PushExit as err:
                 logging.info(err)
                 break
             except Exception as err:
                 connector.update_info(widget=self.widget_tk, text=err)
                 traceback.print_exception(err)
+            else:
+                self.time_measurement_end()
+                connector.update_title(widget=self.widget_tk,
+                                       text="Время работы программы {}".format(self.time_measurement_result()))
+            finally:
+                self.__init__()
+
 
 
 
