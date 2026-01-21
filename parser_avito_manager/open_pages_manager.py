@@ -28,10 +28,9 @@ def check_chanel():
             raise PushStopButton
 
 
-class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin, DataBaseMixin):
+class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
 
     def __init__(self):
-        DataBaseMixin.__init__(self)
         self.url = None
         self.pages = None
         self.links = None
@@ -44,8 +43,8 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin, DataBaseMixin):
         self.counter = 0
         self.timeout_exceptions_counter = TIMEOUT_EXCEPTIONS_COUNTER
         self.base_dir = BASE_DIR
-        self.cursor = None
-        self.connection = None
+        self.count_new_row_in_database = 0
+        self.count_update_row_in_database = 0
 
     @staticmethod
     def setup_options():
@@ -151,7 +150,6 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin, DataBaseMixin):
         connector.update_info(text="Выполняется сортировка")
 
     def bond_methods(self):
-        self.count_row_in_database()
         self.accepting_variables()
         active_inactive_start_button.make_inactive_button()
         active_inactive_stop_button.make_active_button()
@@ -194,8 +192,7 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin, DataBaseMixin):
     @staticmethod
     def initial_text():
         logging.info("")
-        logging.info("")
-        logging.info("-" * 20)
+        logging.info("-" * 40)
         logging.info("start parser")
 
     def start(self):

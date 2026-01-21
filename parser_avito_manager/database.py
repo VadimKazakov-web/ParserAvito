@@ -13,6 +13,7 @@ class DataBaseMixin:
         self._connection = None
         self._cursor = None
         self._create_database()
+        self._count_row_in_database()
 
     def _connect_database(self):
         self._connection = sqlite3.connect(self._db)
@@ -25,7 +26,7 @@ class DataBaseMixin:
         self._connection.commit()
         self._connection.close()
 
-    def count_row_in_database(self):
+    def _count_row_in_database(self):
         self._connect_database()
         res = self._cursor.execute("SELECT count(*) FROM announcement")
         result = res.fetchone()
