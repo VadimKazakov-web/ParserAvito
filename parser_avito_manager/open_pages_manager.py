@@ -15,7 +15,6 @@ import queue
 from exceptions import PushStopButton
 from objects import connector
 from settings import *
-from parser_avito_manager.database import DataBaseMixin
 
 
 def check_chanel():
@@ -31,20 +30,20 @@ def check_chanel():
 class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
 
     def __init__(self):
-        self.url = None
-        self.pages = None
-        self.links = None
-        self.file_name = None
-        self.data_from_tk = None
-        self.sorting = None
-        self.total_data = []
         self.driver = self.setup_options()
-        self.timeout = TIMEOUT
-        self.counter = 0
-        self.timeout_exceptions_counter = TIMEOUT_EXCEPTIONS_COUNTER
-        self.base_dir = BASE_DIR
-        self.count_new_row_in_database = 0
-        self.count_update_row_in_database = 0
+        self._url = None
+        self._pages = None
+        self._links_pages = None
+        self._links_announcement = None
+        self._file_name = None
+        self._data_from_tk = None
+        self._total_data = []
+        self._timeout = TIMEOUT
+        self._timeout_exceptions_counter = TIMEOUT_EXCEPTIONS_COUNTER
+        self._base_dir = BASE_DIR
+        self._count_new_row_in_database = 0
+        self._count_update_row_in_database = 0
+        self._counter = 0
 
     @staticmethod
     def setup_options():
@@ -59,47 +58,40 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
         driver.implicitly_wait(60)
         return driver
 
-    def accepting_variables(self):
-        self.data_from_tk = connector.channel_for_variables.get()
-        logging.info("data from tk: {}".format(self.data_from_tk))
-        if isinstance(self.data_from_tk, dict):
-            self.setup_variables()
-        elif self.data_from_tk == "exit":
+    def _accepting_variables(self):
+        self._data_from_tk = connector.channel_for_variables.get()
+        logging.info("data from tk: {}".format(self._data_from_tk))
+        if isinstance(self._data_from_tk, dict):
+            self._setup_variables()
+        elif self._data_from_tk == "exit":
             self.driver.quit()
             raise PushExit
 
-    def setup_variables(self):
-        self.url = self.data_from_tk.get("link")
-        filename = self.data_from_tk.get("filename")
-        self.file_name = self.base_dir / Path(filename)
-        self.pages = int(self.data_from_tk.get("count_pages"))
-        self.sorting = self.data_from_tk.get("sorting")
+    def _setup_variables(self):
+        self._url = self._data_from_tk.get("link")
+        filename = self._data_from_tk.get("filename")
+        self._file_name = self._base_dir / Path(filename)
+        self._pages = int(self._data_from_tk.get("count_pages"))
 
-    def preparation_links(self):
-        prep_links_instance = PreparationLinksForPages(url=self.url, pages=self.pages)
+    def _preparation_links(self):
+        prep_links_instance = PreparationLinksForPages(url=self._url, pages=self._pages)
         prep_links_instance.start()
-        self.links = prep_links_instance.result
+        self._links_pages = prep_links_instance.result
 
-    def update_progress(self, links: list) -> None:
-        length = len(links)
-        self.counter += 1
-        progress_text = f'отсканировано объявлений: {self.counter}/{length} ({round(self.counter / length * 100)}%)'
-        connector.update_progress(text=progress_text)
-
-    def driver_and_timeout(self, url):
+    def _driver_and_timeout(self, url):
         check_chanel()
         self.driver.get(url)
         check_chanel()
-        time.sleep(self.timeout / 2)
+        time.sleep(self._timeout / 2)
         check_chanel()
-        time.sleep(self.timeout / 2)
+        time.sleep(self._timeout / 2)
 
-    def worker(self, instance, links, callback=None):
+    def _worker(self, instance, links):
         for url in links:
-            timeout_exceptions_counter = self.timeout_exceptions_counter
+            timeout_exceptions_counter = self._timeout_exceptions_counter
             while timeout_exceptions_counter:
                 try:
-                    self.driver_and_timeout(url)
+                    self._driver_and_timeout(url)
                     self.check_title(self.driver)
                 except selenium.common.exceptions.TimeoutException:
                     logging.warning("TimeoutException")
@@ -115,50 +107,50 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
                     connector.update_info(text="Продолжаю открывать web-страницы")
                     connector.update_title(text=self.driver.title)
                     data = instance.start(url)
-                    callback(links)
                     break
             else:
                 connector.update_info(text="Плохое соединение с www.avito.ru")
                 raise BadInternetConnection
 
-    def open_pages(self):
+    def _open_pages(self):
         connector.update_info(text="Открываются страницы")
         instance = OpenPage(self.driver)
-        self.worker(instance=instance, links=self.links, callback=lambda a=None: a)
+        self._worker(instance=instance, links=self._links_pages)
         return instance.data
 
-    def open_announcement(self, links):
+    def _open_announcement(self, links):
         connector.update_info(text="Открываются объявления")
-        instance = OpenAnnouncement(self.driver)
+        instance = OpenAnnouncement(self.driver, links)
         try:
-            self.worker(instance=instance, links=links, callback=self.update_progress)
+            self._worker(instance=instance, links=links)
         finally:
-            self.total_data = instance.data
-            self.count_new_row_in_database = instance.count_new_row_in_database
-            self.count_update_row_in_database = instance.count_update_row_in_database
+            self._total_data = instance.data
+            self._counter = instance.counter
+            self._count_new_row_in_database = instance.count_new_row_in_database
+            self._count_update_row_in_database = instance.count_update_row_in_database
 
-    def sort_total_data(self, top):
-        length = len(self.total_data)
+    def _sort_total_data(self, top):
+        length = len(self._total_data)
+        connector.update_info(text="Выполняется сортировка")
         if length < top:
             top = length
         result = {
-            "total_views": sorted(self.total_data, key=lambda e: e.get("total_views", 0), reverse=True)[0:top],
-            "today_views": sorted(self.total_data, key=lambda e: e.get("today_views", 0), reverse=True)[0:top],
-            "reviews": sorted(self.total_data, key=lambda e: e.get("reviews", 0), reverse=True)[0:top],
+            "total_views": sorted(self._total_data, key=lambda e: e.get("total_views", 0), reverse=True)[0:top],
+            "today_views": sorted(self._total_data, key=lambda e: e.get("today_views", 0), reverse=True)[0:top],
+            "reviews": sorted(self._total_data, key=lambda e: e.get("reviews", 0), reverse=True)[0:top],
         }
-        self.total_data = result
-        connector.update_info(text="Выполняется сортировка")
+        self._total_data = result
 
-    def bond_methods(self):
-        self.accepting_variables()
+    def _bond_methods(self):
+        self._accepting_variables()
         active_inactive_start_button.make_inactive_button()
         active_inactive_stop_button.make_active_button()
-        self.preparation_links()
+        self._preparation_links()
         connector.update_progress(text="...")
         connector.update_title(text="...")
         try:
-            links = self.open_pages()
-            self.open_announcement(links)
+            self._links_pages = self._open_pages()
+            self._open_announcement(self._links_pages)
         except selenium.common.exceptions.WebDriverException as err:
             logging.warning(err)
             connector.update_info(text="WebDriverException, Проверьте интернет соединение")
@@ -172,25 +164,25 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
             logging.warning("err in bond_methods()")
             logging.warning(err)
         finally:
-            self.exit()
+            self._exit()
             active_inactive_start_button.make_active_button()
             active_inactive_stop_button.make_inactive_button()
 
-    def exit(self):
+    def _exit(self):
         self.driver.quit()
-        if self.total_data:
-            self.sort_total_data(top=TOP_ANNOUNCEMENT)
-            logging.info("+++ scanned: {} +++".format(self.counter))
-            logging.info("new row in database: {}".format(self.count_new_row_in_database))
-            logging.info("update row in database: {}".format(self.count_update_row_in_database))
+        if self._total_data:
+            self._sort_total_data(top=TOP_ANNOUNCEMENT)
+            logging.info("+++ scanned: {} +++".format(self._counter))
+            logging.info("new row in database: {}".format(self._count_new_row_in_database))
+            logging.info("update row in database: {}".format(self._count_update_row_in_database))
             result_in_html = ResultInHtml()
-            result_in_html.write_result(file_name=self.file_name, data=self.total_data, count=self.counter)
+            result_in_html.write_result(file_name=self._file_name, data=self._total_data, count=self._counter)
             connector.update_info(text="Результаты готовы")
-            webbrowser.open(self.file_name)
+            webbrowser.open(self._file_name)
             self.complete_audio()
 
     @staticmethod
-    def initial_text():
+    def _initial_text():
         logging.info("")
         logging.info("-" * 40)
         logging.info("start parser")
@@ -198,9 +190,9 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
     def start(self):
         while True:
             self.time_measurement_start()
-            self.initial_text()
+            self._initial_text()
             try:
-                self.bond_methods()
+                self._bond_methods()
             except PushExit as err:
                 logging.info(err)
                 break

@@ -5,19 +5,19 @@ from parser_avito_manager.index import base
 class ResultInHtml:
 
     def __init__(self):
-        self.header_content_pattern = re.compile(r'[{]title_content[}]')
-        self.total_views_pattern = re.compile(r'[{]total_views_content[}]')
-        self.today_views_pattern = re.compile(r'[{]today_views_content[}]')
-        self.review_count_pattern = re.compile(r'[{]review_count_content[}]')
-        self.str_base_html = base
+        self._header_content_pattern = re.compile(r'[{]title_content[}]')
+        self._total_views_pattern = re.compile(r'[{]total_views_content[}]')
+        self._today_views_pattern = re.compile(r'[{]today_views_content[}]')
+        self._review_count_pattern = re.compile(r'[{]review_count_content[}]')
+        self._str_base_html = base
 
     @staticmethod
-    def preparation_title(counter):
+    def _preparation_title(counter):
         content = "Oтсканировано: {length} объявлений".format(length=counter)
         return content
 
     @staticmethod
-    def preparation_elem(elem):
+    def _preparation_elem(elem):
         text = """
         <div class="elem">
         <span class="id">№ {id}</span>
@@ -55,10 +55,10 @@ class ResultInHtml:
                today_views=elem.get("today_views"), rating=elem.get("rating"), reviews=elem.get("reviews"))
         return text
 
-    def preparation_elements(self, data):
+    def _preparation_elements(self, data):
         result = ""
         for elem in data:
-            text = self.preparation_elem(elem)
+            text = self._preparation_elem(elem)
             result += text
         return result
 
@@ -67,9 +67,9 @@ class ResultInHtml:
         today_views = data.get("today_views")
         reviews = data.get("reviews")
         with open(file_name, 'w', encoding='utf-8') as file:
-            content = self.header_content_pattern.sub(self.preparation_title(count), self.str_base_html)
-            content = self.total_views_pattern.sub(self.preparation_elements(total_views), content)
-            content = self.today_views_pattern.sub(self.preparation_elements(today_views), content)
-            content = self.review_count_pattern.sub(self.preparation_elements(reviews), content)
+            content = self._header_content_pattern.sub(self._preparation_title(count), self._str_base_html)
+            content = self._total_views_pattern.sub(self._preparation_elements(total_views), content)
+            content = self._today_views_pattern.sub(self._preparation_elements(today_views), content)
+            content = self._review_count_pattern.sub(self._preparation_elements(reviews), content)
             file.write(content)
 
