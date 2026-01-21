@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from connector.client import ClientMixin
-from objects.data_for_progress import DataForProgress
+from connector.data_for_progress import DataForProgress
 from tkinter import Widget
 
 

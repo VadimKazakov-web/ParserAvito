@@ -1,2 +1,2 @@
 # -*- coding: utf-8 -*-
-from objects.main import config, connector
+from objects.obj import config, connector
