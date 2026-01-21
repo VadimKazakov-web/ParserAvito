@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from tkinter_frontend.root.root import WindowRoot
+from tkinter_frontend import WindowRoot
 import logging
 
 window = WindowRoot("ParserAvitoSelenium")

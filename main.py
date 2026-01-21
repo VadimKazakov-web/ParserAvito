@@ -3,7 +3,7 @@ import threading
 import logging.handlers
 from settings import *
 from tkinter_frontend.window_root.build import window as tk_interface
-from tkinter_frontend.main import build_tk_interface
+from tkinter_frontend.build_tk import build_tk_interface
 from parser_avito_manager.open_pages_manager import ParserAvitoManager
 
 FORMAT = '[%(asctime)s] %(message)s'

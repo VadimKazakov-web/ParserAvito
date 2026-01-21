@@ -2,6 +2,6 @@
 from objects import config
 
 
-class Config:
+class ConfigClass:
     def __init__(self):
         self.config = config

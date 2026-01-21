@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-from tkinter_frontend.classes.config_class import Config
+from tkinter_frontend import ConfigClass
 from tkinter import *
 from tkinter import ttk, font
 
 
-class Base(Config):
+class Base(ConfigClass):
     font = None
     style_frame = None
 

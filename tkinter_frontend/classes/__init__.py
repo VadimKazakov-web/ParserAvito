@@ -1,0 +1,1 @@
+from .config_class import ConfigClass
