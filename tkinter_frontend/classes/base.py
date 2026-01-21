@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from tkinter_frontend import ConfigClass
+from tkinter_frontend.classes import ConfigClass
 from tkinter import *
 from tkinter import ttk, font
 

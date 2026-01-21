@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from tkinter import *
 from tkinter import ttk
-from tkinter_frontend.classes.base import Base
+from tkinter_frontend.classes import Base
 from tkinter_frontend.classes.hover_effect import HoverEffectMixin
 
 

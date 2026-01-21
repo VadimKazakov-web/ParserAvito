@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-from tkinter_frontend.classes.config_class import Config
+from tkinter_frontend.classes import ConfigClass
 
 
-class HoverEffectMixin(Config):
+class HoverEffectMixin(ConfigClass):
 
     def __init__(self, *args, **kwargs):
         super().__init__()

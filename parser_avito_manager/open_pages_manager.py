@@ -199,12 +199,8 @@ class ParserAvitoManager(CheckTitleMixin, TimeMeasurementMixin):
             except Exception as err:
                 connector.update_info(text=err)
                 traceback.print_exception(err)
+                self.__init__()
             else:
                 self.time_measurement_end()
                 connector.update_title(text="Время работы программы {}".format(self.time_measurement_result()))
-            finally:
                 self.__init__()
-
-
-
-
