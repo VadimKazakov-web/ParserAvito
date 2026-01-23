@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from tkinter_frontend.handlers.validation import ValidationVarClass
-from objects import config
+from settings import WIDTH_LABEL
 from objects import connector
 import datetime
 import os
@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 class HandlersClass(ValidationVarClass):
-    width_text = int(config.get("WIDTH_LABEL", 50))
+    width_text = WIDTH_LABEL
     data = {}
 
     @classmethod

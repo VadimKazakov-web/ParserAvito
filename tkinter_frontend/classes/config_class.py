@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from objects import config
 from settings import (FONT_SIZE, BACKGROUND_COLOR, FOREGROUND_COLOR,
                       BACKGROUND_COLOR_BTN, FOREGROUND_COLOR_BTN, WIDTH_LABEL, BACKGROUND_COLOR_ENTRY,
                       FOREGROUND_COLOR_ENTRY, COLOR_FOR_HOVER)
@@ -7,7 +6,6 @@ from settings import (FONT_SIZE, BACKGROUND_COLOR, FOREGROUND_COLOR,
 
 class ConfigClass:
     def __init__(self):
-        self.config = config
         self.FONT_SIZE = FONT_SIZE
         self.BACKGROUND_COLOR = BACKGROUND_COLOR
         self.FOREGROUND_COLOR = FOREGROUND_COLOR
