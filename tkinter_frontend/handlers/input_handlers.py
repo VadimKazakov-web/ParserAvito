@@ -3,8 +3,6 @@ from tkinter_frontend.handlers.validation import ValidationVarClass
 from settings import WIDTH_LABEL
 from objects import connector
 import datetime
-import os
-from pathlib import Path
 
 
 class HandlersClass(ValidationVarClass):
@@ -26,6 +24,12 @@ class HandlersClass(ValidationVarClass):
         else:
             icon.make_unchecked()
             label["text"] = "Недействительная ссылка, введите еще раз"
+
+    @classmethod
+    def default_filename(cls):
+        val = ValidationVarClass.validation_file_name(text=ValidationVarClass.file_name)
+        val = f'{val}_{cls.date_time_now()}.html'
+        return val
 
     @classmethod
     def filename_input_handler(cls, *args, **kwargs):

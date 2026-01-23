@@ -13,9 +13,10 @@ from exceptions import PushStopButton
 from objects import connector
 from settings import *
 from audio.audio_notes import AudioNotesMixin
+from tkinter_frontend import HandlersClass
 
 
-class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin):
+class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
 
     def __init__(self):
         self.driver = None
@@ -130,10 +131,20 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin):
             logging.info("new row in database: {}".format(self._count_new_row_in_database))
             logging.info("update row in database: {}".format(self._count_update_row_in_database))
             result_in_html = ResultInHtml()
-            result_in_html.write_result(file_name=self._file_name, data=self._total_data, count=self._counter)
-            connector.update_info(text="Результаты готовы")
-            webbrowser.open(self._file_name)
-            self.complete_audio()
+            try:
+                result_in_html.write_result(file_name=self._file_name, data=self._total_data, count=self._counter)
+            except OSError as err:
+                self._file_name = BASE_DIR / self.default_filename()
+                logging.warning(err)
+                text_info = "rename filename in default: {}".format(self._file_name)
+                logging.warning(text_info)
+                connector.update_info(text=text_info)
+                result_in_html.write_result(file_name=self._file_name, data=self._total_data, count=self._counter)
+            else:
+                connector.update_info(text="Результаты готовы")
+            finally:
+                webbrowser.open(str(self._file_name))
+                self.complete_audio()
 
     @staticmethod
     def _initial_text():

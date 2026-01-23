@@ -1,8 +1,11 @@
+import logging
 import re
 from parser_avito_manager.index import base
+from tkinter_frontend import HandlersClass
+from objects import connector
 
 
-class ResultInHtml:
+class ResultInHtml(HandlersClass):
 
     def __init__(self):
         self._header_content_pattern = re.compile(r'[{]title_content[}]')
@@ -66,10 +69,13 @@ class ResultInHtml:
         total_views = data.get("total_views")
         today_views = data.get("today_views")
         reviews = data.get("reviews")
-        with open(file_name, 'w', encoding='utf-8') as file:
-            content = self._header_content_pattern.sub(self._preparation_title(count), self._str_base_html)
-            content = self._total_views_pattern.sub(self._preparation_elements(total_views), content)
-            content = self._today_views_pattern.sub(self._preparation_elements(today_views), content)
-            content = self._review_count_pattern.sub(self._preparation_elements(reviews), content)
-            file.write(content)
+        file = open(file_name, 'w', encoding='utf-8')
+        content = self._header_content_pattern.sub(self._preparation_title(count), self._str_base_html)
+        content = self._total_views_pattern.sub(self._preparation_elements(total_views), content)
+        content = self._today_views_pattern.sub(self._preparation_elements(today_views), content)
+        content = self._review_count_pattern.sub(self._preparation_elements(reviews), content)
+        file.write(content)
+        file.close()
+
+
 
