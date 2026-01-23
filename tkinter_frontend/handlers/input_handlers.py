@@ -47,7 +47,7 @@ class HandlersClass(ValidationVarClass):
 
     @staticmethod
     def date_time_now():
-        datetime_now = str(datetime.datetime.today().strftime("%d·%m·%Y·%Hч·%Mмин"))
+        datetime_now = str(datetime.datetime.today().strftime("%d_%m_%Y_%Hч_%Mмин"))
         return datetime_now
 
     @classmethod

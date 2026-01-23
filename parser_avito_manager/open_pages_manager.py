@@ -135,8 +135,8 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
                 result_in_html.write_result(file_name=self._file_name, data=self._total_data, count=self._counter)
             except OSError as err:
                 self._file_name = BASE_DIR / self.default_filename()
-                logging.warning(err)
                 text_info = "rename filename in default: {}".format(self._file_name)
+                logging.warning(err)
                 logging.warning(text_info)
                 connector.update_info(text=text_info)
                 result_in_html.write_result(file_name=self._file_name, data=self._total_data, count=self._counter)
