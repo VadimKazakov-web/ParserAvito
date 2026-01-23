@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 from tkinter_frontend.classes.frame import Frame
-from tkinter_frontend.objects import frame
+from tkinter_frontend import frame
 
 
 frame_custom = Frame(column=0, row=6, master=frame)

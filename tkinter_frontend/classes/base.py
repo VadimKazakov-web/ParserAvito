@@ -15,9 +15,9 @@ class Base(ConfigClass):
         self.master = kwargs.get("master")
         self.instance = None
         if not Base.font:
-            Base.font = font.Font(family='TkDefaultFont', name='default', size=int(self.config.get("FONT_SIZE", 13)))
+            Base.font = font.Font(family='TkDefaultFont', name='default', size=self.FONT_SIZE)
         if not Base.style_frame:
-            Base.style_frame = ttk.Style().configure(style='TFrame', background=self.config.get("BACKGROUND_COLOR", "blue"))
+            Base.style_frame = ttk.Style().configure(style='TFrame', background=self.BACKGROUND_COLOR)
 
     def get_instance(self):
         return self.instance

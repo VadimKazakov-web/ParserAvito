@@ -8,14 +8,15 @@ from tkinter_frontend.classes.hover_effect import HoverEffectMixin
 class Entry(Base, HoverEffectMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        super(Base, self).__init__()
         self.text = StringVar()
         self.instance = EntryStock(master=self.master, font=Base.font,
-                                   background="#FFFFFF",
-                                   foreground="#000000",
+                                   background=self.BACKGROUND_COLOR_ENTRY,
+                                   foreground=self.FOREGROUND_COLOR_ENTRY,
                                    cursor="hand2",
                                    textvariable=self.text,
-                                   width=int(self.config.get("WIDTH_LABEL", 50)))
+                                   width=self.WIDTH_LABEL)
+        HoverEffectMixin.__init__(self, instance=self.instance, default_color=self.BACKGROUND_COLOR_ENTRY)
+
 
     def build(self):
         self.instance.grid(column=self.column, row=self.row, sticky=W)

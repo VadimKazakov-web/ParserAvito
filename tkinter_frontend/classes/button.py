@@ -8,12 +8,12 @@ from tkinter_frontend.classes.hover_effect import HoverEffectMixin
 class Button(Base, HoverEffectMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        super(Base, self).__init__()
         self.text = kwargs.get("text")
         self.instance = ttk.Label(master=self.master, text=self.text, font=Base.font,
-                                  background=self.config.get("FOREGROUND_COLOR", "white"),
-                                  foreground="#000000",
+                                  background=self.BACKGROUND_COLOR_BTN,
+                                  foreground=self.FOREGROUND_COLOR_BTN,
                                   anchor="center", cursor="hand2", style="Button.TLabel")
+        HoverEffectMixin.__init__(self, instance=self.instance, default_color=self.BACKGROUND_COLOR_BTN)
 
     def build(self):
         self.instance.grid(column=self.column, row=self.row, sticky=W)

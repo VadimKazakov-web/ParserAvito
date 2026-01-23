@@ -13,7 +13,7 @@ class LabelIcon(Base):
         self.style_verified = ttk.Style()
         self.style_verified.configure(style="IconValid.TLabel", foreground="#00FF00")
         self.instance = ttk.Label(master=self.master, text=self.text, font=Base.font, style="IconUnchecked.TLabel",
-                                  background=self.config.get("BACKGROUND_COLOR", "blue"))
+                                  background=self.BACKGROUND_COLOR)
 
     def build(self):
         self.instance.grid(column=self.column, row=self.row, sticky=W)

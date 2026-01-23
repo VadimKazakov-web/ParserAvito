@@ -6,8 +6,9 @@ class HoverEffectMixin(ConfigClass):
 
     def __init__(self, *args, **kwargs):
         super().__init__()
-        self.background = self.config.get("COLOR_FOR_HOVER")
-        self.default_color = self.config.get("FOREGROUND_COLOR")
+        self.instance = kwargs.get("instance")
+        self.background = self.COLOR_FOR_HOVER
+        self.default_color = kwargs.get("default_color", "white")
 
     def make_hover(self):
         self.instance.bind("<Enter>", func=self.hover_effect)
