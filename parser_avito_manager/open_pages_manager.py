@@ -98,9 +98,9 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin):
         self._total_data = result
 
     def _bond_methods(self):
+        self._initial_text()
         self._accepting_variables()
-        active_inactive_start_button.make_inactive_button()
-        active_inactive_stop_button.make_active_button()
+        connector.callbacks_for_start_prog()
         self._preparation_links()
         connector.update_progress(text="...")
         connector.update_title(text="...")
@@ -121,8 +121,7 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin):
             logging.warning(err)
         finally:
             self._exit()
-            active_inactive_start_button.make_active_button()
-            active_inactive_stop_button.make_inactive_button()
+            connector.callbacks_for_stop_prog()
 
     def _exit(self):
         self.driver.quit()
@@ -146,7 +145,6 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin):
     def start(self):
         while True:
             self.time_measurement_start()
-            self._initial_text()
             try:
                 self._bond_methods()
             except PushExit as err:
@@ -160,3 +158,4 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin):
                 self.time_measurement_end()
                 connector.update_title(text="Время работы программы {}".format(self.time_measurement_result()))
                 self.__init__()
+

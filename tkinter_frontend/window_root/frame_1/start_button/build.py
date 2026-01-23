@@ -17,5 +17,9 @@ active_inactive_start_button = ActiveInactiveButton(button_custom, button_instan
                                                                       widget=button_custom,
                                                                       master=frame))
 active_inactive_start_button.make_active_button()
+
+connector.set_callbacks_for_start_prog(active_inactive_start_button.make_inactive_button)
+connector.set_callbacks_for_stop_prog(active_inactive_start_button.make_active_button)
+
 button_instance.bind(connector.push_button_event, active_inactive_start_button.make_inactive_button)
 logging.info("{}: done".format(__name__))

@@ -21,6 +21,22 @@ class Connector(ClientMixin):
         self.push_button_event = "<<PushButton>>"
         self.exit_flag = False
         self.widget = None
+        self._callbacks_for_start_list = []
+        self._callbacks_for_stop_list = []
+
+    def callbacks_for_start_prog(self):
+        for elem in self._callbacks_for_start_list:
+            elem()
+
+    def callbacks_for_stop_prog(self):
+        for elem in self._callbacks_for_stop_list:
+            elem()
+
+    def set_callbacks_for_start_prog(self, callback):
+        self._callbacks_for_start_list.append(callback)
+
+    def set_callbacks_for_stop_prog(self, callback):
+        self._callbacks_for_stop_list.append(callback)
 
     def add_widget(self, widget: Widget):
         self.widget = widget
