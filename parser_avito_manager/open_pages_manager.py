@@ -98,8 +98,8 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
 
     def _bond_methods(self):
         self.driver = self.setup_options()
-        self._initial_text()
         self._accepting_variables()
+        self._initial_text()
         connector.callbacks_for_start_prog()
         self._preparation_links()
         connector.update_progress(text="...")
@@ -146,11 +146,13 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
                 webbrowser.open(str(self._file_name))
                 self.complete_audio()
 
-    @staticmethod
-    def _initial_text():
+    def _initial_text(self):
         logging.info("")
         logging.info("-" * 40)
         logging.info("start parser")
+        logging.info("base dir: {}".format(BASE_DIR))
+        logging.info("filename: {}".format(self._file_name))
+        logging.info("database dir: {}, \tdatabase: {}".format(DATABASE_DIR, DATABASE))
 
     def start(self):
         while True:
