@@ -9,8 +9,6 @@ from parser_avito_manager.open_announcement import OpenAnnouncement
 from parser_avito_manager.worker import Worker
 from selenium import webdriver
 from exceptions import BadInternetConnection, PushExit, BreakWhile
-from tkinter_frontend.window_root.frame_1.start_button.build import active_inactive_start_button
-from tkinter_frontend.window_root.frame_1.stop_button.build import active_inactive_stop_button
 from exceptions import PushStopButton
 from objects import connector
 from settings import *
@@ -20,7 +18,7 @@ from audio.audio_notes import AudioNotesMixin
 class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin):
 
     def __init__(self):
-        self.driver = self.setup_options()
+        self.driver = None
         self._url = None
         self._pages = None
         self._links_pages = None
@@ -98,6 +96,7 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin):
         self._total_data = result
 
     def _bond_methods(self):
+        self.driver = self.setup_options()
         self._initial_text()
         self._accepting_variables()
         connector.callbacks_for_start_prog()
