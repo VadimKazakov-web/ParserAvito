@@ -153,7 +153,7 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
         logging.info("base dir: {}".format(BASE_DIR))
         logging.info("filename: {}".format(self._file_name))
         logging.info("database dir: {}, "
-                     "\t\ndatabase: {}".format(DATABASE_DIR, DATABASE))
+                     "\n\tdatabase: {}".format(DATABASE_DIR, DATABASE))
 
     def start(self):
         while True:
