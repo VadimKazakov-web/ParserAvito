@@ -4,7 +4,7 @@ from tkinter_frontend.classes.frame import Frame
 from tkinter_frontend.classes.label import Label
 from tkinter import ttk, font
 from tkinter_frontend.window_root.frame_1.build import frame
-# from tkinter_frontend.window_root.frame_1.frame_for_info.label_info.utils import update_info
+from settings import FONT_SIZE
 
 frame_custom = Frame(column=0, row=7, master=frame)
 frame_custom.build()
@@ -15,7 +15,7 @@ frame_for_info["borderwidth"] = 3
 frame_for_info["relief"] = "ridge"
 
 font = font.Font()
-font.configure(size=12)
+font.configure(size=FONT_SIZE - 1)
 color = "#FFFF00"
 
 label_title = Label(master=frame_for_info, text="информация:", column=0, row=0)

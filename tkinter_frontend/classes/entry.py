@@ -17,9 +17,8 @@ class Entry(Base, HoverEffectMixin):
                                    width=self.WIDTH_LABEL)
         HoverEffectMixin.__init__(self, instance=self.instance, default_color=self.BACKGROUND_COLOR_ENTRY)
 
-
     def build(self):
-        self.instance.grid(column=self.column, row=self.row, sticky=W)
+        self.instance.grid(column=self.column, row=self.row, sticky=W + E)
         self.padding_configure()
         return self.text
 
