@@ -75,10 +75,6 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
     def _open_announcement(self, links):
         connector.update_info(text="Открываются объявления")
         instance = OpenAnnouncement(self.driver, links)
-        # if instance.total_result_db:
-        #     self._total_data = instance.total_result_db
-        #     self._counter = instance.count_row_db
-        #     return
         try:
             worker = Worker(driver=self.driver, instance=instance, links=self._links_announcement)
             instance = worker.start()

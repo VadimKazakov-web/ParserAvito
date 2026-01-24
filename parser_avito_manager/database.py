@@ -30,8 +30,6 @@ class DataBaseMixin:
         except sqlite3.OperationalError as err:
             logging.warning(err)
             if self._pattern_already_exists_table.search(err.args[0]):
-                # self.total_result_db = self.extraction_and_sorting()
-                # self._count_row_in_database()
                 self._delete_table()
                 self._create_database()
 
