@@ -29,7 +29,7 @@ class CheckTitleMixin(AudioNotesMixin):
                 time.sleep(3)
 
             elif cls._pattern_404.search(driver.title):
-                logging.info("\npage title: {}".format(driver.title))
+                # logging.info("\npage title: {}".format(driver.title))
                 # cls.page_not_found_audio()
                 raise BreakWhile
             else:
