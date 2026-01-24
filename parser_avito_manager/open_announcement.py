@@ -35,7 +35,7 @@ class OpenAnnouncement(OpenUrl, DataBaseMixin):
                 block = self._driver.find_element(by=By.CSS_SELECTOR, value=target_block)
                 html = block.get_attribute('innerHTML')
             except selenium.common.exceptions.StaleElementReferenceException:
-                logging.warning("StaleElementReferenceExceptionin\nfind_block(self)")
+                logging.warning("StaleElementReferenceException in\nfind_block(self)")
                 counter -= 1
             else:
                 return html
