@@ -79,6 +79,7 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
             worker = Worker(driver=self.driver, instance=instance, links=self._links_announcement)
             instance = worker.start()
         finally:
+            Worker.reset_time_start()
             self._total_data = instance.extraction_and_sorting()
             self._counter = instance.counter
             self._count_new_row_in_database = instance.count_new_row_in_database
@@ -102,8 +103,6 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
         self._initial_text()
         connector.callbacks_for_start_prog()
         self._preparation_links()
-        connector.update_progress(text="...")
-        connector.update_title(text="...")
         try:
             self._links_announcement = self._open_pages()
             self._open_announcement(self._links_announcement)
@@ -158,7 +157,6 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
 
     def start(self):
         while True:
-            self.time_measurement_start()
             try:
                 self._bond_methods()
             except PushExit as err:
@@ -169,6 +167,4 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
                 traceback.print_exception(err)
                 self.__init__()
             else:
-                self.time_measurement_end()
-                connector.update_title(text="Время работы программы {}".format(self.time_measurement_result()))
                 self.__init__()

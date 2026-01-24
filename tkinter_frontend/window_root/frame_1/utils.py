@@ -31,6 +31,11 @@ def update_info(*args, **kwargs):
     label_text_info["text"] = connector.get_info()
 
 
+def update_time(*args, **kwargs):
+    from tkinter_frontend.window_root.frame_1.progress_bar.build import label_time_origin
+    label_time_origin["text"] = connector.get_time()
+
+
 class ActiveInactiveButton:
 
     def __init__(self, button_custom, button_instance, callback):

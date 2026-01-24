@@ -18,10 +18,11 @@ class Connector(ClientMixin):
         self.create_progress_event = "<<CreateProgress>>"
         self.update_info_event = "<<UpdateInfo>>"
         self.update_progress_event = "<<UpdateProgress>>"
+        self.update_time_event = "<<UpdateTime>>"
         self.push_button_event = "<<PushButton>>"
         self.exit_flag = False
         self.widget = None
-        self._callbacks_for_start_list = []
+        self._callbacks_for_start_list = [self.update_time, self.update_info, self.update_title, self.update_progress]
         self._callbacks_for_stop_list = []
 
     def callbacks_for_start_prog(self):
@@ -41,20 +42,27 @@ class Connector(ClientMixin):
     def add_widget(self, widget: Widget):
         self.widget = widget
 
-    def update_info(self, text: str) -> None:
+    def update_time(self, text: str = "...") -> None:
+        self.data.set(key="time", val=text)
+        self.widget.event_generate(self.update_time_event)
+
+    def update_info(self, text: str = "...") -> None:
         self.data.set(key="info", val=text)
         self.widget.event_generate(self.update_info_event)
 
-    def update_progress(self, text: str) -> None:
+    def update_progress(self, text: str = "...") -> None:
         self.data.set(key="progress", val=text)
         self.widget.event_generate(self.update_progress_event)
 
-    def update_title(self, text: str) -> None:
+    def update_title(self, text: str = "...") -> None:
         self.data.set(key="page_title", val=text)
         self.widget.event_generate(self.update_progress_event)
 
     def get_info(self) -> None:
         return self.data.get(key="info")
+
+    def get_time(self) -> None:
+        return self.data.get(key="time")
 
     def get_progress(self) -> None:
         return self.data.get(key="progress")
