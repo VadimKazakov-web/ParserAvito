@@ -14,6 +14,8 @@ class DataBaseMixin:
         self.count_update_row_in_database = 0
         self._connection = None
         self._cursor = None
+        self.total_result_db = None
+        self.count_row_db = None
         self._pattern_already_exists_table = re.compile(r'already exists')
         self._database_init()
         self._count_row_in_database()
@@ -28,6 +30,8 @@ class DataBaseMixin:
         except sqlite3.OperationalError as err:
             logging.warning(err)
             if self._pattern_already_exists_table.search(err.args[0]):
+                # self.total_result_db = self.extraction_and_sorting()
+                # self._count_row_in_database()
                 self._delete_table()
                 self._create_database()
 
@@ -50,8 +54,8 @@ class DataBaseMixin:
         self._connect_database()
         res = self._cursor.execute("SELECT count(*) FROM announcement")
         result = res.fetchone()
-        count = int(result[0])
-        logging.info("count row in database: {}".format(count))
+        self.count_row_db = int(result[0])
+        logging.info("count row in database: {}".format(self.count_row_db))
 
     def insert_in_database(self, data):
         self._connect_database()
