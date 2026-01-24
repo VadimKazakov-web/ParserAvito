@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import queue
-
+from settings import TOP_ANNOUNCEMENT
 from objects import connector
 import logging
 import selenium.common
@@ -28,6 +28,8 @@ class Worker(CheckTitleMixin):
         self._links = links
         self._timeout_exceptions_counter = TIMEOUT_EXCEPTIONS_COUNTER
         self._timeout = TIMEOUT
+        self._counter = 0
+        self.total_data = None
 
     def _driver_and_timeout(self, url):
         check_chanel()
@@ -71,5 +73,5 @@ class Worker(CheckTitleMixin):
         else:
             connector.update_info(text="Продолжаю открывать web-страницы")
             connector.update_title(text=self._driver.title)
-            data = self._instance.start(url)
+            self._instance.start(url)
             raise BreakWhile

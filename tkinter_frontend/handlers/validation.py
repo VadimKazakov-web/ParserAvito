@@ -13,7 +13,7 @@ class ValidationVarClass:
     url = 'https://www.avito.ru/moskva/knigi_i_zhurnaly?cd=1'
     file_name = 'result'
     pages = 2
-    max_pages = 25
+    max_pages = 100
     _sub = "_"
     _pattern_for_check_url = re.compile(pattern=r'^https://www.avito.ru/.+')
     _pattern_space = re.compile(pattern=r'\s')

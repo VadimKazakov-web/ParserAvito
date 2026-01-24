@@ -76,10 +76,10 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
         connector.update_info(text="Открываются объявления")
         instance = OpenAnnouncement(self.driver, links)
         try:
-            worker = Worker(driver=self.driver, instance=instance, links=self._links_pages)
+            worker = Worker(driver=self.driver, instance=instance, links=self._links_announcement)
             instance = worker.start()
         finally:
-            self._total_data = instance.data
+            self._total_data = instance.extraction_and_sorting()
             self._counter = instance.counter
             self._count_new_row_in_database = instance.count_new_row_in_database
             self._count_update_row_in_database = instance.count_update_row_in_database
@@ -105,8 +105,8 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
         connector.update_progress(text="...")
         connector.update_title(text="...")
         try:
-            self._links_pages = self._open_pages()
-            self._open_announcement(self._links_pages)
+            self._links_announcement = self._open_pages()
+            self._open_announcement(self._links_announcement)
         except selenium.common.exceptions.WebDriverException as err:
             logging.warning(err)
             connector.update_info(text="WebDriverException, Проверьте интернет соединение")
@@ -117,6 +117,7 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
             logging.info(err)
             connector.update_info(text="Остановка")
         except Exception as err:
+            traceback.print_exception(err)
             logging.warning("err in bond_methods()")
             logging.warning(err)
         finally:
@@ -126,7 +127,7 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
     def _exit(self):
         self.driver.quit()
         if self._total_data:
-            self._sort_total_data(top=TOP_ANNOUNCEMENT)
+            # self._sort_total_data(top=TOP_ANNOUNCEMENT)
             logging.info("+++ scanned: {} +++".format(self._counter))
             logging.info("new row in database: {}".format(self._count_new_row_in_database))
             logging.info("update row in database: {}".format(self._count_update_row_in_database))
@@ -144,7 +145,7 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
                 connector.update_info(text="Результаты готовы")
             finally:
                 webbrowser.open(str(self._file_name))
-                self.complete_audio()
+                # self.complete_audio()
 
     def _initial_text(self):
         logging.info("")

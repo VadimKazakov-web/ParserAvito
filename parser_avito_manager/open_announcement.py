@@ -94,7 +94,6 @@ class OpenAnnouncement(OpenUrl, DataBaseMixin):
             result["reviews"] = 0
 
         result["link"] = self._url
-        self._data.append(result)
         return result
 
     def _update_progress(self):
@@ -108,6 +107,6 @@ class OpenAnnouncement(OpenUrl, DataBaseMixin):
         if blocks:
             data = self.collect_data(blocks)
             if data:
-                self.record_in_database(data)
+                self.insert_in_database(data)
                 self._update_progress()
                 return data

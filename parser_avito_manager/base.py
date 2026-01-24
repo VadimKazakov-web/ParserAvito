@@ -13,6 +13,13 @@ class OpenUrl:
     def data(self):
         return self._data
 
+    @data.setter
+    def data(self, value):
+        if isinstance(value, list):
+            self._data = value
+        else:
+            raise TypeError('data must be a list')
+
     def find_blocks(self):
         pass
 
