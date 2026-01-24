@@ -1,8 +1,6 @@
-import logging
 import re
 from parser_avito_manager.index import base
 from tkinter_frontend import HandlersClass
-from objects import connector
 
 
 class ResultInHtml(HandlersClass):
