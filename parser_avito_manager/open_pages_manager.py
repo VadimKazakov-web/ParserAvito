@@ -172,4 +172,3 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
                 self.time_measurement_end()
                 connector.update_title(text="Время работы программы {}".format(self.time_measurement_result()))
                 self.__init__()
-

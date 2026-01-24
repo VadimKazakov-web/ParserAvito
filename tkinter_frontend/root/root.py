@@ -29,7 +29,7 @@ class WindowRoot:
     def exit(self):
         connector.post_data(data="exit")
         self.root.destroy()
-        time.sleep(4)
+        time.sleep(5)
         # программа завершается корректно только так
         os._exit(0)
 
