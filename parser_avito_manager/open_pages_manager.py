@@ -17,7 +17,9 @@ from tkinter_frontend import HandlersClass
 
 
 class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
-
+    """
+    Класс в котором заключена главная логика работы программы
+    """
     def __init__(self):
         self.driver = None
         self._url = None
@@ -34,6 +36,9 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
 
     @staticmethod
     def setup_options():
+        """
+        Создание драйвера для работы с браузером
+        """
         options = webdriver.ChromeOptions()
         options.add_argument("--no-sandbox")
         options.timeouts = {"pageLoad": 30000}
@@ -46,26 +51,41 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
         return driver
 
     def _accepting_variables(self):
+        """
+        Получение переменных из интерфейса
+        """
         self._data_from_tk = connector.channel_for_variables.get()
         logging.info("data from tk: {}".format(self._data_from_tk))
         if isinstance(self._data_from_tk, dict):
             self._setup_variables()
         elif self._data_from_tk == "exit":
+            """
+            Нажатие кнопки "выход"
+            """
             self.driver.quit()
             raise PushExit
 
     def _setup_variables(self):
+        """
+        Установка переменных, полученных из интерфейса tkinter
+        """
         self._url = self._data_from_tk.get("link")
         filename = self._data_from_tk.get("filename")
         self._file_name = self._base_dir / Path(filename)
         self._pages = int(self._data_from_tk.get("count_pages"))
 
     def _preparation_links(self):
+        """
+        Подготовка ссылок на страницы
+        """
         prep_links_instance = PreparationLinksForPages(url=self._url, pages=self._pages)
         prep_links_instance.start()
         self._links_pages = prep_links_instance.result
 
     def _open_pages(self):
+        """
+        Открытие страниц и получение ссылок на объявления для дальнейшей работы
+        """
         connector.update_info(text="Открываются страницы")
         instance = OpenPage(self.driver)
         worker = Worker(driver=self.driver, instance=instance, links=self._links_pages)
@@ -73,6 +93,9 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
         return instance.data
 
     def _open_announcement(self, links):
+        """
+        Открытие объявлений и получение конечных результатов в self._total_data = instance.extraction_and_sorting()
+        """
         connector.update_info(text="Открываются объявления")
         instance = OpenAnnouncement(self.driver, links)
         try:
@@ -86,6 +109,9 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
             self._count_update_row_in_database = instance.count_update_row_in_database
 
     def _sort_total_data(self, top):
+        """
+        Не используется
+        """
         length = len(self._total_data)
         connector.update_info(text="Выполняется сортировка")
         if length < top:
@@ -124,6 +150,12 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
             connector.callbacks_for_stop_prog()
 
     def _exit(self):
+        """
+        Метод реализует корректное завершение программы
+        """
+        """
+        Закрытие браузера
+        """
         self.driver.quit()
         if self._total_data:
             # self._sort_total_data(top=TOP_ANNOUNCEMENT)
@@ -132,8 +164,14 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
             logging.info("update row in database: {}".format(self._count_update_row_in_database))
             result_in_html = ResultInHtml()
             try:
+                """
+                Запись результата в файл
+                """
                 result_in_html.write_result(file_name=self._file_name, data=self._total_data, count=self._counter)
             except OSError as err:
+                """
+                Если название файла некорректное, использовать название по умолчанию
+                """
                 self._file_name = BASE_DIR / self.default_filename()
                 text_info = "rename filename in default: {}".format(self._file_name)
                 logging.warning(err)
@@ -143,10 +181,16 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
             else:
                 connector.update_info(text="Результаты готовы")
             finally:
+                """
+                Открытие результирующего файла в браузере по умолчанию
+                """
                 webbrowser.open(str(self._file_name))
                 # self.complete_audio()
 
     def _initial_text(self):
+        """
+        Начальные сообщения с какой-то информацией
+        """
         logging.info("")
         logging.info("-" * 40)
         logging.info("start parser")
@@ -156,6 +200,10 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
                      "\n\tdatabase: {}".format(DATABASE_DIR, DATABASE))
 
     def start(self):
+        """
+        Запуск цикла программы, отлов нажатия кнопки "выход",
+        отлов нетипичной ошибки в except Exception as err, и повторная инициализация перед новой итерации
+        """
         while True:
             try:
                 self._bond_methods()

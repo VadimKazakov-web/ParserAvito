@@ -26,10 +26,16 @@ class Connector(ClientMixin):
         self._callbacks_for_stop_list = []
 
     def callbacks_for_start_prog(self):
+        """
+        коллбэки выпоняются перед началом работы программы
+        """
         for elem in self._callbacks_for_start_list:
             elem()
 
     def callbacks_for_stop_prog(self):
+        """
+        коллбэки выпоняются после завершения главного цикла программы
+        """
         for elem in self._callbacks_for_stop_list:
             elem()
 

@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 import winsound
 
+"""
+Не используется
+"""
+
 
 class AudioNotesMixin:
 
@@ -18,7 +22,6 @@ class AudioNotesMixin:
 
         """
         Звук при ошибке 404
-        :return:
         """
 
         winsound.PlaySound('SystemHand', winsound.SND_ALIAS)
@@ -29,7 +32,6 @@ class AudioNotesMixin:
 
         """
         Звук при ограничении ip
-        :return:
         """
 
         winsound.PlaySound('SystemHand', winsound.SND_ALIAS)
@@ -40,7 +42,6 @@ class AudioNotesMixin:
 
         """
         Звук при перезагрузке страницы, если данные не загрузились
-        :return:
         """
 
         winsound.PlaySound('SystemHand', winsound.SND_ALIAS)
@@ -51,7 +52,6 @@ class AudioNotesMixin:
 
         """
         Звук когда результаты готовы
-        :return:
         """
 
         winsound.Beep(300, 300)

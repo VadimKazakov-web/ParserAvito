@@ -6,6 +6,11 @@ import re
 
 
 class DataBaseMixin:
+    """
+    Класс для работы с базой данных.
+    При инициализации удаляется старая таблица и создаётся новая.
+    Созданная таблица используется для хранения данных обьявлений полученных из одной сессии.
+    """
 
     def __init__(self):
         self._db = DATABASE
@@ -14,17 +19,22 @@ class DataBaseMixin:
         self.count_update_row_in_database = 0
         self._connection = None
         self._cursor = None
-        self.total_result_db = None
         self.count_row_db = None
         self._pattern_already_exists_table = re.compile(r'already exists')
         self._database_init()
         self._count_row_in_database()
 
     def _connect_database(self):
+        """
+        Подключение к базе данных
+        """
         self._connection = sqlite3.connect(self._db)
         self._cursor = self._connection.cursor()
 
     def _database_init(self):
+        """
+        Если таблица существует, удаляется и создаётся новая
+        """
         try:
             self._create_database()
         except sqlite3.OperationalError as err:
@@ -34,14 +44,20 @@ class DataBaseMixin:
                 self._create_database()
 
     def _create_database(self):
+        """
+        Создание новой таблицы
+        """
         self._connect_database()
-        # привязки (? или :name) не работают
+        # привязки (? или :name) не работают c CREATE TABLE
         self._cursor.execute(
             "CREATE TABLE {} (id INTEGER, title TEXT, link TEXT, total_views, today_views, rating, reviews);".format(self._table_name))
         self._connection.commit()
         self._connection.close()
 
     def _delete_table(self):
+        """
+        Удаление таблицы
+        """
         self._connect_database()
         self._cursor.execute(
             "DROP TABLE {}".format(self._table_name))
@@ -49,6 +65,9 @@ class DataBaseMixin:
         self._connection.close()
 
     def _count_row_in_database(self):
+        """
+        Подсчёт объявлений в таблице
+        """
         self._connect_database()
         res = self._cursor.execute("SELECT count(*) FROM announcement")
         result = res.fetchone()
@@ -56,6 +75,9 @@ class DataBaseMixin:
         logging.info("count row in database: {}".format(self.count_row_db))
 
     def insert_in_database(self, data):
+        """
+        Вставка данных одного объявления в таблицу
+        """
         self._connect_database()
         self._cursor.execute(
             "INSERT INTO announcement VALUES(:id, :title, :link, :total_views, :today_views, :rating, :reviews);",
@@ -64,7 +86,11 @@ class DataBaseMixin:
         self._connection.commit()
         self._connection.close()
 
-    def _list_tuple_in_list_dict(self, data):
+    @staticmethod
+    def _list_tuple_in_list_dict(data):
+        """
+        Конвертация списка кортежей в список словарей
+        """
         result_list = []
         for _id, title, link, total_views, today_views, rating, reviews in data:
             result_list.append({
@@ -79,6 +105,9 @@ class DataBaseMixin:
         return result_list
 
     def extraction_and_sorting(self):
+        """
+        Получение отсортированных объявлений
+        """
         self._connect_database()
 
         total_views_res = self._cursor.execute("SELECT * FROM {} ORDER BY total_views DESC LIMIT {};".format(
@@ -102,6 +131,9 @@ class DataBaseMixin:
         return result
 
     def record_in_database(self, data):
+        """
+        Не используется
+        """
         self._connect_database()
         res = self._cursor.execute("SELECT * FROM announcement WHERE id = :id;", data)
         result = res.fetchone()

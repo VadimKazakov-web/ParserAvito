@@ -1,7 +1,6 @@
 import logging
 import selenium.common
 from selenium.webdriver.common.by import By
-
 from objects import connector
 from parser_avito_manager.base import OpenUrl
 import re
@@ -9,6 +8,9 @@ from parser_avito_manager.database import DataBaseMixin
 
 
 class OpenAnnouncement(OpenUrl, DataBaseMixin):
+    """
+    Класс работает с обьявлением
+    """
 
     def __init__(self, driver, links):
         super().__init__(driver)
@@ -28,7 +30,10 @@ class OpenAnnouncement(OpenUrl, DataBaseMixin):
         self.counter_stale_element_exception = 3
         self.counter = 0
 
-    def find_block(self, target_block):
+    def _find_block(self, target_block):
+        """
+        Поиск блока html по селектору
+        """
         counter = self.counter_stale_element_exception
         while counter:
             try:
@@ -40,14 +45,20 @@ class OpenAnnouncement(OpenUrl, DataBaseMixin):
             else:
                 return html
 
-    def find_blocks(self):
+    def _find_blocks(self):
+        """
+        Поиск левого и правого блока html по селектору
+        """
         data = {}
         for target in self._target_block, self._target_block_seller:
-            html = self.find_block(target_block=target.get("block"))
+            html = self._find_block(target_block=target.get("block"))
             data[target.get("name")] = html
         return data
 
-    def collect_data(self, blocks):
+    def _collect_data(self, blocks):
+        """
+        Поиск нужных данных на странице обьявления
+        """
         block, block_seller = blocks.get("left"), blocks.get("right")
         result = {}
         end_point = None
@@ -55,6 +66,7 @@ class OpenAnnouncement(OpenUrl, DataBaseMixin):
         if result_title:
             title = result_title.group("title")
             result["title"] = title
+            # используются end_point на html странице, для поиска по шаблону по "цепочке"
             end_point = result_title.end()
 
         result_id = self.pattern_id.search(block[end_point:])
@@ -102,11 +114,6 @@ class OpenAnnouncement(OpenUrl, DataBaseMixin):
         connector.update_progress(text=progress_text)
 
     def start(self, url: str):
-        self._url = url
-        blocks = self.find_blocks()
-        if blocks:
-            data = self.collect_data(blocks)
-            if data:
-                self.insert_in_database(data)
-                self._update_progress()
-                return data
+        data = super().start(url)
+        self.insert_in_database(data)
+        self._update_progress()

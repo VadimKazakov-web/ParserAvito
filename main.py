@@ -8,7 +8,7 @@ from parser_avito_manager.open_pages_manager import ParserAvitoManager
 
 FORMAT = '[%(asctime)s] %(message)s'
 formatter = logging.Formatter(FORMAT)
-file_handler = False
+file_handler = True
 if not file_handler:
     handler = logging.StreamHandler()
 else:

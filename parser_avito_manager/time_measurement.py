@@ -2,6 +2,9 @@ import datetime
 
 
 class TimeMeasurementMixin:
+    """
+    Класс используется для измерения времени работы программы
+    """
 
     time_start = None
     time_end = None

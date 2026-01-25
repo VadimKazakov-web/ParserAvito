@@ -2,6 +2,9 @@
 
 
 class OpenUrl:
+    """
+    Родительский класс для OpenPage и OpenAnnouncement
+    """
 
     def __init__(self, driver):
         self._driver = driver
@@ -20,7 +23,7 @@ class OpenUrl:
         else:
             raise TypeError('data must be a list')
 
-    def find_blocks(self):
+    def _find_blocks(self):
         pass
 
     def _collect_data(self, blocks):
@@ -28,7 +31,8 @@ class OpenUrl:
 
     def start(self, url):
         self._url = url
-        blocks = self.find_blocks()
+        blocks = self._find_blocks()
         if blocks:
-            data = self.collect_data(blocks)
-            return data
+            data = self._collect_data(blocks)
+            if data:
+                return data

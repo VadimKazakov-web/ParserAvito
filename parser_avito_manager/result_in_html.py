@@ -4,6 +4,9 @@ from tkinter_frontend import HandlersClass
 
 
 class ResultInHtml(HandlersClass):
+    """
+    Запись результатов в html файл
+    """
 
     def __init__(self):
         self._header_content_pattern = re.compile(r'[{]title_content[}]')
