@@ -6,5 +6,5 @@
 *.wav
 /build
 /dist
-/ParserAvitoOutput/
-/proxi_extension/
+/ParserAvitoOutput
+/proxi_extension
