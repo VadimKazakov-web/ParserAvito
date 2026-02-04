@@ -54,7 +54,8 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
         """
         Получение переменных из интерфейса
         """
-        self._data_from_tk = connector.channel_for_variables.get()
+        # блокирующий метод
+        self._data_from_tk = connector.get_data_from_interface()
         logging.info("data from tk: {}".format(self._data_from_tk))
         if isinstance(self._data_from_tk, dict):
             self._setup_variables()
@@ -88,7 +89,7 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
         """
         connector.update_info(text="Открываются страницы")
         instance = OpenPage(self.driver)
-        worker = Worker(driver=self.driver, instance=instance, links=self._links_pages)
+        worker = Worker(driver=self.driver, instance=instance, links=self._links_pages, start_method=instance.start)
         instance = worker.start()
         return instance.data
 
@@ -99,7 +100,7 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
         connector.update_info(text="Открываются объявления")
         instance = OpenAnnouncement(self.driver, links)
         try:
-            worker = Worker(driver=self.driver, instance=instance, links=self._links_announcement)
+            worker = Worker(driver=self.driver, instance=instance, links=self._links_announcement, start_method=instance.start)
             instance = worker.start()
         finally:
             Worker.reset_time_start()

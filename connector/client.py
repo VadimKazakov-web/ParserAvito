@@ -21,3 +21,8 @@ class ClientMixin:
     def post_data_tk(cls, *args, **kwargs):
         data = kwargs.get("data")
         cls.channel_for_tkinter.put(data)
+
+    @classmethod
+    def get_data_from_interface(cls, block=True):
+        data = cls.channel_for_backend.get(block=block)
+        return data

@@ -15,7 +15,7 @@ def check_chanel():
     Проверяет очередь данных, в частности, не нажата ли кнопка "Stop"
     """
     try:
-        data = connector.channel_for_variables.get(block=False)
+        data = connector.get_data_from_interface(block=False)
     except queue.Empty:
         return
     else:
@@ -31,11 +31,12 @@ class Worker(CheckTitleMixin, TimeMeasurementMixin):
     Ловит ошибки таймаутов и перезагружает страницу.
     """
 
-    def __init__(self, driver, instance, links):
+    def __init__(self, driver, instance, links, start_method):
         TimeMeasurementMixin.time_measurement_start()
         self._driver = driver
         self._instance = instance
         self._links = links
+        self._start = start_method
         self._timeout_exceptions_counter = TIMEOUT_EXCEPTIONS_COUNTER
         self._timeout = TIMEOUT
         self._counter = 0
@@ -108,6 +109,7 @@ class Worker(CheckTitleMixin, TimeMeasurementMixin):
         """
         Отлов типичных ошибок
         """
+        start_method = self._start
         try:
             self._driver_and_timeout(url)
             self.check_title(self._driver)
@@ -125,5 +127,5 @@ class Worker(CheckTitleMixin, TimeMeasurementMixin):
             """
             Если нет ошибок, собрать данные со страницы
             """
-            self._instance.start(url)
+            self._start(url)
             raise BreakWhile
