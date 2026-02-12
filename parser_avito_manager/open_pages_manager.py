@@ -168,7 +168,7 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
                 """
                 Запись результата в файл
                 """
-                result_in_html.write_result(file_name=self._file_name, data=self._total_data, count=self._counter)
+                result_in_html.write_result(file_name=self._file_name, data=self._total_data, count=self._count_new_row_in_database)
             except OSError as err:
                 """
                 Если название файла некорректное, использовать название по умолчанию

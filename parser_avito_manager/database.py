@@ -79,11 +79,14 @@ class DataBaseMixin:
         Вставка данных одного объявления в таблицу
         """
         self._connect_database()
-        self._cursor.execute(
-            "INSERT INTO announcement VALUES(:id, :title, :link, :total_views, :today_views, :rating, :reviews);",
-            data)
-        self.count_new_row_in_database += 1
-        self._connection.commit()
+        res = self._cursor.execute("SELECT * FROM announcement WHERE id = :id;", data)
+        result = res.fetchone()
+        if not result:
+            self._cursor.execute(
+                "INSERT INTO announcement VALUES(:id, :title, :link, :total_views, :today_views, :rating, :reviews);",
+                data)
+            self.count_new_row_in_database += 1
+            self._connection.commit()
         self._connection.close()
 
     @staticmethod
