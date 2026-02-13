@@ -3,12 +3,11 @@ import logging
 import traceback
 import webbrowser
 import selenium.common
-from parser_avito_manager import PreparationLinksForPages, ResultInHtml, TimeMeasurementMixin
+from parser_avito_manager import ResultInHtml, TimeMeasurementMixin, SetupVarMixin
 from parser_avito_manager.open_page import OpenPage
 from parser_avito_manager.open_announcement import OpenAnnouncement
 from parser_avito_manager.worker import Worker
-from selenium import webdriver
-from exceptions import BadInternetConnection, PushExit, BreakWhile
+from exceptions import BadInternetConnection, PushExit
 from exceptions import PushStopButton
 from objects import connector
 from settings import *
@@ -16,127 +15,56 @@ from audio.audio_notes import AudioNotesMixin
 from tkinter_frontend import HandlersClass
 
 
-class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
+def open_pages(*args, **kwargs):
+    """
+    Открытие страниц и получение ссылок на объявления для дальнейшей работы
+    """
+    driver = kwargs.get("driver")
+    links_dict = kwargs.get("links_dict")
+    connector.update_info(text="Открываются страницы")
+    instance = OpenPage(driver)
+    worker = Worker(driver=driver, instance=instance, links_dict=links_dict,
+                    start_method=instance.start)
+    instance = worker.start()
+    return instance.data
+
+
+def open_announcement(*args, **kwargs):
+    """
+    Открытие объявлений и получение конечных результатов в self._total_data = instance.extraction_and_sorting()
+    """
+    driver = kwargs.get("driver")
+    links = kwargs.get("links")
+    connector.update_info(text="Открываются объявления")
+    instance = OpenAnnouncement(driver, links)
+    try:
+        worker = Worker(driver=driver, instance=instance, links=links,
+                        start_method=instance.start)
+        instance = worker.start()
+    finally:
+        Worker.reset_time_start()
+        return {
+            "total_data": instance.extraction_and_sorting(),
+            "count_new_row_in_database": instance.count_new_row_in_database,
+        }
+
+
+class ParserAvitoManager(SetupVarMixin, TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
     """
     Класс в котором заключена главная логика работы программы
     """
     def __init__(self):
-        self.driver = None
-        self._url = None
-        self._pages = None
-        self._links_pages = None
-        self._links_pages_dict = None
-        self._links_announcement = None
-        self._file_name = None
-        self._data_from_tk = None
-        self._total_data = []
-        self._base_dir = BASE_DIR
+        SetupVarMixin.__init__(self)
+        self._total_data = None
         self._count_new_row_in_database = 0
-        self._count_update_row_in_database = 0
-        self._counter = 0
-
-    @staticmethod
-    def setup_options():
-        """
-        Создание драйвера для работы с браузером
-        """
-        options = webdriver.ChromeOptions()
-        options.add_argument("--no-sandbox")
-        options.timeouts = {"pageLoad": 30000}
-        options.page_load_strategy = 'eager'
-        options.browser_version = 'stable'
-        # assert options.capabilities['browserVersion'] == 'stable'
-        # assert options.capabilities['browserVersion'] == '142'
-        driver = webdriver.Chrome(options=options)
-        driver.implicitly_wait(60)
-        return driver
-
-    def _accepting_variables(self):
-        """
-        Получение переменных из интерфейса
-        """
-        # блокирующий метод
-        self._data_from_tk = connector.get_data_from_interface()
-        logging.info("data from tk: {}".format(self._data_from_tk))
-        if isinstance(self._data_from_tk, dict):
-            self._setup_variables()
-        elif self._data_from_tk == "exit":
-            """
-            Нажатие кнопки "выход"
-            """
-            self.driver.quit()
-            raise PushExit
-
-    def _setup_variables(self):
-        """
-        Установка переменных, полученных из интерфейса tkinter
-        """
-        self._url = self._data_from_tk.get("link")
-        filename = self._data_from_tk.get("filename")
-        self._file_name = self._base_dir / Path(filename)
-        self._pages = int(self._data_from_tk.get("count_pages"))
-
-    def _preparation_links(self):
-        """
-        Подготовка ссылок на страницы
-        """
-        prep_links_instance = PreparationLinksForPages(url=self._url, pages=self._pages)
-        prep_links_instance.start()
-        self._links_pages = prep_links_instance.result
-        self._links_pages_dict = prep_links_instance.result_dict
-
-    def _open_pages(self):
-        """
-        Открытие страниц и получение ссылок на объявления для дальнейшей работы
-        """
-        connector.update_info(text="Открываются страницы")
-        instance = OpenPage(self.driver)
-        worker = Worker(driver=self.driver, instance=instance, links_dict=self._links_pages_dict,
-                        start_method=instance.start)
-        instance = worker.start()
-        return instance.data
-
-    def _open_announcement(self, links):
-        """
-        Открытие объявлений и получение конечных результатов в self._total_data = instance.extraction_and_sorting()
-        """
-        connector.update_info(text="Открываются объявления")
-        instance = OpenAnnouncement(self.driver, links)
-        try:
-            worker = Worker(driver=self.driver, instance=instance, links=links,
-                            start_method=instance.start)
-            instance = worker.start()
-        finally:
-            Worker.reset_time_start()
-            self._total_data = instance.extraction_and_sorting()
-            self._counter = instance.counter
-            self._count_new_row_in_database = instance.count_new_row_in_database
-            self._count_update_row_in_database = instance.count_update_row_in_database
-
-    def _sort_total_data(self, top):
-        """
-        Не используется
-        """
-        length = len(self._total_data)
-        connector.update_info(text="Выполняется сортировка")
-        if length < top:
-            top = length
-        result = {
-            "total_views": sorted(self._total_data, key=lambda e: e.get("total_views", 0), reverse=True)[0:top],
-            "today_views": sorted(self._total_data, key=lambda e: e.get("today_views", 0), reverse=True)[0:top],
-            "reviews": sorted(self._total_data, key=lambda e: e.get("reviews", 0), reverse=True)[0:top],
-        }
-        self._total_data = result
 
     def _bond_methods(self):
-        self.driver = self.setup_options()
-        self._accepting_variables()
-        self._initial_text()
+        self.setup_var()
         connector.callbacks_for_start_prog()
-        self._preparation_links()
+        data = None
         try:
-            self._links_announcement = self._open_pages()
-            self._open_announcement(self._links_announcement)
+            links_announcement = open_pages(driver=self.driver, links_dict=self._links_dict)
+            data = open_announcement(driver=self.driver, links=links_announcement)
         except selenium.common.exceptions.WebDriverException as err:
             logging.warning(err)
             connector.update_info(text="WebDriverException, Проверьте интернет соединение")
@@ -151,6 +79,8 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
             logging.warning("err in bond_methods()")
             logging.warning(err)
         finally:
+            self._total_data = data.get("total_data")
+            self._count_new_row_in_database = data.get("count_new_row_in_database")
             self._exit()
             connector.callbacks_for_stop_prog()
 
@@ -163,16 +93,14 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
         """
         self.driver.quit()
         if self._total_data:
-            # self._sort_total_data(top=TOP_ANNOUNCEMENT)
-            logging.info("+++ scanned: {} +++".format(self._counter))
             logging.info("new row in database: {}".format(self._count_new_row_in_database))
-            logging.info("update row in database: {}".format(self._count_update_row_in_database))
             result_in_html = ResultInHtml()
             try:
                 """
                 Запись результата в файл
                 """
-                result_in_html.write_result(file_name=self._file_name, data=self._total_data, count=self._count_new_row_in_database)
+                result_in_html.write_result(file_name=self._file_name, data=self._total_data,
+                                            count=self._count_new_row_in_database)
             except OSError as err:
                 """
                 Если название файла некорректное, использовать название по умолчанию
@@ -182,7 +110,8 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
                 logging.warning(err)
                 logging.warning(text_info)
                 connector.update_info(text=text_info)
-                result_in_html.write_result(file_name=self._file_name, data=self._total_data, count=self._counter)
+                result_in_html.write_result(file_name=self._file_name, data=self._total_data,
+                                            count=self._count_new_row_in_database)
             else:
                 connector.update_info(text="Результаты готовы")
             finally:
@@ -191,18 +120,6 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
                 """
                 webbrowser.open(str(self._file_name))
                 # self.complete_audio()
-
-    def _initial_text(self):
-        """
-        Начальные сообщения с какой-то информацией
-        """
-        logging.info("")
-        logging.info("-" * 40)
-        logging.info("start parser")
-        logging.info("base dir: {}".format(BASE_DIR))
-        logging.info("filename: {}".format(self._file_name))
-        logging.info("database dir: {}, "
-                     "\n\tdatabase: {}".format(DATABASE_DIR, DATABASE))
 
     def start(self):
         """
