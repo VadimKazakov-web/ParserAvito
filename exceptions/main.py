@@ -18,6 +18,20 @@ class BreakWhile(Exception):
             return "BreakWhile"
 
 
+class MaxPageError(Exception):
+    def __init__(self, *args):
+        if args:
+            self.message = args[0]
+        else:
+            self.message = None
+
+    def __str__(self):
+        if self.message:
+            return "MaxPageError, {}".format(self.message)
+        else:
+            return "BreakWhile, The maximum number of pages has been reached"
+
+
 class NamedParametersError(Exception):
     def __init__(self, *args):
         if args:

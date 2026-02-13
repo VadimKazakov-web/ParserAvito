@@ -25,6 +25,7 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
         self._url = None
         self._pages = None
         self._links_pages = None
+        self._links_pages_dict = None
         self._links_announcement = None
         self._file_name = None
         self._data_from_tk = None
@@ -82,6 +83,7 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
         prep_links_instance = PreparationLinksForPages(url=self._url, pages=self._pages)
         prep_links_instance.start()
         self._links_pages = prep_links_instance.result
+        self._links_pages_dict = prep_links_instance.result_dict
 
     def _open_pages(self):
         """
@@ -89,7 +91,8 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
         """
         connector.update_info(text="Открываются страницы")
         instance = OpenPage(self.driver)
-        worker = Worker(driver=self.driver, instance=instance, links=self._links_pages, start_method=instance.start)
+        worker = Worker(driver=self.driver, instance=instance, links_dict=self._links_pages_dict,
+                        start_method=instance.start)
         instance = worker.start()
         return instance.data
 
@@ -100,7 +103,8 @@ class ParserAvitoManager(TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
         connector.update_info(text="Открываются объявления")
         instance = OpenAnnouncement(self.driver, links)
         try:
-            worker = Worker(driver=self.driver, instance=instance, links=self._links_announcement, start_method=instance.start)
+            worker = Worker(driver=self.driver, instance=instance, links=links,
+                            start_method=instance.start)
             instance = worker.start()
         finally:
             Worker.reset_time_start()

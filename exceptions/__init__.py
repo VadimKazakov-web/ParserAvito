@@ -1,2 +1,2 @@
 from exceptions.main import (NamedParametersError, BadInternetConnection,
-                             PushStopButton, PushExit, BreakWhile)
+                             PushStopButton, PushExit, BreakWhile, MaxPageError)
