@@ -22,7 +22,7 @@ class DataBaseMixin:
         self.count_row_db = None
         self._pattern_already_exists_table = re.compile(r'already exists')
         self._database_init()
-        self._count_row_in_database()
+        # self._count_row_in_database()
 
     def _connect_database(self):
         """

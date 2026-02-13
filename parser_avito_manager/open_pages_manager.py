@@ -53,6 +53,7 @@ class ParserAvitoManager(SetupVarMixin, TimeMeasurementMixin, AudioNotesMixin, H
     """
     Класс в котором заключена главная логика работы программы
     """
+
     def __init__(self):
         SetupVarMixin.__init__(self)
         self._total_data = None
@@ -88,38 +89,15 @@ class ParserAvitoManager(SetupVarMixin, TimeMeasurementMixin, AudioNotesMixin, H
         """
         Метод реализует корректное завершение программы
         """
-        """
-        Закрытие браузера
-        """
+        # Закрытие браузера
         self.driver.quit()
         if self._total_data:
             logging.info("new row in database: {}".format(self._count_new_row_in_database))
-            result_in_html = ResultInHtml()
-            try:
-                """
-                Запись результата в файл
-                """
-                result_in_html.write_result(file_name=self._file_name, data=self._total_data,
-                                            count=self._count_new_row_in_database)
-            except OSError as err:
-                """
-                Если название файла некорректное, использовать название по умолчанию
-                """
-                self._file_name = BASE_DIR / self.default_filename()
-                text_info = "rename filename in default: {}".format(self._file_name)
-                logging.warning(err)
-                logging.warning(text_info)
-                connector.update_info(text=text_info)
-                result_in_html.write_result(file_name=self._file_name, data=self._total_data,
-                                            count=self._count_new_row_in_database)
-            else:
-                connector.update_info(text="Результаты готовы")
-            finally:
-                """
-                Открытие результирующего файла в браузере по умолчанию
-                """
-                webbrowser.open(str(self._file_name))
-                # self.complete_audio()
+            result_in_html = ResultInHtml(file_name=self._file_name, data=self._total_data,
+                                          count=self._count_new_row_in_database)
+            # Запись результата в файл
+            result_in_html()
+            webbrowser.open(str(result_in_html.file_name))
 
     def start(self):
         """

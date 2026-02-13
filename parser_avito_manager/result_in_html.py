@@ -1,5 +1,9 @@
+import logging
 import re
+
+from objects import connector
 from parser_avito_manager.index import base
+from settings import BASE_DIR
 from tkinter_frontend import HandlersClass
 
 
@@ -8,7 +12,10 @@ class ResultInHtml(HandlersClass):
     Запись результатов в html файл
     """
 
-    def __init__(self):
+    def __init__(self, file_name, data, count):
+        self.file_name = file_name
+        self._data = data
+        self._count = count
         self._header_content_pattern = re.compile(r'[{]title_content[}]')
         self._total_views_pattern = re.compile(r'[{]total_views_content[}]')
         self._today_views_pattern = re.compile(r'[{]today_views_content[}]')
@@ -66,17 +73,27 @@ class ResultInHtml(HandlersClass):
             result += text
         return result
 
-    def write_result(self, file_name, data, count):
-        total_views = data.get("total_views")
-        today_views = data.get("today_views")
-        reviews = data.get("reviews")
-        file = open(file_name, 'w', encoding='utf-8')
-        content = self._header_content_pattern.sub(self._preparation_title(count), self._str_base_html)
+    def _write_result(self):
+        total_views = self._data.get("total_views")
+        today_views = self._data.get("today_views")
+        reviews = self._data.get("reviews")
+        file = open(self.file_name, 'w', encoding='utf-8')
+        content = self._header_content_pattern.sub(self._preparation_title(self._count), self._str_base_html)
         content = self._total_views_pattern.sub(self._preparation_elements(total_views), content)
         content = self._today_views_pattern.sub(self._preparation_elements(today_views), content)
         content = self._review_count_pattern.sub(self._preparation_elements(reviews), content)
         file.write(content)
         file.close()
 
-
-
+    def __call__(self, *args, **kwargs):
+        try:
+            self._write_result()
+        except OSError:
+            """
+            Если название файла некорректное, использовать название по умолчанию
+            """
+            self.file_name = BASE_DIR / self.default_filename()
+            text_info = "rename filename in default: {}".format(self.file_name)
+            logging.warning(text_info)
+            connector.update_info(text=text_info)
+            self._write_result()

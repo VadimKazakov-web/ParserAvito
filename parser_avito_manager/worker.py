@@ -79,6 +79,7 @@ class Worker(CheckTitleMixin, TimeMeasurementMixin):
         """
         if self._links:
             for url in self._links:
+                connector.update_info(text="Продолжаю открывать web-страницы")
                 self._create_while(url=url)
         else:
             for page, url in self._links_dict.items():
@@ -152,7 +153,6 @@ class Worker(CheckTitleMixin, TimeMeasurementMixin):
         except Exception as err:
             self._read_err_obj_timeout(err)
         else:
-            connector.update_info(text="Продолжаю открывать web-страницы")
             connector.update_title(text=self._driver.title)
             """
             Если нет ошибок, собрать данные со страницы
