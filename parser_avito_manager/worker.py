@@ -79,7 +79,6 @@ class Worker(CheckTitleMixin, TimeMeasurementMixin):
         """
         if self._links:
             for url in self._links:
-                connector.update_info(text="Продолжаю открывать web-страницы")
                 self._create_while(url=url)
         else:
             for page, url in self._links_dict.items():
@@ -96,6 +95,7 @@ class Worker(CheckTitleMixin, TimeMeasurementMixin):
         page = kwargs.get("page")
         url = kwargs.get("url")
         timeout_exceptions_counter = self._timeout_exceptions_counter
+        connector.update_info(text="Продолжаю открывать web-страницы")
         while timeout_exceptions_counter:
             try:
                 self._main_block(page, url)

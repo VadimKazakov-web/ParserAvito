@@ -4,11 +4,11 @@ import logging.handlers
 from settings import *
 from tkinter_frontend.window_root.build import window as tk_interface
 from tkinter_frontend.build_tk import build_tk_interface
-from parser_avito_manager.open_pages_manager import ParserAvitoManager
+from parser_avito_manager.backend_manager import ParserAvitoManager
 
 FORMAT = '[%(asctime)s] %(message)s'
 formatter = logging.Formatter(FORMAT)
-file_handler = False
+file_handler = True
 if not file_handler:
     handler = logging.StreamHandler()
 else:
