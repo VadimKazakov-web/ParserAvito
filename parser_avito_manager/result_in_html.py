@@ -1,19 +1,18 @@
 import logging
 import re
-
 from objects import connector
 from parser_avito_manager.index import base
 from settings import BASE_DIR
-from tkinter_frontend import HandlersClass
 
 
-class ResultInHtml(HandlersClass):
+class ResultInHtml:
     """
     Запись результатов в html файл
     """
 
-    def __init__(self, file_name, data, count):
+    def __init__(self, file_name, default_filename, data, count):
         self.file_name = file_name
+        self.default_filename = default_filename
         self._data = data
         self._count = count
         self._header_content_pattern = re.compile(r'[{]title_content[}]')
@@ -92,7 +91,7 @@ class ResultInHtml(HandlersClass):
             """
             Если название файла некорректное, использовать название по умолчанию
             """
-            self.file_name = BASE_DIR / self.default_filename()
+            self.file_name = BASE_DIR / self.default_filename
             text_info = "rename filename in default: {}".format(self.file_name)
             logging.warning(text_info)
             connector.update_info(text=text_info)

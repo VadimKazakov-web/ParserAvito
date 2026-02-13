@@ -69,6 +69,7 @@ class SetupVarMixin:
         filename = data.get("filename")
         self._file_name = self._base_dir / Path(filename)
         self._pages = int(data.get("count_pages"))
+        self._default_filename = data.get("default_filename")
 
     def _initial_text(self):
         """
