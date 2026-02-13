@@ -11,8 +11,6 @@ from exceptions import BadInternetConnection, PushExit
 from exceptions import PushStopButton
 from objects import connector
 from settings import *
-from audio.audio_notes import AudioNotesMixin
-from tkinter_frontend import HandlersClass
 
 
 def open_pages(*args, **kwargs):
@@ -49,7 +47,7 @@ def open_announcement(*args, **kwargs):
         }
 
 
-class ParserAvitoManager(SetupVarMixin, TimeMeasurementMixin, AudioNotesMixin, HandlersClass):
+class ParserAvitoManager(SetupVarMixin, TimeMeasurementMixin):
     """
     Класс в котором заключена главная логика работы программы
     """
@@ -93,7 +91,8 @@ class ParserAvitoManager(SetupVarMixin, TimeMeasurementMixin, AudioNotesMixin, H
         self.driver.quit()
         if self._total_data:
             logging.info("new row in database: {}".format(self._count_new_row_in_database))
-            result_in_html = ResultInHtml(file_name=self._file_name, data=self._total_data,
+            result_in_html = ResultInHtml(file_name=self._file_name, default_filename=self._default_filename,
+                                          data=self._total_data,
                                           count=self._count_new_row_in_database)
             # Запись результата в файл
             result_in_html()
