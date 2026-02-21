@@ -18,7 +18,7 @@ logging.root.setLevel(logging.INFO)
 logging.root.handlers.clear()
 logging.root.addHandler(handler)
 
-logging.info("start program")
+logging.info("start programm")
 instance = ParserAvitoManager()
 thread = threading.Thread(target=instance.start)
 thread.start()
