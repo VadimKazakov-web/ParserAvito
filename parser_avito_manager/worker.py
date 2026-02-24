@@ -40,6 +40,18 @@ class Worker(CheckTitleMixin, TimeMeasurementMixin):
         self._instance = instance
         self._links = kwargs.get("links")
         self._links_dict = kwargs.get("links_dict")
+        # self._links_dict = {
+        #     1: "https://www.avito.ru/moskva/tovary_dlya_kompyutera/komplektuyuschie/cd_dvd_i_blu-ray_privody-ASgBAgICAkTGB~pm7gmSZw?cd=1&localPriority=0",
+        #     10: "https://www.avito.ru/moskva/tovary_dlya_kompyutera/komplektuyuschie/cd_dvd_i_blu-ray_privody-ASgBAgICAkTGB~pm7gmSZw?cd=1&localPriority=0&p=10",
+        #     20: "https://www.avito.ru/moskva/tovary_dlya_kompyutera/komplektuyuschie/cd_dvd_i_blu-ray_privody-ASgBAgICAkTGB~pm7gmSZw?cd=1&localPriority=0&p=20",
+        #     30: "https://www.avito.ru/moskva/tovary_dlya_kompyutera/komplektuyuschie/cd_dvd_i_blu-ray_privody-ASgBAgICAkTGB~pm7gmSZw?cd=1&localPriority=0&p=30",
+        #     40: "https://www.avito.ru/moskva/tovary_dlya_kompyutera/komplektuyuschie/cd_dvd_i_blu-ray_privody-ASgBAgICAkTGB~pm7gmSZw?cd=1&localPriority=0&p=40",
+        #     50: "https://www.avito.ru/moskva/tovary_dlya_kompyutera/komplektuyuschie/cd_dvd_i_blu-ray_privody-ASgBAgICAkTGB~pm7gmSZw?cd=1&localPriority=0&p=50",
+        #     60: "https://www.avito.ru/moskva/tovary_dlya_kompyutera/komplektuyuschie/cd_dvd_i_blu-ray_privody-ASgBAgICAkTGB~pm7gmSZw?cd=1&localPriority=0&p=60",
+        #     70: "https://www.avito.ru/moskva/tovary_dlya_kompyutera/komplektuyuschie/cd_dvd_i_blu-ray_privody-ASgBAgICAkTGB~pm7gmSZw?cd=1&localPriority=0&p=70",
+        #     80: "https://www.avito.ru/moskva/tovary_dlya_kompyutera/komplektuyuschie/cd_dvd_i_blu-ray_privody-ASgBAgICAkTGB~pm7gmSZw?cd=1&localPriority=0&p=80",
+        #
+        # }
         self._start = start_method
         self._timeout_exceptions_counter = TIMEOUT_EXCEPTIONS_COUNTER
         self._timeout = TIMEOUT
@@ -78,12 +90,17 @@ class Worker(CheckTitleMixin, TimeMeasurementMixin):
         Обход ссылок
         """
         if self._links:
+            # обход ссылок на объявления
             for url in self._links:
                 self._create_while(url=url)
+                self._start(url)
         else:
+            # обход ссылок на страницы
             for page, url in self._links_dict.items():
                 try:
-                    self._create_while(page=page, url=url)
+                    self._create_while(url=url)
+                    self._check_limit_max_page(requested_page=page)
+                    self._start(url)
                 except MaxPageError:
                     break
 
@@ -92,13 +109,12 @@ class Worker(CheckTitleMixin, TimeMeasurementMixin):
         Если возникновение ошибок таймаута больше разрешённых попыток self._timeout_exceptions_counter,
         выходим из цикла с ошибкой "плохого соединения" BadInternetConnection
         """
-        page = kwargs.get("page")
         url = kwargs.get("url")
         timeout_exceptions_counter = self._timeout_exceptions_counter
         connector.update_info(text="Продолжаю открывать web-страницы")
         while timeout_exceptions_counter:
             try:
-                self._main_block(page, url)
+                self._main_block(url)
                 timeout_exceptions_counter -= 1
             except BreakWhile:
                 break
@@ -137,7 +153,13 @@ class Worker(CheckTitleMixin, TimeMeasurementMixin):
             else:
                 return int(current_page)
 
-    def _main_block(self, page, url):
+    def _check_limit_max_page(self, requested_page: int) -> None:
+        current_page = self._find_current_page()
+        if requested_page > current_page:
+            logging.info("The maximum number of pages has been reached: {}".format(requested_page))
+            raise MaxPageError
+
+    def _main_block(self, url):
         """
         Отлов типичных ошибок
         """
@@ -154,13 +176,4 @@ class Worker(CheckTitleMixin, TimeMeasurementMixin):
             self._read_err_obj_timeout(err)
         else:
             connector.update_title(text=self._driver.title)
-            """
-            Если нет ошибок, собрать данные со страницы
-            """
-            if page:
-                current_page = self._find_current_page()
-                if page > current_page:
-                    logging.info("достигнуто максимальное колл-во страниц: {}".format(page))
-                    raise MaxPageError
-            self._start(url)
             raise BreakWhile

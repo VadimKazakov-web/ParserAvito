@@ -4,6 +4,7 @@
 *test.txt
 *.html
 *.wav
+*.pyc
 /build
 /dist
 /ParserAvitoOutput
