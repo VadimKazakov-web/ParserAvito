@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 import queue
 import re
-
 from selenium.webdriver.common.by import By
-
 from objects import connector
 import logging
 import selenium.common
-from exceptions import BreakWhile, BadInternetConnection, PushStopButton, MaxPageError
+from exceptions import BreakWhile, BadInternetConnection, PushStopButton, MaxPageError, NamedParametersError
 from parser_avito_manager import CheckTitleMixin, TimeMeasurementMixin
 from settings import TIMEOUT_EXCEPTIONS_COUNTER, TIMEOUT
 import time
@@ -89,20 +87,8 @@ class Worker(CheckTitleMixin, TimeMeasurementMixin):
         """
         Обход ссылок
         """
-        if self._links:
-            # обход ссылок на объявления
-            for url in self._links:
-                self._create_while(url=url)
-                self._start(url)
-        else:
-            # обход ссылок на страницы
-            for page, url in self._links_dict.items():
-                try:
-                    self._create_while(url=url)
-                    self._check_limit_max_page(requested_page=page)
-                    self._start(url)
-                except MaxPageError:
-                    break
+        if not self._links:
+            raise NamedParametersError
 
     def _create_while(self, *args, **kwargs):
         """
@@ -177,3 +163,42 @@ class Worker(CheckTitleMixin, TimeMeasurementMixin):
         else:
             connector.update_title(text=self._driver.title)
             raise BreakWhile
+
+
+class WorkerForPage(Worker):
+
+    def __init__(self, *args, **kwargs):
+        Worker.__init__(self, *args, **kwargs)
+        self._links = kwargs.get("links_dict")
+
+    def _go_to_url(self):
+        super()._go_to_url()
+        """
+        Обход ссылок
+        """
+        # обход ссылок на страницы
+        for page, url in self._links.items():
+            try:
+                self._create_while(url=url)
+                self._check_limit_max_page(requested_page=page)
+                self._start(url)
+            except MaxPageError:
+                break
+
+
+class WorkerForAnnouncement(Worker):
+
+    def __init__(self, *args, **kwargs):
+        Worker.__init__(self, *args, **kwargs)
+
+    def _go_to_url(self):
+        super()._go_to_url()
+
+        """
+        Обход ссылок
+        """
+        # обход ссылок на страницы
+        for url in self._links:
+            self._create_while(url=url)
+            self._start(url)
+

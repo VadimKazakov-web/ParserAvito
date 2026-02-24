@@ -6,7 +6,7 @@ import selenium.common
 from parser_avito_manager import ResultInHtml, TimeMeasurementMixin, SetupVarMixin
 from parser_avito_manager.open_page import OpenPage
 from parser_avito_manager.open_announcement import OpenAnnouncement
-from parser_avito_manager.worker import Worker
+from parser_avito_manager.worker import WorkerForPage, WorkerForAnnouncement
 from exceptions import BadInternetConnection, PushExit
 from exceptions import PushStopButton
 from objects import connector
@@ -21,8 +21,8 @@ def open_pages(*args, **kwargs):
     links_dict = kwargs.get("links_dict")
     connector.update_info(text="Открываются страницы")
     instance = OpenPage(driver)
-    worker = Worker(driver=driver, instance=instance, links_dict=links_dict,
-                    start_method=instance.start)
+    worker = WorkerForPage(driver=driver, instance=instance, links_dict=links_dict,
+                           start_method=instance.start)
     instance = worker.start()
     return instance.data
 
@@ -36,11 +36,11 @@ def open_announcement(*args, **kwargs):
     connector.update_info(text="Открываются объявления")
     instance = OpenAnnouncement(driver, links)
     try:
-        worker = Worker(driver=driver, instance=instance, links=links,
-                        start_method=instance.start)
+        worker = WorkerForAnnouncement(driver=driver, instance=instance, links=links,
+                                       start_method=instance.start)
         instance = worker.start()
     finally:
-        Worker.reset_time_start()
+        WorkerForAnnouncement.reset_time_start()
         return {
             "total_data": instance.extraction_and_sorting(),
             "count_new_row_in_database": instance.count_new_row_in_database,
