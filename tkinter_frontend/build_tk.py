@@ -12,5 +12,5 @@ def build_tk_interface():
     import tkinter_frontend.window_root.frame_1.frame_for_info.build
     import tkinter_frontend.window_root.frame_1.start_button.build
     import tkinter_frontend.window_root.frame_1.stop_button.build
-    import tkinter_frontend.window_root.frame_2.build
+    import tkinter_frontend.window_root.frame_2.update_block.build
     logging.info("{}: done".format(__name__))

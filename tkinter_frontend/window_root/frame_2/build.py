@@ -6,5 +6,6 @@ from tkinter_frontend.window_root.build import window
 
 ROOT = window.get_root()
 frame_custom = Frame(column=2, row=0, master=ROOT)
+frame_2 = frame_custom.get_instance()
 frame_custom.build()
 logging.info("{}: done".format(__name__))

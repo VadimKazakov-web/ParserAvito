@@ -5,7 +5,8 @@ from tkinter_frontend.classes.frame import Frame
 from tkinter_frontend.window_root.build import window
 from tkinter_frontend.handlers.input_handlers import HandlersClass
 import functools
-from tkinter_frontend.window_root.frame_1.utils import create_progress, update_progress, update_info, update_time
+from tkinter_frontend.window_root.frame_1.utils import (create_progress, update_progress, update_info,
+                                                        update_time, update_version, create_install_prog_btn)
 
 ROOT = window.get_root()
 frame_custom = Frame(column=1, row=0, master=ROOT)
@@ -18,6 +19,8 @@ frame.bind(connector.create_progress_event, create_progress)
 frame.bind(connector.update_progress_event, update_progress)
 frame.bind(connector.update_info_event, update_info)
 frame.bind(connector.update_time_event, update_time)
+frame.bind(connector.update_version_event, update_version)
+frame.bind(connector.create_install_prog_event, create_install_prog_btn)
 connector.add_widget(frame)
 
 logging.info("{}: done".format(__name__))
