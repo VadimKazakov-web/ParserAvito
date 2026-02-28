@@ -18,6 +18,8 @@ class Connector(ClientMixin):
         self.create_progress_event = "<<CreateProgress>>"
         self.update_info_event = "<<UpdateInfo>>"
         self.update_progress_event = "<<UpdateProgress>>"
+        self.update_version_event = "<<UpdateVersion>>"
+        self.create_install_prog_event = "<<CreateInstallBtnProg>>"
         self.update_time_event = "<<UpdateTime>>"
         self.push_button_event = "<<PushButton>>"
         self.exit_flag = False
@@ -64,6 +66,14 @@ class Connector(ClientMixin):
         self.data.set(key="page_title", val=text)
         self.widget.event_generate(self.update_progress_event)
 
+    def update_version(self, text: str = "...") -> None:
+        self.data.set(key="version", val=text)
+        self.widget.event_generate(self.update_version_event)
+
+    def gen_install_event(self):
+        self.widget.event_generate(self.create_install_prog_event)
+
+
     def get_info(self) -> None:
         return self.data.get(key="info")
 
@@ -75,6 +85,9 @@ class Connector(ClientMixin):
 
     def get_title(self) -> None:
         return self.data.get(key="page_title")
+
+    def get_version(self) -> None:
+        return self.data.get(key="version")
 
     def post_data(self, *args, **kwargs):
         super().post_data(*args, **kwargs)

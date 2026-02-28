@@ -7,3 +7,9 @@ sudo apt update && sudo apt install python3 && sudo apt install python3-pip pyth
 
 в папке dist появится exe файл с программой
 
+# os.environ["PYTHONUTF8"] = "1"
+# print("PYTHONUTF8 ", os.environ.get("PYTHONUTF8"))
+# print("flags.utf8_mode ", sys.flags.utf8_mode)
+# print("filesyscodec ", sys.getfilesystemencoding())
+# print("locale ", locale.getpreferredencoding())
+

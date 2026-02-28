@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from objects import connector
+from tkinter_frontend.classes.button import Button
 
 
 def unbind_return(*args, **kwargs):
@@ -29,6 +30,20 @@ def update_progress(*args, **kwargs):
 def update_info(*args, **kwargs):
     from tkinter_frontend.window_root.frame_1.frame_for_info.build import label_text_info
     label_text_info["text"] = connector.get_info()
+
+
+def update_version(*args, **kwargs):
+    from tkinter_frontend.window_root.frame_2.update_block.build import label_instance
+    label_instance["text"] = connector.get_version()
+
+
+def create_install_prog_btn(*args, **kwargs):
+    from tkinter_frontend import frame_2
+    button_custom = Button(master=frame_2, text="установить обновление\n"
+                                                "и перезапустить программу", column=0, row=2)
+    button_custom.build()
+    button_custom.make_hover()
+    button_instance = button_custom.get_instance()
 
 
 def update_time(*args, **kwargs):

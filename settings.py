@@ -2,6 +2,9 @@
 import os
 from pathlib import Path
 
+VERSION = "v1.1.0"
+APP_NAME = Path("ParserAvito")
+
 BASE_DIR = Path(os.getcwd()) / Path("ParserAvitoOutput")
 if not BASE_DIR.exists():
     BASE_DIR.mkdir(parents=True, exist_ok=True)
@@ -24,6 +27,7 @@ TIMEOUT = 5
 
 TOP_ANNOUNCEMENT = 100
 
+# tkinter interface
 FONT_SIZE = 13
 BACKGROUND_COLOR = "#0000CD"
 FOREGROUND_COLOR = "white"
@@ -33,3 +37,6 @@ BACKGROUND_COLOR_BTN = "white"
 FOREGROUND_COLOR_BTN = "#000000"
 COLOR_FOR_HOVER = "#00BFFF"
 WIDTH_LABEL = 50
+
+REPOSITORY = "https://github.com/VadimKazakov-web/ParserAvito.git"
+REPOSITORY_TAGS = "https://github.com/VadimKazakov-web/ParserAvito/tags"
