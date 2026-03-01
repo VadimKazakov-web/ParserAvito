@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from tkinter import W
+from tkinter import W, E, font
 from tkinter import ttk
 from tkinter_frontend.classes import Base
 from tkinter_frontend.classes.hover_effect import HoverEffectMixin
@@ -19,3 +19,10 @@ class Button(Base, HoverEffectMixin):
         self.instance.grid(column=self.column, row=self.row, sticky=W)
         self.instance.grid_configure(ipadx=20, ipady=5)
         self.padding_configure()
+
+
+class ButtonForUpdate(Button):
+
+    def __init__(self, *args, **kwargs):
+        Button.__init__(self, *args, **kwargs)
+        self.instance["font"] = Base.font_small

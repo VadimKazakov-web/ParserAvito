@@ -2,7 +2,7 @@
 import os
 from pathlib import Path
 
-VERSION = "v1.1.0"
+VERSION = "sdfdffdvcd"
 APP_NAME = Path("ParserAvito")
 
 BASE_DIR = Path(os.getcwd()) / Path("ParserAvitoOutput")

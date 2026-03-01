@@ -16,3 +16,12 @@ class Label(Base):
     def build(self):
         self.instance.grid(column=self.column, row=self.row, sticky=W)
         self.padding_configure()
+
+
+class LabelForUpdate(Label):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.instance["font"] = Base.font_small
+
+

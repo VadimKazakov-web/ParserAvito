@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 from objects import connector
-from tkinter_frontend.window_root.frame_1.utils import ActiveInactiveButton
+from tkinter_frontend.utils import ActiveInactiveButton
 from tkinter_frontend.window_root.frame_1.frame_for_buttons.build import frame_for_buttons
 from tkinter_frontend.classes.button import Button
 from tkinter_frontend import frame

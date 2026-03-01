@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from objects import connector
-from tkinter_frontend.classes.button import Button
+from tkinter_frontend.classes.button import Button, ButtonForUpdate
 
 
 def unbind_return(*args, **kwargs):
@@ -39,8 +39,8 @@ def update_version(*args, **kwargs):
 
 def create_install_prog_btn(*args, **kwargs):
     from tkinter_frontend import frame_2
-    button_custom = Button(master=frame_2, text="установить обновление\n"
-                                                "и перезапустить программу", column=0, row=2)
+    button_custom = ButtonForUpdate(master=frame_2, text="установить обновление\n"
+                                                         "и перезапустить программу", column=0, row=2)
     button_custom.build()
     button_custom.make_hover()
     button_instance = button_custom.get_instance()

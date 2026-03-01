@@ -2,7 +2,7 @@
 import logging
 from tkinter_frontend.window_root.frame_1.frame_for_buttons.build import frame_for_buttons
 from tkinter_frontend.classes.button import Button
-from tkinter_frontend.window_root.frame_1.utils import ActiveInactiveButton
+from tkinter_frontend.utils import ActiveInactiveButton
 from objects import connector
 import functools
 

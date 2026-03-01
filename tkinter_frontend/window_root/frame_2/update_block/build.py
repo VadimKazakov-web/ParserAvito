@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 import logging
 from update import Update
-from tkinter_frontend.classes.label import Label
-from tkinter_frontend.classes.button import Button
+from tkinter_frontend.classes.label import Label, LabelForUpdate
+from tkinter_frontend.classes.button import Button, ButtonForUpdate
 from tkinter_frontend import frame_2
 
-label = Label(master=frame_2, text="", column=0, row=0)
+label = LabelForUpdate(master=frame_2, text="", column=0, row=0)
 label_instance = label.get_instance()
 label_instance["width"] = 20
 label.build()
 
-button_custom = Button(master=frame_2, text="    проверить обновление   ", column=0, row=1)
+button_custom = ButtonForUpdate(master=frame_2, text="проверить\nобновление", column=0, row=1)
 button_custom.build()
 button_custom.make_hover()
 button_instance = button_custom.get_instance()
