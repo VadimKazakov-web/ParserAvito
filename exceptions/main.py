@@ -88,4 +88,30 @@ class PushStopButton(Exception):
             return "The \"Stop\" button is pressed"
 
 
+class ManyExeFile(Exception):
+    def __init__(self, *args):
+        if args:
+            self.message = args[0]
+        else:
+            self.message = None
+
+    def __str__(self):
+        if self.message:
+            return "ManyExeFile, {}".format(self.message)
+        else:
+            return "lots of exe files"
+
+
+class PlatformError(Exception):
+    def __init__(self, *args):
+        if args:
+            self.message = args[0]
+        else:
+            self.message = None
+
+    def __str__(self):
+        if self.message:
+            return "PlatformError, {}".format(self.message)
+        else:
+            return "the platform differs from Windows"
 

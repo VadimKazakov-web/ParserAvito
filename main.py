@@ -8,7 +8,7 @@ from parser_avito_manager.backend_manager import ParserAvitoManager
 
 FORMAT = '[%(asctime)s] %(message)s'
 formatter = logging.Formatter(FORMAT)
-file_handler = True
+file_handler = False
 if not file_handler:
     handler = logging.StreamHandler()
 else:
@@ -19,9 +19,9 @@ logging.root.handlers.clear()
 logging.root.addHandler(handler)
 
 logging.info("start program")
-instance = ParserAvitoManager()
-thread = threading.Thread(target=instance.start)
-thread.start()
+# instance = ParserAvitoManager()
+# thread = threading.Thread(target=instance.start)
+# thread.start()
 build_tk_interface()
 tk_interface.start()
-thread.join()
+# thread.join()

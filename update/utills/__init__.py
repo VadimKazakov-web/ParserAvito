@@ -1,3 +1,2 @@
 # -*- coding: utf-8 -*-
-from .update_classs import Update
 from .utills import *

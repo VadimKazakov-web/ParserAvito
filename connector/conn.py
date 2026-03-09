@@ -73,7 +73,6 @@ class Connector(ClientMixin):
     def gen_install_event(self):
         self.widget.event_generate(self.create_install_prog_event)
 
-
     def get_info(self) -> None:
         return self.data.get(key="info")
 

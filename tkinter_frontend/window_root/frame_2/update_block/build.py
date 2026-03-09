@@ -7,13 +7,12 @@ from tkinter_frontend import frame_2
 
 label = LabelForUpdate(master=frame_2, text="", column=0, row=0)
 label_instance = label.get_instance()
-label_instance["width"] = 20
+label_instance["width"] = 33
 label.build()
 
-button_custom = ButtonForUpdate(master=frame_2, text="проверить\nобновление", column=0, row=1)
+button_custom = ButtonForUpdate(master=frame_2, text="проверить обновление\nпрограммы", column=0, row=1)
 button_custom.build()
 button_custom.make_hover()
 button_instance = button_custom.get_instance()
-upd = Update()
-button_instance.bind("<ButtonPress-1>", upd.check_update)
+button_instance.bind("<ButtonPress-1>", Update.check_update)
 logging.info("{}: done".format(__name__))

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from objects import connector
 from tkinter_frontend.classes.button import Button, ButtonForUpdate
+from update import Update
 
 
 def unbind_return(*args, **kwargs):
@@ -44,6 +45,11 @@ def create_install_prog_btn(*args, **kwargs):
     button_custom.build()
     button_custom.make_hover()
     button_instance = button_custom.get_instance()
+    button_instance.bind("<ButtonPress-1>", Update.update)
+
+
+# def update_program(*args, **kwargs):
+#     Update.update()
 
 
 def update_time(*args, **kwargs):

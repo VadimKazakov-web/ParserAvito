@@ -1,11 +1,21 @@
 # -*- coding: utf-8 -*-
 import os
+import shutil
 from pathlib import Path
+from exceptions import ManyExeFile
+from objects import connector
+from utills import get_desktop_path, get_pyinstaller_work_dir, get_drive_path
+
 
 VERSION = "sdfdffdvcd"
-APP_NAME = Path("ParserAvito")
+APP_NAME = "ParserAvito"
 
-BASE_DIR = Path(os.getcwd()) / Path("ParserAvitoOutput")
+SCHTASKS_NAME = "parser"
+
+DRIVE_PATH = get_drive_path()
+
+BASE_DIR = Path(get_desktop_path()) / Path("ParserAvitoOutput")
+# BASE_DIR = Path(os.getcwd()) / Path("ParserAvitoOutput")
 if not BASE_DIR.exists():
     BASE_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -20,6 +30,8 @@ if not DATABASE_DIR.exists():
     DATABASE_DIR.mkdir(parents=True, exist_ok=True)
 
 DATABASE = DATABASE_DIR / Path('data.db')
+
+DB_TABLE_NAME = "announcement"
 
 TIMEOUT_EXCEPTIONS_COUNTER = 4
 
@@ -40,3 +52,17 @@ WIDTH_LABEL = 50
 
 REPOSITORY = "https://github.com/VadimKazakov-web/ParserAvito.git"
 REPOSITORY_TAGS = "https://github.com/VadimKazakov-web/ParserAvito/tags"
+
+PYINSTALLER_WORK_DIR = get_pyinstaller_work_dir("pyinstaller_work_folder")
+if PYINSTALLER_WORK_DIR.exists():
+    from update import reach_new_path, search_file
+    unpack_archive = PYINSTALLER_WORK_DIR / Path("project-repo")
+    for child in unpack_archive.iterdir():
+        if child.stem.startswith(Path(REPOSITORY).stem):
+            unpack_project_root = Path(child)
+            prog_path = search_file(path=unpack_project_root, suffix=".exe")
+            try:
+                prog_path = reach_new_path(path=prog_path, desktop=BASE_DIR.parent)
+            except ManyExeFile:
+                connector.update_info(text="много созданных экземпляров программы")
+    shutil.rmtree(path=PYINSTALLER_WORK_DIR)

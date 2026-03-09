@@ -14,7 +14,7 @@ class DataBaseMixin:
 
     def __init__(self):
         self._db = DATABASE
-        self._table_name = "announcement"
+        self._table_name = DB_TABLE_NAME
         self.count_new_row_in_database = 0
         self.count_update_row_in_database = 0
         self._connection = None

@@ -1,98 +1,86 @@
 # -*- coding: utf-8 -*-
 import logging
 import time
-from objects import connector
 from settings import *
 import subprocess
-import shutil
 import requests
 import re
-
-FORMAT = '[%(asctime)s] %(message)s'
-formatter = logging.Formatter(FORMAT)
-handler = logging.StreamHandler()
-handler.setFormatter(formatter)
-logging.root.setLevel(logging.INFO)
-logging.root.handlers.clear()
-logging.root.addHandler(handler)
+import shutil
+from update.utills import search_file, check_current_version_and_new_tag, extra_vision_var, reach_new_path, create_task_for_update
 
 
 class Update:
+    _pattern_tags = re.compile(r'href="/VadimKazakov-web/ParserAvito/releases/tag/(?P<tag>.+?)"')
+    _repo_tags = REPOSITORY_TAGS
+    _unpack_project_root = ""
+    _new_tag = ""
+    _link_for_zip_archive = ""
+    _icon_path = ""
+    _prog_path = ""
+    _headers = {
+        "Accept": "application/json,text/html",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 YaBrowser/25.12.0.0 Safari/537.36",
+    }
+    _repo = REPOSITORY
+    _repo_name = Path(REPOSITORY).stem
+    _repo_dir = _repo_name
+    _archive_name = Path(f'{_repo_name}.zip')
+    _archive_path = PYINSTALLER_WORK_DIR / _archive_name
+    _unpack_archive = PYINSTALLER_WORK_DIR / Path("project-repo")
 
-    def __init__(self):
-        self._repo = REPOSITORY
-        self._repo_name = Path(REPOSITORY).stem
-        self._repo_dir = self._repo_name
-        self._repo_tags = REPOSITORY_TAGS
-        self._pattern_tags = re.compile(r'href="/VadimKazakov-web/ParserAvito/releases/tag/(?P<tag>.+?)"')
-        self._archive_name = Path(f'{self._repo_name}.zip')
-
-        self._archive_path = BASE_DIR / self._archive_name
-        self._unpack_project = BASE_DIR / Path("project-repo")
-
-        self._unpack_project_root = ""
-        self._new_tag = ""
-        self._link_for_zip_archive = ""
-        self._icon_path = ""
-        self._prog_path = ""
-        self._headers = {
-            "Accept": "application/json,text/html",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 YaBrowser/25.12.0.0 Safari/537.36",
-        }
-
-    def check_update(self, *args, **kwargs):
-        tag = self._request_new_tag()
-        if not self._check_current_version_and_new_tag(tag, VERSION):
-            text = f'доступна новая версия \n{tag}'
+    @classmethod
+    def check_update(cls, *args, **kwargs):
+        tag = cls._request_new_tag()
+        if not check_current_version_and_new_tag(tag, VERSION):
+            text = f'доступна новая версия: {tag}'
             connector.update_version(text=text)
             connector.gen_install_event()
         else:
-            text = f'нет новых версий'
+            text = f'нет новой версии'
             connector.update_version(text=text)
 
-    def start(self):
-        tag = self._request_new_tag()
-        if not self._check_current_version_and_new_tag(tag, VERSION):
-            url = self._extra_vision_var(tag)
-            self._download_file(url)
-            self._unpack_zip_archive()
-            self._search_project_dir()
-            self._icon_path = self._search_file(path=self._unpack_project_root, suffix=".ico")
-            self._compile_repo()
-            self._prog_path = self._search_file(path=self._unpack_project_root, suffix=".exe")
-            logging.info(self._prog_path)
+    @classmethod
+    def update(cls, *args, **kwargs):
+        if not PYINSTALLER_WORK_DIR.exists():
+            PYINSTALLER_WORK_DIR.mkdir(parents=True, exist_ok=True)
+        url = extra_vision_var(cls._new_tag)
+        cls._download_file(url)
+        cls._unpack_zip_archive()
+        cls._unpack_project_root = cls._search_project_dir()
+        logging.info("cls._unpack_project_root: {}".format(cls._unpack_project_root))
+        cls._icon_path = search_file(path=cls._unpack_project_root, suffix=".ico")
+        cls._compile_repo()
+        cls._prog_path = search_file(path=cls._unpack_project_root, suffix=".exe")
+        logging.info("cls._prog_path: {}".format(cls._prog_path))
+        try:
+            cls._prog_path = reach_new_path(path=cls._prog_path, desktop=PYINSTALLER_WORK_DIR)
+        except ManyExeFile:
+            connector.update_info(text="много созданных экземпляров программы")
+            return
+        logging.info("cls._prog_path: {}".format(cls._prog_path))
+        create_task_for_update(path=cls._prog_path, t_name=SCHTASKS_NAME)
+        # shutil.rmtree(path=PYINSTALLER_WORK_DIR)
 
-    @staticmethod
-    def _check_current_version_and_new_tag(tag, curver):
-        if tag != curver:
-            logging.info("A new version has been discovered")
-            return False
-        else:
-            return True
-
-    @staticmethod
-    def _extra_vision_var(tag):
-        url = f'https://github.com/VadimKazakov-web/ParserAvito/archive/refs/tags/{tag}.zip'
-        return url
-
-    def _request_new_tag(self):
-        response = requests.get(url=self._repo_tags, headers=self._headers)
+    @classmethod
+    def _request_new_tag(cls):
+        response = requests.get(url=cls._repo_tags, headers=cls._headers)
         st_code = response.status_code
         if st_code == 200:
-            gen = self._pattern_tags.finditer(response.text)
+            gen = cls._pattern_tags.finditer(response.text)
             match = next(gen)
             tag = match.group("tag")
-            self._new_tag = tag
-            logging.info("new tag repository: {}".format(self._new_tag))
+            cls._new_tag = tag
+            logging.info("new tag repository: {}".format(cls._new_tag))
             return tag
         else:
             logging.warning(f'_request_new_tag: response.status_code == {st_code}')
 
-    def _download_file(self, url):
+    @classmethod
+    def _download_file(cls, url):
         time.sleep(1)
-        response = requests.get(url, headers=self._headers)
+        response = requests.get(url, headers=cls._headers)
         if response.status_code == 200:
-            self._archive_path.write_bytes(response.content)
+            cls._archive_path.write_bytes(response.content)
 
     def _get_repo(self):
         # Аргумент shell (по умолчанию False),
@@ -106,37 +94,27 @@ class Update:
         if completed_process.returncode == 0:
             logging.info("_get_repo: done")
 
-    def _unpack_zip_archive(self):
-        shutil.unpack_archive(filename=self._archive_path, extract_dir=self._unpack_project, format="zip")
+    @classmethod
+    def _unpack_zip_archive(cls):
+        shutil.unpack_archive(filename=cls._archive_path, extract_dir=cls._unpack_archive, format="zip")
 
-    def _compile_repo(self):
-        completed_process = subprocess.run(f'pyinstaller --name {APP_NAME}({self._new_tag}) '
-                                           f'--distpath {self._unpack_project_root} '
-                                           f'--workpath {self._unpack_project_root} '
-                                           f'--specpath {self._unpack_project_root} '
-                                           f'--icon {self._icon_path} '
-                                           f'--onefile --noconsole {self._unpack_project_root}/main.py',
-                                           executable=None, capture_output=True,
-                                           shell=True)
+    @classmethod
+    def _compile_repo(cls):
+        command = r"pyinstaller --name {name}({tag}) --distpath {path} --workpath {path} --specpath {path} --icon {icon_path} --onefile --noconsole {path_script}".format(
+            name=APP_NAME,
+            tag=cls._new_tag,
+            path=cls._unpack_project_root,
+            path_script=cls._unpack_project_root / Path("main.py"),
+            icon_path=cls._icon_path
+        )
+        completed_process = subprocess.run(command, executable=None, capture_output=True, shell=True)
         if completed_process.returncode == 0:
             logging.info("_compile_repo: done")
         else:
             logging.warning(completed_process.stderr.decode(encoding="utf-8"))
 
-    @staticmethod
-    def _search_file(path, suffix):
-        for child in Path(path).iterdir():
-            if child.suffix == suffix:
-                return child
-
-    def _search_project_dir(self):
-        for child in self._unpack_project.iterdir():
-            if child.stem.startswith(self._repo_name):
-                self._unpack_project_root = child
-                break
-
-
-# u = Update()
-# u.start()
-# p = Path(REPOSITORY)
-# print(p.stem)
+    @classmethod
+    def _search_project_dir(cls):
+        for child in cls._unpack_archive.iterdir():
+            if child.stem.startswith(cls._repo_name):
+                return Path(child)
