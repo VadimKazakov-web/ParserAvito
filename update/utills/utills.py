@@ -57,7 +57,7 @@ def extra_vision_var(tag: str) -> str:
 
 
 def get_time_for_command():
-    delta = datetime.timedelta(minutes=2)
+    delta = datetime.timedelta(minutes=1)
     delta_sec = datetime.timedelta(seconds=45)
     while True:
         if datetime.datetime.now().second > delta_sec.seconds:

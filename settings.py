@@ -60,9 +60,10 @@ if PYINSTALLER_WORK_DIR.exists():
     for child in unpack_archive.iterdir():
         if child.stem.startswith(Path(REPOSITORY).stem):
             unpack_project_root = Path(child)
-            prog_path = search_file(path=unpack_project_root, suffix=".exe")
+            prog_path = search_file(path=PYINSTALLER_WORK_DIR, suffix=".exe")
             try:
                 prog_path = reach_new_path(path=prog_path, desktop=BASE_DIR.parent)
             except ManyExeFile:
                 connector.update_info(text="много созданных экземпляров программы")
+
     shutil.rmtree(path=PYINSTALLER_WORK_DIR)
