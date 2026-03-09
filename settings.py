@@ -57,13 +57,13 @@ PYINSTALLER_WORK_DIR = get_pyinstaller_work_dir("pyinstaller_work_folder")
 if PYINSTALLER_WORK_DIR.exists():
     from update import reach_new_path, search_file
     unpack_archive = PYINSTALLER_WORK_DIR / Path("project-repo")
-    for child in unpack_archive.iterdir():
-        if child.stem.startswith(Path(REPOSITORY).stem):
-            unpack_project_root = Path(child)
-            prog_path = search_file(path=PYINSTALLER_WORK_DIR, suffix=".exe")
-            try:
-                prog_path = reach_new_path(path=prog_path, desktop=BASE_DIR.parent)
-            except ManyExeFile:
-                connector.update_info(text="много созданных экземпляров программы")
+    # for child in unpack_archive.iterdir():
+    #     if child.stem.startswith(Path(REPOSITORY).stem):
+    #         unpack_project_root = Path(child)
+    #         prog_path = search_file(path=PYINSTALLER_WORK_DIR, suffix=".exe")
+    #         try:
+    #             prog_path = reach_new_path(path=prog_path, desktop=BASE_DIR.parent)
+    #         except ManyExeFile:
+    #             connector.update_info(text="много созданных экземпляров программы")
 
     # shutil.rmtree(path=PYINSTALLER_WORK_DIR)
