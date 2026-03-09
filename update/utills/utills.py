@@ -57,28 +57,31 @@ def extra_vision_var(tag: str) -> str:
 
 
 def get_time_for_command():
-    delta = datetime.timedelta(minutes=1)
-    delta_sec = datetime.timedelta(seconds=45)
+    delta = datetime.timedelta(minutes=2)
+    delta_sec = datetime.timedelta(seconds=50)
     while True:
         if datetime.datetime.now().second > delta_sec.seconds:
             result = datetime.datetime.now() + delta
-            hour = norm_hours(str(result.time().hour))
-            minute = str(result.time().minute)
-            print("task begin ", result.time())
-            return {
-                "hour": hour,
-                "minute": minute,
-            }
+            time_str = norm_hours_and_minute(str(result.time().hour), str(result.time().minute))
+            print("task begin ", time_str)
+            return time_str
         else:
             time.sleep(2)
             print(datetime.datetime.now().time())
 
 
-def norm_hours(hour):
+def norm_hours_and_minute(hour, minute):
+    result = ""
     if len(hour) > 1:
-        return hour
+        result += hour
     elif len(hour) == 1:
-        return f"0{hour}"
+        result += f"0{hour}"
+    result += ":"
+    if len(minute) > 1:
+        result += minute
+    elif len(minute) == 1:
+        result += f"0{minute}"
+    return result
 
 
 def create_task_for_update(path, t_name):
@@ -86,7 +89,7 @@ def create_task_for_update(path, t_name):
     logging.info("path to task for schtasks: {}".format(new_path))
     time_for_command = get_time_for_command()
     command = (f'schtasks /create /tn {t_name} /tr {new_path}'
-               f' /sc once /st {time_for_command.get("hour")}:{time_for_command.get("minute")}')
+               f' /sc once /st {time_for_command}')
     logging.info("schtasks command: \n{}".format(command))
     completed_process = subprocess.run(
         command, shell=True,
