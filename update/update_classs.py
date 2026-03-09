@@ -9,7 +9,7 @@ import re
 import shutil
 from update.utills import (search_file,
                            check_current_version_and_new_tag, extra_vision_var, reach_new_path,
-                           create_task_for_update, delete_task)
+                           create_task_for_update, delete_task, run_task_for_update)
 
 
 class Update:
@@ -63,6 +63,7 @@ class Update:
             return
         logging.info("cls._prog_path: {}".format(cls._prog_path))
         create_task_for_update(path=cls._prog_path, t_name=SCHTASKS_NAME)
+        run_task_for_update(task=SCHTASKS_NAME)
         window_root.window.exit()
 
     @classmethod
