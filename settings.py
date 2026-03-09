@@ -66,4 +66,4 @@ if PYINSTALLER_WORK_DIR.exists():
             except ManyExeFile:
                 connector.update_info(text="много созданных экземпляров программы")
 
-    shutil.rmtree(path=PYINSTALLER_WORK_DIR)
+    # shutil.rmtree(path=PYINSTALLER_WORK_DIR)
