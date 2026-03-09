@@ -7,7 +7,7 @@ from objects import connector
 from utills import get_desktop_path, get_pyinstaller_work_dir, get_drive_path
 
 
-VERSION = "1.1.3"
+VERSION = "1.1.4"
 APP_NAME = "ParserAvito"
 
 SCHTASKS_NAME = "parser_avito"
@@ -54,15 +54,8 @@ REPOSITORY_TAGS = "https://github.com/VadimKazakov-web/ParserAvito/tags"
 
 PYINSTALLER_WORK_DIR = get_pyinstaller_work_dir("pyinstaller_work_folder")
 if PYINSTALLER_WORK_DIR.exists():
-    from update import reach_new_path, search_file
-    unpack_archive = PYINSTALLER_WORK_DIR / Path("project-repo")
-    # for child in unpack_archive.iterdir():
-    #     if child.stem.startswith(Path(REPOSITORY).stem):
-    #         unpack_project_root = Path(child)
-    #         prog_path = search_file(path=PYINSTALLER_WORK_DIR, suffix=".exe")
-    #         try:
-    #             prog_path = reach_new_path(path=prog_path, desktop=BASE_DIR.parent)
-    #         except ManyExeFile:
-    #             connector.update_info(text="много созданных экземпляров программы")
-
-    # shutil.rmtree(path=PYINSTALLER_WORK_DIR)
+    from update import search_file
+    prog_path = search_file(path=PYINSTALLER_WORK_DIR, suffix=".exe")
+    if prog_path:
+        new_prog_path = shutil.move(prog_path, BASE_DIR.parent)
+    shutil.rmtree(PYINSTALLER_WORK_DIR)
