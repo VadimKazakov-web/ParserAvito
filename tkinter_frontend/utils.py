@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 from objects import connector
 from tkinter_frontend.classes.button import Button, ButtonForUpdate
-from update import Update
-
 
 def unbind_return(*args, **kwargs):
     event = args[0]
@@ -40,6 +38,7 @@ def update_version(*args, **kwargs):
 
 def create_install_prog_btn(*args, **kwargs):
     from tkinter_frontend import frame_2
+    from update import Update
     button_custom = ButtonForUpdate(master=frame_2, text="установить обновление\n"
                                                          "и перезапустить программу", column=0, row=2)
     button_custom.build()

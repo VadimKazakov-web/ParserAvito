@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 import logging
-import os
+from tkinter_frontend import window_root
 import time
 from settings import *
 import subprocess
 import requests
 import re
 import shutil
-from update.utills import search_file, check_current_version_and_new_tag, extra_vision_var, reach_new_path, create_task_for_update
+from update.utills import (search_file,
+                           check_current_version_and_new_tag, extra_vision_var, reach_new_path,
+                           create_task_for_update, delete_task)
 
 
 class Update:
@@ -42,6 +44,7 @@ class Update:
 
     @classmethod
     def update(cls, *args, **kwargs):
+        delete_task(task=SCHTASKS_NAME)
         if not PYINSTALLER_WORK_DIR.exists():
             PYINSTALLER_WORK_DIR.mkdir(parents=True, exist_ok=True)
         url = extra_vision_var(cls._new_tag)
@@ -51,8 +54,6 @@ class Update:
         logging.info("cls._unpack_project_root: {}".format(cls._unpack_project_root))
         cls._icon_path = search_file(path=cls._unpack_project_root, suffix=".ico")
         cls._compile_repo()
-        # cls._compile_current_repo()
-        # logging.info("cls._unpack_project_root: {}".format(cls._unpack_project_root))
         cls._prog_path = search_file(path=cls._unpack_project_root, suffix=".exe")
         logging.info("cls._prog_path: {}".format(cls._prog_path))
         try:
@@ -62,7 +63,7 @@ class Update:
             return
         logging.info("cls._prog_path: {}".format(cls._prog_path))
         create_task_for_update(path=cls._prog_path, t_name=SCHTASKS_NAME)
-        # shutil.rmtree(path=PYINSTALLER_WORK_DIR)
+        window_root.window.exit()
 
     @classmethod
     def _request_new_tag(cls):
@@ -103,7 +104,7 @@ class Update:
 
     @classmethod
     def _compile_repo(cls):
-        command = r"pyinstaller --name {name}({tag}) --distpath {path} --workpath {path} --specpath {path} --icon {icon_path} --onefile --noconsole {path_script}".format(
+        command = r"pyinstaller --name {name}[{tag}] --distpath {path} --workpath {path} --specpath {path} --icon {icon_path} --onefile --noconsole {path_script}".format(
             name=APP_NAME,
             tag=cls._new_tag,
             path=cls._unpack_project_root,

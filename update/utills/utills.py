@@ -58,16 +58,15 @@ def extra_vision_var(tag: str) -> str:
 
 def get_time_for_command():
     delta = datetime.timedelta(minutes=1)
-    delta_sec = datetime.timedelta(seconds=45)
+    delta_sec_min = datetime.timedelta(seconds=50)
+    delta_sec_max = datetime.timedelta(seconds=55)
     while True:
-        if datetime.datetime.now().second > delta_sec.seconds:
+        if delta_sec_max.seconds > datetime.datetime.now().second > delta_sec_min.seconds:
             result = datetime.datetime.now() + delta
             time_str = norm_hours_and_minute(str(result.time().hour), str(result.time().minute))
-            print("task begin ", time_str)
             return time_str
         else:
             time.sleep(2)
-            print(datetime.datetime.now().time())
 
 
 def norm_hours_and_minute(hour, minute):
@@ -85,10 +84,9 @@ def norm_hours_and_minute(hour, minute):
 
 
 def create_task_for_update(path, t_name):
-    new_path = str(path).replace(" ", "^ ")
-    logging.info("path to task for schtasks: {}".format(new_path))
+    logging.info("path to task for schtasks: {}".format(path))
     time_for_command = get_time_for_command()
-    command = (f'schtasks /create /tn {t_name} /tr {new_path}'
+    command = (f'schtasks /create /tn {t_name} /tr {path}'
                f' /sc once /st {time_for_command}')
     logging.info("schtasks command: \n{}".format(command))
     completed_process = subprocess.run(
@@ -99,3 +97,17 @@ def create_task_for_update(path, t_name):
         logging.warning(completed_process.stderr.decode(encoding="oem", errors="replace"))
     else:
         logging.info("schtasks create: done")
+        logging.info(completed_process.stdout.decode(encoding="oem", errors="replace"))
+
+
+def delete_task(task):
+    command = f"schtasks -delete -tn {task} -f"
+    logging.info("schtasks command: \n{}".format(command))
+    completed_process = subprocess.run(
+        command, shell=True,
+        capture_output=True)
+    if completed_process.returncode != 0:
+        # сработала только кодировка "oem"
+        logging.warning(completed_process.stderr.decode(encoding="oem", errors="replace"))
+    else:
+        logging.info(completed_process.stdout.decode(encoding="oem", errors="replace"))

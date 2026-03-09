@@ -10,7 +10,7 @@ from utills import get_desktop_path, get_pyinstaller_work_dir, get_drive_path
 VERSION = "1.1.1.0"
 APP_NAME = "ParserAvito"
 
-SCHTASKS_NAME = "parser"
+SCHTASKS_NAME = "parser_avito"
 
 DRIVE_PATH = get_drive_path()
 BASE_DIR = Path(get_desktop_path()) / Path("ParserAvitoOutput")
