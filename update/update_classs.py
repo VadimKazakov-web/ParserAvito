@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+import os
 import time
 from settings import *
 import subprocess
@@ -50,6 +51,8 @@ class Update:
         logging.info("cls._unpack_project_root: {}".format(cls._unpack_project_root))
         cls._icon_path = search_file(path=cls._unpack_project_root, suffix=".ico")
         cls._compile_repo()
+        # cls._compile_current_repo()
+        # logging.info("cls._unpack_project_root: {}".format(cls._unpack_project_root))
         cls._prog_path = search_file(path=cls._unpack_project_root, suffix=".exe")
         logging.info("cls._prog_path: {}".format(cls._prog_path))
         try:
@@ -100,6 +103,23 @@ class Update:
 
     @classmethod
     def _compile_repo(cls):
+        command = r"pyinstaller --name {name}({tag}) --distpath {path} --workpath {path} --specpath {path} --icon {icon_path} --onefile --noconsole {path_script}".format(
+            name=APP_NAME,
+            tag=cls._new_tag,
+            path=cls._unpack_project_root,
+            path_script=cls._unpack_project_root / Path("main.py"),
+            icon_path=cls._icon_path
+        )
+        completed_process = subprocess.run(command, executable=None, capture_output=True, shell=True)
+        if completed_process.returncode == 0:
+            logging.info("_compile_repo: done")
+        else:
+            logging.warning(completed_process.stderr.decode(encoding="utf-8"))
+
+    @classmethod
+    def _compile_current_repo(cls):
+        cls._unpack_project_root = Path(os.getcwd())
+        cls._icon_path = Path(os.getcwd()) / Path("free-icon-web-crawler-11892629.ico")
         command = r"pyinstaller --name {name}({tag}) --distpath {path} --workpath {path} --specpath {path} --icon {icon_path} --onefile --noconsole {path_script}".format(
             name=APP_NAME,
             tag=cls._new_tag,
