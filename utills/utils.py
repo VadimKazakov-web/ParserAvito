@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import shutil
 import subprocess
 import winreg
 import logging
@@ -47,6 +48,4 @@ def get_desktop_path():
         return value
     finally:
         winreg.CloseKey(winreg.HKEY_CURRENT_USER)
-
-
 

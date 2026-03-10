@@ -37,8 +37,8 @@ def update_version(*args, **kwargs):
 
 
 def create_install_prog_btn(*args, **kwargs):
-    from tkinter_frontend import frame_2
-    from update import Update
+    from tkinter_frontend.window_root.frame_2.build import frame_2
+    from update.update_classs import Update
     button_custom = ButtonForUpdate(master=frame_2, text="установить обновление\n"
                                                          "и перезапустить программу", column=0, row=2)
     button_custom.build()

@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
+import logging
 import os
 import shutil
 from pathlib import Path
 from exceptions import ManyExeFile
 from objects import connector
+from update.utills.utills import ControlPyinstallerWorkDir
 from utills import get_desktop_path, get_pyinstaller_work_dir, get_drive_path
 
 
-VERSION = "1.1.4"
+VERSION = "1.1.5"
 APP_NAME = "ParserAvito"
 
 SCHTASKS_NAME = "parser_avito"
@@ -52,10 +54,5 @@ WIDTH_LABEL = 50
 REPOSITORY = "https://github.com/VadimKazakov-web/ParserAvito.git"
 REPOSITORY_TAGS = "https://github.com/VadimKazakov-web/ParserAvito/tags"
 
+PYINSTALLER_WORK_DIR_RM = False
 PYINSTALLER_WORK_DIR = get_pyinstaller_work_dir("pyinstaller_work_folder")
-if PYINSTALLER_WORK_DIR.exists():
-    from update import search_file
-    prog_path = search_file(path=PYINSTALLER_WORK_DIR, suffix=".exe")
-    if prog_path:
-        new_prog_path = shutil.move(prog_path, BASE_DIR.parent)
-    shutil.rmtree(PYINSTALLER_WORK_DIR)

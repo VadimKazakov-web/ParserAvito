@@ -1,4 +1,3 @@
-from .root import WindowRoot
-from .window_root import frame, frame_2
-# from .classes import ConfigClass, Base
-from .handlers import HandlersClass
+# -*- coding: utf-8 -*-
+from .classes import *
+from .handlers import input_handlers

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import logging
-from update import Update
+from update.update_classs import Update
 from tkinter_frontend.classes.label import Label, LabelForUpdate
 from tkinter_frontend.classes.button import Button, ButtonForUpdate
-from tkinter_frontend import frame_2
+from tkinter_frontend.window_root.frame_2.build import frame_2
 
 label = LabelForUpdate(master=frame_2, text="", column=0, row=0)
 label_instance = label.get_instance()

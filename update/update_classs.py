@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 import logging
-from tkinter_frontend import window_root
+from tkinter_frontend.window_root.build import window
 import time
 from settings import *
 import subprocess
 import requests
 import re
 import shutil
-from update.utills import (search_file,
-                           check_current_version_and_new_tag, extra_vision_var, reach_new_path,
-                           create_task_for_update, delete_task, run_task_for_update)
+from update.utills.utills import (search_file,
+                                  check_current_version_and_new_tag, extra_vision_var, reach_new_path,
+                                  create_task_for_update, delete_task, run_task_for_update)
 
 
 class Update:
@@ -45,8 +45,7 @@ class Update:
     @classmethod
     def update(cls, *args, **kwargs):
         delete_task(task=SCHTASKS_NAME)
-        if not PYINSTALLER_WORK_DIR.exists():
-            PYINSTALLER_WORK_DIR.mkdir(parents=True, exist_ok=True)
+        PYINSTALLER_WORK_DIR.mkdir(parents=True, exist_ok=True)
         url = extra_vision_var(cls._new_tag)
         cls._download_file(url)
         cls._unpack_zip_archive()
@@ -64,7 +63,7 @@ class Update:
         logging.info("cls._prog_path: {}".format(cls._prog_path))
         create_task_for_update(path=cls._prog_path, t_name=SCHTASKS_NAME)
         run_task_for_update(task=SCHTASKS_NAME)
-        window_root.window.exit()
+        window.exit()
 
     @classmethod
     def _request_new_tag(cls):

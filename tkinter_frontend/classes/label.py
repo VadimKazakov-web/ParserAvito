@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-from tkinter import W
-from tkinter import ttk
+from tkinter import ttk, W
 from tkinter_frontend.classes import Base
 
 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 from tkinter_frontend.classes.frame import Frame
-from tkinter_frontend import frame
+from tkinter_frontend.window_root.frame_1.build import frame
 
 frame_custom = Frame(column=0, row=8, master=frame)
 frame_custom.build()

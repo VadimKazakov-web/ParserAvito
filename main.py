@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 import threading
 import logging.handlers
-from settings import *
+from settings import LOG_DIR, LOG_FILE, PYINSTALLER_WORK_DIR, BASE_DIR
 from tkinter_frontend.window_root.build import window as tk_interface
 from tkinter_frontend.build_tk import build_tk_interface
 from parser_avito_manager.backend_manager import ParserAvitoManager
+from update.utills.utills import ControlPyinstallerWorkDir
 
 FORMAT = '[%(asctime)s] %(message)s'
 formatter = logging.Formatter(FORMAT)
@@ -19,6 +20,9 @@ logging.root.handlers.clear()
 logging.root.addHandler(handler)
 
 logging.info("start program")
+
+ControlPyinstallerWorkDir.control_pyinstaller_work_dir(path=PYINSTALLER_WORK_DIR, desktop=BASE_DIR.parent)
+
 # instance = ParserAvitoManager()
 # thread = threading.Thread(target=instance.start)
 # thread.start()
