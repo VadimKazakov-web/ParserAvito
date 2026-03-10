@@ -81,8 +81,10 @@ def norm_hours_and_minute(hour, minute):
 def create_task_for_update(path, t_name):
     logging.info("path to task for schtasks: {}".format(path))
     time_for_command = get_time_for_command()
-    command = (f'schtasks /create /tn {t_name} /tr {path}'
-               f' /sc once /st {time_for_command}')
+    path = "\"" + r"'" + path + r"'" + "\""
+    command = "schtasks /create /tn {name} /tr {path} /sc once /st {time}".format(
+        name=t_name, path=path, time=time_for_command
+    )
     logging.info("schtasks command: \n{}".format(command))
     completed_process = subprocess.run(
         command, shell=True,
@@ -138,7 +140,7 @@ class ControlPyinstallerWorkDir:
                     return
                 else:
                     logging.info("the program has been moved: \n{}".format(new_prog_path))
-            time.sleep(20)
+            time.sleep(15)
             shutil.rmtree(path)
             logging.info("rm directory: \n{}".format(path))
             cls._rm_dir = True

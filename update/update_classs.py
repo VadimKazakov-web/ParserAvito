@@ -56,7 +56,7 @@ class Update:
         cls._prog_path = search_file(path=cls._unpack_project_root, suffix=".exe")
         logging.info("cls._prog_path: {}".format(cls._prog_path))
         try:
-            cls._prog_path = reach_new_path(path=cls._prog_path, desktop=PYINSTALLER_WORK_DIR)
+            cls._prog_path = reach_new_path(path=cls._prog_path, desktop=BASE_DIR.parent)
         except ManyExeFile:
             connector.update_info(text="много созданных экземпляров программы")
             return
