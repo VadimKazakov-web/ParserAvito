@@ -14,7 +14,7 @@ file_handler = True
 if not file_handler:
     handler = logging.StreamHandler()
 else:
-    handler = logging.handlers.RotatingFileHandler(filename=LOG_DIR / LOG_FILE, maxBytes=6000, backupCount=5)
+    handler = logging.handlers.RotatingFileHandler(filename=LOG_DIR / LOG_FILE, maxBytes=7000, backupCount=6)
 handler.setFormatter(formatter)
 logging.root.setLevel(logging.INFO)
 logging.root.handlers.clear()
