@@ -16,7 +16,7 @@ if not file_handler:
 else:
     handler = logging.handlers.RotatingFileHandler(filename=LOG_DIR / LOG_FILE, maxBytes=7000, backupCount=6)
 handler.setFormatter(formatter)
-logging.root.setLevel(logging.INFO)
+logging.root.setLevel(logging.WARNING)
 logging.root.handlers.clear()
 logging.root.addHandler(handler)
 
