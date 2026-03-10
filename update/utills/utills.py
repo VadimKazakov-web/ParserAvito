@@ -81,7 +81,7 @@ def norm_hours_and_minute(hour, minute):
 def create_task_for_update(path, t_name):
     logging.info("path to task for schtasks: {}".format(path))
     time_for_command = get_time_for_command()
-    path = "\"" + r"'" + path + r"'" + "\""
+    path = "\"" + r"'" + str(path) + r"'" + "\""
     command = "schtasks /create /tn {name} /tr {path} /sc once /st {time}".format(
         name=t_name, path=path, time=time_for_command
     )
