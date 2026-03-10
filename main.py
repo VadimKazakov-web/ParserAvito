@@ -21,11 +21,10 @@ logging.root.addHandler(handler)
 
 logging.info("start program")
 
-ControlPyinstallerWorkDir.control_pyinstaller_work_dir(path=PYINSTALLER_WORK_DIR, desktop=BASE_DIR.parent)
-
 # instance = ParserAvitoManager()
 # thread = threading.Thread(target=instance.start)
 # thread.start()
 build_tk_interface()
 tk_interface.start()
+ControlPyinstallerWorkDir.control_pyinstaller_work_dir(path=PYINSTALLER_WORK_DIR, desktop=BASE_DIR.parent)
 # thread.join()
