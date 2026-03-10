@@ -130,13 +130,14 @@ class ControlPyinstallerWorkDir:
     def control_pyinstaller_work_dir(cls, path, desktop):
         if path.exists() and not cls._rm_dir:
             prog_path = search_file(path=path, suffix=".exe")
-            try:
-                new_prog_path = reach_new_path(path=prog_path, desktop=desktop)
-            except ManyExeFile:
-                connector.update_info(text="много созданных экземпляров программы")
-                return
-            else:
-                logging.info("the program has been moved: \n{}".format(new_prog_path))
+            if prog_path:
+                try:
+                    new_prog_path = reach_new_path(path=prog_path, desktop=desktop)
+                except ManyExeFile:
+                    connector.update_info(text="много созданных экземпляров программы")
+                    return
+                else:
+                    logging.info("the program has been moved: \n{}".format(new_prog_path))
             time.sleep(20)
             shutil.rmtree(path)
             logging.info("rm directory: \n{}".format(path))
