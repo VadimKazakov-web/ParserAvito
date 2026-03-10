@@ -128,10 +128,6 @@ class Update:
 
     @classmethod
     def _compile_repo_from_code(cls):
-        # APP_NAME = "hj"
-        # cls._new_tag = "1.1.1"
-        # cls._unpack_project_root = Path(r"C:\Users\accou\pyinstaller_work_folder\project-repo\ParserAvito-1.2.1")
-        # cls._icon_path = Path(r"C:\Users\accou\pyinstaller_work_folder\project-repo\ParserAvito-1.2.1\free-icon-web-crawler-11892629.ico")
         logging.info("_compile_repo: start")
         command = "pyinstaller --name {name}[{tag}] --distpath {path} --workpath {path} --specpath {path} --icon {icon_path} --onefile --noconsole {path_script}".format(
             name=APP_NAME,
