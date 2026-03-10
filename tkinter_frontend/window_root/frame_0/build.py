@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import logging
-
 from tkinter_frontend.classes.frame import Frame
 from tkinter_frontend.window_root.build import window
 

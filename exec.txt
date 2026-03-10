@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "main.py", line 34, in <module>
+  File "tkinter_frontend\build_tk.py", line 6, in build_tk_interface
+  File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1147, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
+  File "pyimod02_importers.py", line 446, in exec_module
+  File "pyimod02_importers.py", line 383, in _check_name_wrapper
+  File "pyimod02_importers.py", line 503, in get_code
+  File "pyimod01_archive.py", line 119, in extract
+PermissionError: [Errno 13] Permission denied: 'C:\\Users\\accou\\pyinstaller_work_folder\\ParserAvito[1.1.13].exe

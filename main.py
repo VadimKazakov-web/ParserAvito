@@ -26,11 +26,12 @@ logging.info("start program")
 # thread = threading.Thread(target=instance.start)
 # thread.start()
 
+build_tk_interface()
+
 thread_control_work_dir = threading.Thread(target=functools.partial(
     ControlPyinstallerWorkDir.control_pyinstaller_work_dir, path=PYINSTALLER_WORK_DIR, desktop=BASE_DIR.parent
 ), daemon=True)
 thread_control_work_dir.start()
 
-build_tk_interface()
 tk_interface.start()
 # thread.join()
