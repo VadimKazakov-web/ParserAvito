@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+import PyInstaller.__main__
 from tkinter_frontend.window_root.build import window
 import time
 from settings import *
@@ -53,7 +54,8 @@ class Update:
         logging.info("cls._unpack_project_root: {}".format(cls._unpack_project_root))
         cls._icon_path = search_file(path=cls._unpack_project_root, suffix=".ico")
         logging.info("cls._icon_path: {}".format(cls._icon_path))
-        cls._compile_repo()
+        # cls._compile_repo()
+        cls._compile_repo_from_code()
         cls._prog_path = search_file(path=cls._unpack_project_root, suffix=".exe")
         logging.info("cls._prog_path: {}".format(cls._prog_path))
         try:
@@ -68,7 +70,12 @@ class Update:
 
     @classmethod
     def _request_new_tag(cls):
-        response = requests.get(url=cls._repo_tags, headers=cls._headers)
+        try:
+            response = requests.get(url=cls._repo_tags, headers=cls._headers)
+        except requests.exceptions.ProxyError:
+            logging.info("the client has a proxy enabled")
+            connector.update_info(text="отключите прокси сервер или VPN")
+            return
         st_code = response.status_code
         if st_code == 200:
             gen = cls._pattern_tags.finditer(response.text)
@@ -120,21 +127,16 @@ class Update:
             logging.warning(completed_process.stderr.decode(encoding="utf-8"))
 
     @classmethod
-    def _compile_current_repo(cls):
-        cls._unpack_project_root = Path(os.getcwd())
-        cls._icon_path = Path(os.getcwd()) / Path("free-icon-web-crawler-11892629.ico")
-        command = r"pyinstaller --name {name}({tag}) --distpath {path} --workpath {path} --specpath {path} --icon {icon_path} --onefile --noconsole {path_script}".format(
+    def _compile_repo_from_code(cls):
+        command = "pyinstaller --name {name}[{tag}] --distpath {path} --workpath {path} --specpath {path} --icon {icon_path} --onefile --noconsole {path_script}".format(
             name=APP_NAME,
             tag=cls._new_tag,
             path=cls._unpack_project_root,
             path_script=cls._unpack_project_root / Path("main.py"),
             icon_path=cls._icon_path
         )
-        completed_process = subprocess.run(command, executable=None, capture_output=True, shell=True)
-        if completed_process.returncode == 0:
-            logging.info("_compile_repo: done")
-        else:
-            logging.warning(completed_process.stderr.decode(encoding="utf-8"))
+        command_list = command.split(" ")[1:]
+        PyInstaller.__main__.run(command_list)
 
     @classmethod
     def _search_project_dir(cls):
