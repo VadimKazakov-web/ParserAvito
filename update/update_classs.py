@@ -52,6 +52,7 @@ class Update:
         cls._unpack_project_root = cls._search_project_dir()
         logging.info("cls._unpack_project_root: {}".format(cls._unpack_project_root))
         cls._icon_path = search_file(path=cls._unpack_project_root, suffix=".ico")
+        logging.info("cls._icon_path: {}".format(cls._icon_path))
         cls._compile_repo()
         cls._prog_path = search_file(path=cls._unpack_project_root, suffix=".exe")
         logging.info("cls._prog_path: {}".format(cls._prog_path))
@@ -74,7 +75,7 @@ class Update:
             match = next(gen)
             tag = match.group("tag")
             cls._new_tag = tag
-            logging.info("new tag repository: {}".format(cls._new_tag))
+            logging.info("last tag repository: {}".format(cls._new_tag))
             return tag
         else:
             logging.warning(f'_request_new_tag: response.status_code == {st_code}')
@@ -104,7 +105,8 @@ class Update:
 
     @classmethod
     def _compile_repo(cls):
-        command = r"pyinstaller --name {name}[{tag}] --distpath {path} --workpath {path} --specpath {path} --icon {icon_path} --onefile --noconsole {path_script}".format(
+        logging.info("_compile_repo: start")
+        command = "pyinstaller --name {name}[{tag}] --distpath {path} --workpath {path} --specpath {path} --icon {icon_path} --onefile --noconsole {path_script}".format(
             name=APP_NAME,
             tag=cls._new_tag,
             path=cls._unpack_project_root,
