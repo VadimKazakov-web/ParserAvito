@@ -10,7 +10,7 @@ from update.utills.utills import ControlPyinstallerWorkDir
 
 FORMAT = '[%(asctime)s] %(message)s'
 formatter = logging.Formatter(FORMAT)
-file_handler = False
+file_handler = True
 if not file_handler:
     handler = logging.StreamHandler()
 else:
