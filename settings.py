@@ -9,7 +9,7 @@ from update.utills.utills import ControlPyinstallerWorkDir
 from utills import get_desktop_path, get_pyinstaller_work_dir, get_drive_path
 
 
-VERSION = "1.1.17"
+VERSION = "1.1.18"
 APP_NAME = "ParserAvito"
 
 SCHTASKS_NAME = "parser_avito"

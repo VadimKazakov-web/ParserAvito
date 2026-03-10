@@ -140,7 +140,6 @@ class ControlPyinstallerWorkDir:
                     return
                 else:
                     logging.info("the program has been moved: \n{}".format(new_prog_path))
-            time.sleep(15)
             shutil.rmtree(path)
             logging.info("rm directory: \n{}".format(path))
             cls._rm_dir = True
