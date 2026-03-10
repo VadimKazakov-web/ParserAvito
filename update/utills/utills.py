@@ -4,6 +4,7 @@ import re
 import shutil
 import subprocess
 import datetime
+import time
 from pathlib import Path
 from exceptions import ManyExeFile
 from objects import connector
@@ -136,6 +137,7 @@ class ControlPyinstallerWorkDir:
                 return
             else:
                 logging.info("the program has been moved: \n{}".format(new_prog_path))
+            time.sleep(5)
             shutil.rmtree(path)
             logging.info("rm directory: \n{}".format(path))
             cls._rm_dir = True
