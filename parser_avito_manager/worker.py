@@ -197,6 +197,7 @@ class WorkerForAnnouncement(Worker):
         """
         Обход ссылок
         """
+        logging.info("links in WorkerForAnnouncement._go_to_url: \n{}".format(self._links))
         # обход ссылок на страницы
         for url in self._links:
             self._create_while(url=url)

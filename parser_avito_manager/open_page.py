@@ -25,12 +25,20 @@ class OpenPage(OpenUrl):
         """
         Получение ссылок на обьявления со страницы
         """
+        data = []
         for block in blocks:
             link = block.find_element(by=By.TAG_NAME, value='h2').find_element(by=By.TAG_NAME, value='a')
-            self._data.append(self._url_root + link.get_dom_attribute('href'))
-
-    def start(self, url):
-        data = super().start(url)
-        logging.info("length data in OpenPage: {}".format(len(self.data)))
+            data.append(self._url_root + link.get_dom_attribute('href'))
         return data
 
+    def start(self, url):
+        self._url = url
+        blocks = self._find_blocks()
+        logging.info("blocks in OpenPage: {}".format(blocks))
+        if blocks:
+            data = self._collect_data(blocks)
+            logging.info("data in OpenPage: {}".format(data))
+            if data:
+                logging.info("length data in OpenPage: {}".format(len(data)))
+                self._data = data
+                return self._data

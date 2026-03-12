@@ -22,9 +22,9 @@ logging.root.addHandler(handler)
 
 logging.info("start program")
 
-# instance = ParserAvitoManager()
-# thread = threading.Thread(target=instance.start)
-# thread.start()
+instance = ParserAvitoManager()
+thread = threading.Thread(target=instance.start)
+thread.start()
 
 build_tk_interface()
 
@@ -34,4 +34,4 @@ thread_control_work_dir = threading.Thread(target=functools.partial(
 thread_control_work_dir.start()
 
 tk_interface.start()
-# thread.join()
+thread.join()

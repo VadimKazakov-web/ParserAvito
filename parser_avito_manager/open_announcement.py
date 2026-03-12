@@ -5,6 +5,7 @@ from objects import connector
 from parser_avito_manager.base import OpenUrl
 import re
 from parser_avito_manager.database import DataBaseMixin
+from settings import LEFT_BLOCK_CSS, RIGHT_BLOCK_CSS
 
 
 class OpenAnnouncement(OpenUrl, DataBaseMixin):
@@ -18,8 +19,8 @@ class OpenAnnouncement(OpenUrl, DataBaseMixin):
         self.links = links
         self._length_links = len(self.links)
         self._data = []
-        self._target_block = {"block": '.style__contentLeftWrapper___XzU0Nj', "name": "left"}
-        self._target_block_seller = {"block": '.style__contentRightWrapper___XzU0Nj', "name": "right"}
+        self._target_block = {"block": LEFT_BLOCK_CSS, "name": "left"}
+        self._target_block_seller = {"block": RIGHT_BLOCK_CSS, "name": "right"}
         self.pattern_id = re.compile(r'data-marker="item-view/item-id">\D+?(?P<id>\d+?)\D', flags=re.DOTALL)
         self.pattern_date = re.compile(r'data-marker="item-view/item-date">.*?·.*?(?P<date>.+?)</span>', flags=re.DOTALL)
         self.pattern_total_views = re.compile(r'data-marker="item-view/total-views">(?P<total_views>\d+?)\D+?</span>', flags=re.DOTALL)
@@ -114,6 +115,17 @@ class OpenAnnouncement(OpenUrl, DataBaseMixin):
         connector.update_progress(text=progress_text)
 
     def start(self, url: str):
-        data = super().start(url)
-        self.insert_in_database(data)
-        self._update_progress()
+        self._url = url
+        logging.info("url in OpenAnnouncement: {}".format(self._url))
+        blocks = self._find_blocks()
+        logging.info("blocks in OpenAnnouncement: {}".format(blocks))
+        if blocks:
+            data = self._collect_data(blocks)
+            logging.info("data in OpenAnnouncement: {}".format(data))
+            if data:
+                logging.info("length data in OpenAnnouncement: {}".format(len(data)))
+                self._data = data
+                self.insert_in_database(self._data)
+                self._update_progress()
+                return self._data
+

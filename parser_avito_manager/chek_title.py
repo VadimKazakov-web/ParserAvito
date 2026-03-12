@@ -4,6 +4,7 @@ import logging
 import time
 from audio.audio_notes import AudioNotesMixin
 from exceptions import BreakWhile
+from objects import connector
 
 
 class CheckTitleMixin(AudioNotesMixin):
@@ -23,7 +24,9 @@ class CheckTitleMixin(AudioNotesMixin):
             if cls._pattern_problem_ip.search(driver.title):
 
                 if not cls._show_problem_ip_title:
-                    logging.info("\npage title: {}".format(driver.title))
+                    text = "page title: {}".format(driver.title)
+                    logging.info(text)
+                    connector.update_info(text=text)
                     cls._show_problem_ip_title = True
                     # cls.access_restricted_audio()
                 time.sleep(3)

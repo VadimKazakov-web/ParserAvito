@@ -57,3 +57,7 @@ REPOSITORY_TAGS = "https://github.com/VadimKazakov-web/ParserAvito/tags"
 
 PYINSTALLER_WORK_DIR_RM = False
 PYINSTALLER_WORK_DIR = get_pyinstaller_work_dir("pyinstaller_work_folder")
+
+#parsing
+LEFT_BLOCK_CSS = ".style__contentLeftWrapper___XzU0Nj"
+RIGHT_BLOCK_CSS = ".style__contentRightWrapper___XzU0Nj"

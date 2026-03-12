@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 
 
 class OpenUrl:
@@ -32,7 +33,9 @@ class OpenUrl:
     def start(self, url):
         self._url = url
         blocks = self._find_blocks()
+        logging.info("blocks in OpenUrl: {}".format(blocks))
         if blocks:
             data = self._collect_data(blocks)
+            logging.info("data in OpenUrl: {}".format(data))
             if data:
                 return data
