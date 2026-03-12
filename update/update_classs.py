@@ -55,18 +55,19 @@ class Update:
         cls._icon_path = search_file(path=cls._unpack_project_root, suffix=".ico")
         logging.info("cls._icon_path: {}".format(cls._icon_path))
         # cls._compile_repo()
-        cls._compile_repo_from_code()
-        cls._prog_path = search_file(path=cls._unpack_project_root, suffix=".exe")
-        logging.info("cls._prog_path: {}".format(cls._prog_path))
-        try:
-            cls._prog_path = reach_new_path(path=cls._prog_path, desktop=BASE_DIR.parent)
-        except ManyExeFile:
-            connector.update_info(text="много созданных экземпляров программы")
-            return
-        logging.info("cls._prog_path: {}".format(cls._prog_path))
-        create_task_for_update(path=cls._prog_path, t_name=SCHTASKS_NAME)
-        run_task_for_update(task=SCHTASKS_NAME)
-        window.exit()
+        # cls._compile_repo_from_code()
+        cls._test_pyinstaller()
+        # cls._prog_path = search_file(path=cls._unpack_project_root, suffix=".exe")
+        # logging.info("cls._prog_path: {}".format(cls._prog_path))
+        # try:
+        #     cls._prog_path = reach_new_path(path=cls._prog_path, desktop=BASE_DIR.parent)
+        # except ManyExeFile:
+        #     connector.update_info(text="много созданных экземпляров программы")
+        #     return
+        # logging.info("cls._prog_path: {}".format(cls._prog_path))
+        # create_task_for_update(path=cls._prog_path, t_name=SCHTASKS_NAME)
+        # run_task_for_update(task=SCHTASKS_NAME)
+        # window.exit()
 
     @classmethod
     def _request_new_tag(cls):
@@ -140,6 +141,17 @@ class Update:
         logging.info("command list: \n{}".format(command_list))
         PyInstaller.__main__.run(command_list)
         logging.info("_compile_repo: done")
+
+    @classmethod
+    def _test_pyinstaller(cls):
+        logging.info("_test_pyinstaller: start")
+        command = "python -m PyInstaller"
+        completed_process = subprocess.run(command, executable=None, capture_output=True, shell=True)
+        if completed_process.returncode == 0:
+            logging.info(completed_process.stdout.decode(encoding="oem"))
+            logging.info("_compile_repo: done")
+        else:
+            logging.warning(completed_process.stderr.decode(encoding="oem"))
 
     @classmethod
     def _search_project_dir(cls):

@@ -10,13 +10,13 @@ from update.utills.utills import ControlPyinstallerWorkDir
 
 FORMAT = '[%(asctime)s] %(message)s'
 formatter = logging.Formatter(FORMAT)
-file_handler = True
+file_handler = False
 if not file_handler:
     handler = logging.StreamHandler()
 else:
     handler = logging.handlers.RotatingFileHandler(filename=LOG_DIR / LOG_FILE, maxBytes=7000, backupCount=6)
 handler.setFormatter(formatter)
-logging.root.setLevel(logging.WARNING)
+logging.root.setLevel(logging.INFO)
 logging.root.handlers.clear()
 logging.root.addHandler(handler)
 
