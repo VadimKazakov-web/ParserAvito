@@ -1,13 +1,6 @@
 # -*- coding: utf-8 -*-
-import logging
-import os
-import shutil
 from pathlib import Path
-from exceptions import ManyExeFile
-from objects import connector
-from update.utills.utills import ControlPyinstallerWorkDir
 from utills import get_desktop_path, get_pyinstaller_work_dir, get_drive_path
-
 
 VERSION = "1.2.1"
 
@@ -17,7 +10,6 @@ SCHTASKS_NAME = "parser_avito"
 
 DRIVE_PATH = get_drive_path()
 BASE_DIR = Path(get_desktop_path()) / Path("ParserAvitoOutput")
-# BASE_DIR = Path(os.getcwd()) / Path("ParserAvitoOutput")
 if not BASE_DIR.exists():
     BASE_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -58,6 +50,9 @@ REPOSITORY_TAGS = "https://github.com/VadimKazakov-web/ParserAvito/tags"
 PYINSTALLER_WORK_DIR_RM = False
 PYINSTALLER_WORK_DIR = get_pyinstaller_work_dir("pyinstaller_work_folder")
 
-#parsing
+# parsing
 LEFT_BLOCK_ANNOUNCEMENT_CSS = ".d9134745e0e171a2"
 RIGHT_BLOCK_ANNOUNCEMENT_CSS = "._58fc8f170622acf7"
+
+# download program
+URL_S3_BUCKET = "https://s3.twcstorage.ru/parser-avito-download/ParserAvito.exe"

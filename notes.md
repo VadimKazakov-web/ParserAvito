@@ -1,4 +1,5 @@
-[команды](#command)
+[команды](#command)<br>
+[где скачать программу][1]<br>
 
 
 
@@ -14,3 +15,6 @@
 
 * команда для установки requests:
     > pip3 install requests
+
+
+[1]: https://s3.twcstorage.ru/parser-avito-download/ParserAvito.exe

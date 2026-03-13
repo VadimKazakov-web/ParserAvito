@@ -4,9 +4,24 @@ import shutil
 import subprocess
 import winreg
 import logging
+import logging.handlers
 import platform
 from pathlib import Path
 from exceptions import PlatformError
+from settings import *
+
+
+def logging_settings(maxBytes=7000, backupCount=6, file_handler=True):
+    FORMAT = '[%(asctime)s] %(message)s'
+    formatter = logging.Formatter(FORMAT)
+    if not file_handler:
+        handler = logging.StreamHandler()
+    else:
+        handler = logging.handlers.RotatingFileHandler(filename=LOG_DIR / LOG_FILE, maxBytes=maxBytes, backupCount=backupCount)
+    handler.setFormatter(formatter)
+    logging.root.setLevel(logging.INFO)
+    logging.root.handlers.clear()
+    logging.root.addHandler(handler)
 
 
 def get_pyinstaller_work_dir(work_dir):
@@ -48,4 +63,16 @@ def get_desktop_path():
         return value
     finally:
         winreg.CloseKey(winreg.HKEY_CURRENT_USER)
+
+
+class ControlPyinstallerWorkDir:
+
+    _rm_dir = False
+
+    @classmethod
+    def control_pyinstaller_work_dir(cls, path):
+        if path.exists() and not cls._rm_dir:
+            shutil.rmtree(path)
+            logging.info("rm directory: \n{}".format(path))
+            cls._rm_dir = True
 

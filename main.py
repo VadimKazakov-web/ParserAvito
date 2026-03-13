@@ -2,23 +2,13 @@
 import functools
 import threading
 import logging.handlers
-from settings import LOG_DIR, LOG_FILE, PYINSTALLER_WORK_DIR, BASE_DIR
+from settings import PYINSTALLER_WORK_DIR
 from tkinter_frontend.window_root.build import window as tk_interface
 from tkinter_frontend.build_tk import build_tk_interface
 from parser_avito_manager.backend_manager import ParserAvitoManager
-from update.utills.utills import ControlPyinstallerWorkDir
+from utills import ControlPyinstallerWorkDir, logging_settings
 
-FORMAT = '[%(asctime)s] %(message)s'
-formatter = logging.Formatter(FORMAT)
-file_handler = False
-if not file_handler:
-    handler = logging.StreamHandler()
-else:
-    handler = logging.handlers.RotatingFileHandler(filename=LOG_DIR / LOG_FILE, maxBytes=7000, backupCount=6)
-handler.setFormatter(formatter)
-logging.root.setLevel(logging.INFO)
-logging.root.handlers.clear()
-logging.root.addHandler(handler)
+logging_settings(file_handler=False)
 
 logging.info("start program")
 
@@ -29,8 +19,7 @@ thread.start()
 build_tk_interface()
 
 thread_control_work_dir = threading.Thread(target=functools.partial(
-    ControlPyinstallerWorkDir.control_pyinstaller_work_dir, path=PYINSTALLER_WORK_DIR, desktop=BASE_DIR.parent
-), daemon=True)
+    ControlPyinstallerWorkDir.control_pyinstaller_work_dir, path=PYINSTALLER_WORK_DIR), daemon=True)
 thread_control_work_dir.start()
 
 tk_interface.start()

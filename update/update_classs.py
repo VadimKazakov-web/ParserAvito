@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 import logging
 import PyInstaller.__main__
+
+from exceptions import ManyExeFile
+from objects import connector
 from tkinter_frontend.window_root.build import window
-import time
 from settings import *
 import subprocess
 import requests
@@ -18,9 +20,6 @@ class Update:
     _repo_tags = REPOSITORY_TAGS
     _unpack_project_root = ""
     _new_tag = ""
-    _link_for_zip_archive = ""
-    _icon_path = ""
-    _prog_path = ""
     _headers = {
         "Accept": "application/json,text/html",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 YaBrowser/25.12.0.0 Safari/537.36",
@@ -28,15 +27,14 @@ class Update:
     _repo = REPOSITORY
     _repo_name = Path(REPOSITORY).stem
     _repo_dir = _repo_name
-    _archive_name = Path(f'{_repo_name}.zip')
-    _archive_path = PYINSTALLER_WORK_DIR / _archive_name
-    _unpack_archive = PYINSTALLER_WORK_DIR / Path("project-repo")
+    _program_path = None
 
     @classmethod
     def check_update(cls, *args, **kwargs):
         tag = cls._request_new_tag()
         if not check_current_version_and_new_tag(tag, VERSION):
             text = f'доступна новая версия: {tag}'
+            cls._program_path = PYINSTALLER_WORK_DIR / Path(f'{cls._repo_name}[{tag}].exe')
             connector.update_version(text=text)
             connector.gen_install_event()
         else:
@@ -47,27 +45,17 @@ class Update:
     def update(cls, *args, **kwargs):
         delete_task(task=SCHTASKS_NAME)
         PYINSTALLER_WORK_DIR.mkdir(parents=True, exist_ok=True)
-        url = extra_vision_var(cls._new_tag)
-        cls._download_file(url)
-        cls._unpack_zip_archive()
-        cls._unpack_project_root = cls._search_project_dir()
-        logging.info("cls._unpack_project_root: {}".format(cls._unpack_project_root))
-        cls._icon_path = search_file(path=cls._unpack_project_root, suffix=".ico")
-        logging.info("cls._icon_path: {}".format(cls._icon_path))
-        # cls._compile_repo()
-        # cls._compile_repo_from_code()
-        cls._test_pyinstaller()
-        # cls._prog_path = search_file(path=cls._unpack_project_root, suffix=".exe")
-        # logging.info("cls._prog_path: {}".format(cls._prog_path))
-        # try:
-        #     cls._prog_path = reach_new_path(path=cls._prog_path, desktop=BASE_DIR.parent)
-        # except ManyExeFile:
-        #     connector.update_info(text="много созданных экземпляров программы")
-        #     return
-        # logging.info("cls._prog_path: {}".format(cls._prog_path))
-        # create_task_for_update(path=cls._prog_path, t_name=SCHTASKS_NAME)
-        # run_task_for_update(task=SCHTASKS_NAME)
-        # window.exit()
+        cls._download_file(url=URL_S3_BUCKET, path_file=cls._program_path)
+        logging.info("cls._program_path: {}".format(cls._program_path))
+        try:
+            cls._program_path = reach_new_path(path=cls._program_path, desktop=BASE_DIR.parent)
+        except ManyExeFile:
+            connector.update_info(text="много созданных экземпляров программы")
+            return
+        logging.info("cls._program_path: {}".format(cls._program_path))
+        create_task_for_update(path=cls._program_path, t_name=SCHTASKS_NAME)
+        run_task_for_update(task=SCHTASKS_NAME)
+        window.exit()
 
     @classmethod
     def _request_new_tag(cls):
@@ -89,11 +77,10 @@ class Update:
             logging.warning(f'_request_new_tag: response.status_code == {st_code}')
 
     @classmethod
-    def _download_file(cls, url):
-        time.sleep(1)
+    def _download_file(cls, url: str, path_file: Path) -> None:
         response = requests.get(url, headers=cls._headers)
         if response.status_code == 200:
-            cls._archive_path.write_bytes(response.content)
+            path_file.write_bytes(response.content)
 
     def _get_repo(self):
         # Аргумент shell (по умолчанию False),
