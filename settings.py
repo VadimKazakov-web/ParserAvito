@@ -37,7 +37,7 @@ DB_TABLE_NAME = "announcement"
 
 TIMEOUT_EXCEPTIONS_COUNTER = 4
 
-TIMEOUT = 5
+TIMEOUT = 6
 
 TOP_ANNOUNCEMENT = 100
 
@@ -59,5 +59,5 @@ PYINSTALLER_WORK_DIR_RM = False
 PYINSTALLER_WORK_DIR = get_pyinstaller_work_dir("pyinstaller_work_folder")
 
 #parsing
-LEFT_BLOCK_CSS = ".style__contentLeftWrapper___XzU0Nj"
-RIGHT_BLOCK_CSS = ".style__contentRightWrapper___XzU0Nj"
+LEFT_BLOCK_ANNOUNCEMENT_CSS = ".d9134745e0e171a2"
+RIGHT_BLOCK_ANNOUNCEMENT_CSS = "._58fc8f170622acf7"

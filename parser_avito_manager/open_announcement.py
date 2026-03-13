@@ -5,7 +5,7 @@ from objects import connector
 from parser_avito_manager.base import OpenUrl
 import re
 from parser_avito_manager.database import DataBaseMixin
-from settings import LEFT_BLOCK_CSS, RIGHT_BLOCK_CSS
+from settings import LEFT_BLOCK_ANNOUNCEMENT_CSS, RIGHT_BLOCK_ANNOUNCEMENT_CSS
 
 
 class OpenAnnouncement(OpenUrl, DataBaseMixin):
@@ -19,8 +19,8 @@ class OpenAnnouncement(OpenUrl, DataBaseMixin):
         self.links = links
         self._length_links = len(self.links)
         self._data = []
-        self._target_block = {"block": LEFT_BLOCK_CSS, "name": "left"}
-        self._target_block_seller = {"block": RIGHT_BLOCK_CSS, "name": "right"}
+        self._target_block_left = {"block": LEFT_BLOCK_ANNOUNCEMENT_CSS, "name": "left"}
+        self._target_block_right = {"block": RIGHT_BLOCK_ANNOUNCEMENT_CSS, "name": "right"}
         self.pattern_id = re.compile(r'data-marker="item-view/item-id">\D+?(?P<id>\d+?)\D', flags=re.DOTALL)
         self.pattern_date = re.compile(r'data-marker="item-view/item-date">.*?·.*?(?P<date>.+?)</span>', flags=re.DOTALL)
         self.pattern_total_views = re.compile(r'data-marker="item-view/total-views">(?P<total_views>\d+?)\D+?</span>', flags=re.DOTALL)
@@ -51,7 +51,7 @@ class OpenAnnouncement(OpenUrl, DataBaseMixin):
         Поиск левого и правого блока html по селектору
         """
         data = {}
-        for target in self._target_block, self._target_block_seller:
+        for target in self._target_block_left, self._target_block_right:
             html = self._find_block(target_block=target.get("block"))
             data[target.get("name")] = html
         return data
@@ -60,17 +60,17 @@ class OpenAnnouncement(OpenUrl, DataBaseMixin):
         """
         Поиск нужных данных на странице обьявления
         """
-        block, block_seller = blocks.get("left"), blocks.get("right")
+        block_left, block_right = blocks.get("left"), blocks.get("right")
         result = {}
         end_point = None
-        result_title = self.pattern_title.search(block)
+        result_title = self.pattern_title.search(block_left)
         if result_title:
             title = result_title.group("title")
             result["title"] = title
             # используются end_point на html странице, для поиска по шаблону по "цепочке"
             end_point = result_title.end()
 
-        result_id = self.pattern_id.search(block[end_point:])
+        result_id = self.pattern_id.search(block_left[end_point:])
         if result_id:
             result['id'] = result_id.group("id")
             end_point = result_id.end()
@@ -78,21 +78,21 @@ class OpenAnnouncement(OpenUrl, DataBaseMixin):
             logging.info("url without id: {}".format(self._url))
             return
 
-        result_date = self.pattern_date.search(block[end_point:])
+        result_date = self.pattern_date.search(block_left[end_point:])
         if result_date:
             result['date'] = result_date.group("date")
             end_point = result_date.end()
 
-        result_total_views = self.pattern_total_views.search(block[end_point:])
+        result_total_views = self.pattern_total_views.search(block_left[end_point:])
         if result_total_views:
             result['total_views'] = int(result_total_views.group("total_views"))
             end_point = result_total_views.end()
 
-        result_today_views = self.pattern_today_views.search(block[end_point:])
+        result_today_views = self.pattern_today_views.search(block_left[end_point:])
         if result_today_views:
             result['today_views'] = int(result_today_views.group("today_views"))
 
-        result_rating = self.pattern_rating.search(block_seller)
+        result_rating = self.pattern_rating.search(block_right)
         if result_rating:
             result["rating"] = float(result_rating.group("rating"))
             end_point = result_rating.end()
@@ -100,7 +100,7 @@ class OpenAnnouncement(OpenUrl, DataBaseMixin):
             result["rating"] = 0.0
             end_point = 0
 
-        result_reviews = self.pattern_reviews.search(block_seller[end_point:])
+        result_reviews = self.pattern_reviews.search(block_right[end_point:])
         if result_reviews:
             result["reviews"] = int(result_reviews.group("reviews"))
         else:
