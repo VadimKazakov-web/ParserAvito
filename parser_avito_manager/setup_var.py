@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 from pathlib import Path
-from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.webdriver import WebDriver
 from exceptions import PushExit
 from objects import connector
 from parser_avito_manager import PreparationLinksForPages
@@ -21,12 +22,12 @@ def setup_options():
     """
     Создание драйвера для работы с браузером
     """
-    options = webdriver.ChromeOptions()
+    options = Options()
     options.add_argument("--no-sandbox")
     options.timeouts = {"pageLoad": 30000}
     options.page_load_strategy = 'eager'
     options.browser_version = 'stable'
-    driver = webdriver.Chrome(options=options)
+    driver = WebDriver(options=options)
     driver.implicitly_wait(60)
     return driver
 

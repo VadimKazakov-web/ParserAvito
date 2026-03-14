@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from pathlib import Path
-from utills import get_desktop_path, get_pyinstaller_work_dir, get_drive_path
+from utills.utils import get_desktop_path, get_pyinstaller_work_dir, get_drive_path
 
 VERSION = "1.2.1"
 
@@ -55,4 +55,8 @@ LEFT_BLOCK_ANNOUNCEMENT_CSS = ".d9134745e0e171a2"
 RIGHT_BLOCK_ANNOUNCEMENT_CSS = "._58fc8f170622acf7"
 
 # download program
-URL_S3_BUCKET = "https://s3.twcstorage.ru/parser-avito-download/ParserAvito.exe"
+URL_S3_BUCKET_PROG = "https://s3.twcstorage.ru/parser-avito-download/ParserAvito/ParserAvito.exe"
+URL_S3_BUCKET_XML = "https://s3.twcstorage.ru/parser-avito-download/ParserAvito/parser.xml"
+
+
+

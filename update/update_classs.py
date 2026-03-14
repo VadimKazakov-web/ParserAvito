@@ -1,18 +1,16 @@
 # -*- coding: utf-8 -*-
 import logging
-import PyInstaller.__main__
+import shutil
 
 from exceptions import ManyExeFile
 from objects import connector
-from tkinter_frontend.window_root.build import window
 from settings import *
-import subprocess
 import requests
 import re
-import shutil
-from update.utills.utills import (search_file,
-                                  check_current_version_and_new_tag, extra_vision_var, reach_new_path,
-                                  create_task_for_update, delete_task, run_task_for_update)
+from tkinter_frontend.window_root.build import window
+from update.utills.utills import (run_task_for_update,
+                                  check_current_version_and_new_tag, reach_new_path,
+                                  create_task_for_update, delete_task, get_datetime, rename_path)
 
 
 class Update:
@@ -28,6 +26,7 @@ class Update:
     _repo_name = Path(REPOSITORY).stem
     _repo_dir = _repo_name
     _program_path = None
+    _xml_path = PYINSTALLER_WORK_DIR / Path("parser.xml")
 
     @classmethod
     def check_update(cls, *args, **kwargs):
@@ -45,17 +44,30 @@ class Update:
     def update(cls, *args, **kwargs):
         delete_task(task=SCHTASKS_NAME)
         PYINSTALLER_WORK_DIR.mkdir(parents=True, exist_ok=True)
-        cls._download_file(url=URL_S3_BUCKET, path_file=cls._program_path)
+        cls._download_file(url=URL_S3_BUCKET_PROG, path_file=cls._program_path)
+        cls._download_file(url=URL_S3_BUCKET_XML, path_file=cls._xml_path)
         logging.info("cls._program_path: {}".format(cls._program_path))
         try:
-            cls._program_path = reach_new_path(path=cls._program_path, desktop=BASE_DIR.parent)
-        except ManyExeFile:
-            connector.update_info(text="много созданных экземпляров программы")
-            return
+            cls._program_path = shutil.move(src=cls._program_path, dst=BASE_DIR.parent)
+        except shutil.Error as err:
+            if re.search(r'already exists', err.args[0]):
+                cls._program_path = rename_path(cls._program_path)
+                cls._program_path = shutil.move(src=cls._program_path, dst=BASE_DIR.parent)
         logging.info("cls._program_path: {}".format(cls._program_path))
-        create_task_for_update(path=cls._program_path, t_name=SCHTASKS_NAME)
+        cls._create_xml_settings()
+        create_task_for_update(path=cls._xml_path, t_name=SCHTASKS_NAME)
         run_task_for_update(task=SCHTASKS_NAME)
         window.exit()
+
+    @classmethod
+    def _create_xml_settings(cls):
+        xml_string = cls._xml_path.read_text(encoding="utf-16")
+        date, _time = get_datetime()
+        xml_string = xml_string.replace("{task}", SCHTASKS_NAME)
+        xml_string = xml_string.replace("{date}", date)
+        xml_string = xml_string.replace("{time}", _time)
+        xml_string = xml_string.replace("{program_path}", str(cls._program_path))
+        cls._xml_path.write_text(xml_string, encoding="utf-16")
 
     @classmethod
     def _request_new_tag(cls):
@@ -81,67 +93,3 @@ class Update:
         response = requests.get(url, headers=cls._headers)
         if response.status_code == 200:
             path_file.write_bytes(response.content)
-
-    def _get_repo(self):
-        # Аргумент shell (по умолчанию False),
-        # указывающий, следует ли использовать оболочку в качестве исполняемой программы.
-        # Если shell равно True, рекомендуется передавать args в виде строки, а не последовательности.
-        # Аргумент executable указывает на программу-заглушку, которую нужно запустить.
-        # Он используется крайне редко. Когда shell=False, executable заменяет программу, указанную в args.
-        # Однако исходные args по-прежнему передаются программе.
-        completed_process = subprocess.run(f'git clone {REPOSITORY} {self._repo_dir}', executable=None,
-                                           capture_output=True, shell=True)
-        if completed_process.returncode == 0:
-            logging.info("_get_repo: done")
-
-    @classmethod
-    def _unpack_zip_archive(cls):
-        shutil.unpack_archive(filename=cls._archive_path, extract_dir=cls._unpack_archive, format="zip")
-
-    @classmethod
-    def _compile_repo(cls):
-        logging.info("_compile_repo: start")
-        command = "pyinstaller --name {name}[{tag}] --distpath {path} --workpath {path} --specpath {path} --icon {icon_path} --onefile --noconsole {path_script}".format(
-            name=APP_NAME,
-            tag=cls._new_tag,
-            path=cls._unpack_project_root,
-            path_script=cls._unpack_project_root / Path("main.py"),
-            icon_path=cls._icon_path
-        )
-        completed_process = subprocess.run(command, executable=None, capture_output=True, shell=True)
-        if completed_process.returncode == 0:
-            logging.info("_compile_repo: done")
-        else:
-            logging.warning(completed_process.stderr.decode(encoding="utf-8"))
-
-    @classmethod
-    def _compile_repo_from_code(cls):
-        logging.info("_compile_repo: start")
-        command = "pyinstaller --name {name}[{tag}] --distpath {path} --workpath {path} --specpath {path} --icon {icon_path} --onefile --noconsole {path_script}".format(
-            name=APP_NAME,
-            tag=cls._new_tag,
-            path=cls._unpack_project_root,
-            path_script=cls._unpack_project_root / Path("main.py"),
-            icon_path=cls._icon_path
-        )
-        command_list = command.split(" ")[1:]
-        logging.info("command list: \n{}".format(command_list))
-        PyInstaller.__main__.run(command_list)
-        logging.info("_compile_repo: done")
-
-    @classmethod
-    def _test_pyinstaller(cls):
-        logging.info("_test_pyinstaller: start")
-        command = "python -m PyInstaller"
-        completed_process = subprocess.run(command, executable=None, capture_output=True, shell=True)
-        if completed_process.returncode == 0:
-            logging.info(completed_process.stdout.decode(encoding="oem"))
-            logging.info("_compile_repo: done")
-        else:
-            logging.warning(completed_process.stderr.decode(encoding="oem"))
-
-    @classmethod
-    def _search_project_dir(cls):
-        for child in cls._unpack_archive.iterdir():
-            if child.stem.startswith(cls._repo_name):
-                return Path(child)

@@ -113,5 +113,6 @@ class ParserAvitoManager(SetupVarMixin, TimeMeasurementMixin):
                 connector.update_info(text=err)
                 traceback.print_exception(err)
                 self.__init__()
+                return
             else:
                 self.__init__()

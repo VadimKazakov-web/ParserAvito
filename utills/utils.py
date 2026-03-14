@@ -8,10 +8,10 @@ import logging.handlers
 import platform
 from pathlib import Path
 from exceptions import PlatformError
-from settings import *
 
 
 def logging_settings(maxBytes=7000, backupCount=6, file_handler=True):
+    from settings import LOG_DIR, LOG_FILE
     FORMAT = '[%(asctime)s] %(message)s'
     formatter = logging.Formatter(FORMAT)
     if not file_handler:
