@@ -6,7 +6,9 @@ __pycache__
 *.html
 *.wav
 *.pyc
+parser.xml
 /build
 /dist
 /ParserAvitoOutput
 /proxi_extension
+/selenium

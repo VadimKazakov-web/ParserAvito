@@ -5,6 +5,7 @@ import shutil
 import subprocess
 import datetime
 import time
+import random
 from pathlib import Path
 from exceptions import ManyExeFile
 from objects import connector
@@ -16,11 +17,17 @@ def search_file(path: Path, suffix) -> Path:
             return Path(child)
 
 
+def random_str(num):
+    text = [random.choice('qwertyuioplkjhgfdsazxcvbnm') for _ in range(num)]
+    result = ''.join(text)
+    return result
+
+
 def rename_path(path: Path) -> Path:
     parent = path.parent
     stem = path.stem
     suffix = path.suffix
-    stem += f'_{suffix}'
+    stem += f'_{random_str(7)}{suffix}'
     new_path = parent / stem
     return path.rename(new_path)
 
@@ -58,11 +65,17 @@ def extra_vision_var(tag: str) -> str:
     return url
 
 
-def get_time_for_command():
+def get_datetime():
     delta = datetime.timedelta(minutes=2)
     result = datetime.datetime.now() + delta
-    time_str = norm_hours_and_minute(str(result.time().hour), str(result.time().minute))
-    return time_str
+    _time = result.time()
+    date = result.date()
+    month = str(date.month)
+    if len(month) < 2:
+        month = "0" + month
+    date_str = f"{date.year}-{month}-{date.day}"
+    time_str = norm_hours_and_minute(str(_time.hour), str(_time.minute))
+    return date_str, time_str
 
 
 def norm_hours_and_minute(hour, minute):
@@ -76,15 +89,13 @@ def norm_hours_and_minute(hour, minute):
         result += minute
     elif len(minute) == 1:
         result += f"0{minute}"
+    result += ":00"
     return result
 
 
 def create_task_for_update(path, t_name):
-    logging.info("path to task for schtasks: {}".format(path))
-    time_for_command = get_time_for_command()
-    path = "\"" + r"'" + str(path) + r"'" + "\""
-    command = "schtasks /create /tn {name} /tr {path} /sc once /st {time}".format(
-        name=t_name, path=path, time=time_for_command
+    command = "schtasks /create /tn {name} /xml {path}".format(
+        name=t_name, path=path
     )
     logging.info("schtasks command: \n{}".format(command))
     completed_process = subprocess.run(
