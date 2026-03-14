@@ -50,6 +50,7 @@ class Update:
         try:
             cls._program_path = shutil.move(src=cls._program_path, dst=BASE_DIR.parent)
         except shutil.Error as err:
+            logging.info(err)
             if re.search(r'already exists', err.args[0]):
                 cls._program_path = rename_path(cls._program_path)
                 cls._program_path = shutil.move(src=cls._program_path, dst=BASE_DIR.parent)
@@ -92,4 +93,7 @@ class Update:
     def _download_file(cls, url: str, path_file: Path) -> None:
         response = requests.get(url, headers=cls._headers)
         if response.status_code == 200:
+            logging.info("write in {}".format(path_file))
             path_file.write_bytes(response.content)
+        else:
+            logging.info("status code in _download_file: {}".format(response.status_code))
