@@ -58,6 +58,7 @@ class Update:
         cls._create_xml_settings()
         create_task_for_update(path=cls._xml_path, t_name=SCHTASKS_NAME)
         run_task_for_update(task=SCHTASKS_NAME)
+        shutil.rmtree(PYINSTALLER_WORK_DIR)
         window.exit()
 
     @classmethod
