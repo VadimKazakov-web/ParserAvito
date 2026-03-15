@@ -16,3 +16,8 @@ def run_command(command_list):
 
 new_tag = sys.argv[1]
 commit_message = sys.argv[2]
+
+git_add = ["git", "add", "."]
+run_command(git_add)
+git_commit = ["git", "commit", "-m", commit_message]
+run_command(git_commit)
