@@ -2,7 +2,7 @@
 from pathlib import Path
 from utills.utils import get_desktop_path, get_pyinstaller_work_dir, get_drive_path
 
-VERSION = "1.0.4"
+VERSION = "1.0.5"
 
 APP_NAME = "ParserAvito"
 
