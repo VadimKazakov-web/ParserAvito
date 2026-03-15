@@ -21,3 +21,9 @@ git_add = ["git", "add", "."]
 run_command(git_add)
 git_commit = ["git", "commit", "-m", commit_message]
 run_command(git_commit)
+git_add_new_tag = ["git", "tag", "-a", new_tag, "-m", new_tag]
+run_command(git_add_new_tag)
+pyinstaller_compile = ["pyinstaller", "parser.spec"]
+run_command(pyinstaller_compile)
+upload_in_bucket = ["python", "publish_s3_bucket.py"]
+run_command(upload_in_bucket)

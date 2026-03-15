@@ -7,6 +7,7 @@ __pycache__
 *.wav
 *.pyc
 parser.xml
+publish_s3_bucket.py
 /build
 /dist
 /ParserAvitoOutput
