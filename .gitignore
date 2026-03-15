@@ -6,7 +6,6 @@ __pycache__
 *.html
 *.wav
 *.pyc
-parser.xml
 publish_s3_bucket.py
 /build
 /dist

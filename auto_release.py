@@ -2,6 +2,8 @@
 import sys
 import subprocess
 
+"""Модуль для автоматизации рутинных команд для релиза, добавлен в репозиторий чтобы не забыть"""
+
 
 def run_command(command_list):
     complete_process = subprocess.run(command_list, capture_output=True, shell=True)
