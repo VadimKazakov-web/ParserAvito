@@ -30,12 +30,11 @@ class OpenUrl:
     def _collect_data(self, blocks):
         pass
 
-    def start(self, url):
+    def start(self, url: str) -> list:
         self._url = url
         blocks = self._find_blocks()
-        logging.info("blocks in OpenUrl: {}".format(blocks))
         if blocks:
             data = self._collect_data(blocks)
-            logging.info("data in OpenUrl: {}".format(data))
             if data:
-                return data
+                self._data = data
+                return self._data

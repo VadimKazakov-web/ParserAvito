@@ -114,18 +114,9 @@ class OpenAnnouncement(OpenUrl, DataBaseMixin):
         progress_text = f'отсканировано объявлений: {self.counter}/{self._length_links} ({round(self.counter / self._length_links * 100)}%)'
         connector.update_progress(text=progress_text)
 
-    def start(self, url: str):
-        self._url = url
-        logging.info("url in OpenAnnouncement: {}".format(self._url))
-        blocks = self._find_blocks()
-        logging.info("blocks in OpenAnnouncement: {}".format(blocks))
-        if blocks:
-            data = self._collect_data(blocks)
-            logging.info("data in OpenAnnouncement: {}".format(data))
-            if data:
-                logging.info("length data in OpenAnnouncement: {}".format(len(data)))
-                self._data = data
-                self.insert_in_database(self._data)
-                self._update_progress()
-                return self._data
+    def start(self, url: str) -> list:
+        data = super().start(url)
+        self.insert_in_database(self._data)
+        self._update_progress()
+        return data
 

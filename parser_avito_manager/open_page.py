@@ -31,14 +31,6 @@ class OpenPage(OpenUrl):
             data.append(self._url_root + link.get_dom_attribute('href'))
         return data
 
-    def start(self, url):
-        self._url = url
-        blocks = self._find_blocks()
-        logging.info("blocks in OpenPage: {}".format(blocks))
-        if blocks:
-            data = self._collect_data(blocks)
-            logging.info("data in OpenPage: {}".format(data))
-            if data:
-                logging.info("length data in OpenPage: {}".format(len(data)))
-                self._data = data
-                return self._data
+    def start(self, url: str) -> list:
+        data = super().start(url)
+        return data
