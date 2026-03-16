@@ -23,7 +23,8 @@ argv = sys.argv
 new_tag = argv[1]
 commit_message = argv[2]
 
-VERSION_PROG_FILE.write_text(new_tag)
+text = f'version = "{new_tag}"'
+VERSION_PROG_FILE.write_text(text)
 
 git_add = ["git", "add", "."]
 run_command(git_add)

@@ -8,6 +8,7 @@ import logging.handlers
 import platform
 from pathlib import Path
 from exceptions import PlatformError
+from auto_rel.settings import VERSION_PROG_FILE
 
 
 def logging_settings(maxBytes=7000, backupCount=6, file_handler=True):
@@ -65,14 +66,6 @@ def get_desktop_path():
         winreg.CloseKey(winreg.HKEY_CURRENT_USER)
 
 
-class ControlPyinstallerWorkDir:
-
-    _rm_dir = False
-
-    @classmethod
-    def control_pyinstaller_work_dir(cls, path):
-        if path.exists() and not cls._rm_dir:
-            shutil.rmtree(path)
-            logging.info("rm directory: \n{}".format(path))
-            cls._rm_dir = True
-
+def get_version_prog(path: Path):
+    version = path.read_text()
+    return version

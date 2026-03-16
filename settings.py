@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 from pathlib import Path
-from utills.utils import get_desktop_path, get_pyinstaller_work_dir, get_drive_path
+from utills.utils import get_desktop_path, get_pyinstaller_work_dir, get_drive_path, get_version_prog
+from auto_rel.settings import VERSION_PROG_FILE
 
 APP_NAME = "ParserAvito"
+
+VERSION = get_version_prog(VERSION_PROG_FILE)
 
 SCHTASKS_NAME = "parser_avito"
 
@@ -55,6 +58,7 @@ RIGHT_BLOCK_ANNOUNCEMENT_CSS = "._58fc8f170622acf7"
 # download program
 URL_S3_BUCKET_PROG = "https://s3.twcstorage.ru/parser-avito-download/ParserAvito.exe"
 URL_S3_BUCKET_XML = "https://s3.twcstorage.ru/parser-avito-download/parser.xml"
+URL_S3_BUCKET_VERSION_PROG = "https://s3.twcstorage.ru/parser-avito-download/version.py"
 
 
 

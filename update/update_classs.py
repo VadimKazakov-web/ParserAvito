@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
 import shutil
-
 from exceptions import ManyExeFile
 from objects import connector
 from settings import *
@@ -11,6 +10,7 @@ from tkinter_frontend.window_root.build import window
 from update.utills.utills import (run_task_for_update,
                                   check_current_version_and_new_tag, reach_new_path,
                                   create_task_for_update, delete_task, get_datetime, rename_path)
+from version import version
 
 
 class Update:
@@ -25,13 +25,15 @@ class Update:
     _repo = REPOSITORY
     _repo_name = Path(REPOSITORY).stem
     _repo_dir = _repo_name
+
     _program_path = None
     _xml_path = PYINSTALLER_WORK_DIR / Path("parser.xml")
+    _version_prog_path = PYINSTALLER_WORK_DIR / Path("version.txt")
 
     @classmethod
     def check_update(cls, *args, **kwargs):
         tag = cls._request_new_tag()
-        if not check_current_version_and_new_tag(tag, VERSION):
+        if not check_current_version_and_new_tag(tag, version):
             text = f'доступна новая версия: {tag}'
             cls._program_path = PYINSTALLER_WORK_DIR / Path(f'{cls._repo_name}[{tag}].exe')
             connector.update_version(text=text)
@@ -89,6 +91,9 @@ class Update:
             return tag
         else:
             logging.warning(f'_request_new_tag: response.status_code == {st_code}')
+            cls._download_file(URL_S3_BUCKET_VERSION_PROG, cls._version_prog_path)
+            version = get_version_prog(cls._version_prog_path)
+            return version
 
     @classmethod
     def _download_file(cls, url: str, path_file: Path) -> None:
