@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import sys
 import subprocess
-from pathlib import Path
+sys.path.append("")
+from audio.audio_notes import AudioNotesMixin
+from auto_rel.settings import VERSION_PROG_FILE
 
 """Модуль для автоматизации рутинных команд для релиза, добавлен в репозиторий чтобы не забыть"""
 
@@ -17,8 +19,6 @@ def run_command(command_list):
         print(complete_process.stderr.decode(encoding='oem'))
         print(f'{command_list} error')
 
-
-VERSION_PROG_FILE = Path("version.txt")
 
 argv = sys.argv
 new_tag = argv[1]

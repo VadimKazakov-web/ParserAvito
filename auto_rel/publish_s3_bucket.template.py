@@ -1,12 +1,11 @@
 # Создание клиента
-import uuid
 from pathlib import Path
 import boto3
 from botocore.client import Config
-from auto_release import VERSION_PROG_FILE
+from auto_rel import VERSION_PROG_FILE
 
 BUCKET = {'Name': '---'} # <--- заменить
-FILENAME_PROG = Path("dist/ParserAvito.exe")
+FILENAME_PROG = Path("../dist/ParserAvito.exe")
 s3 = boto3.client(
         's3',
         endpoint_url='https://s3.twcstorage.ru',

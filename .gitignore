@@ -6,7 +6,7 @@ __pycache__
 *.html
 *.wav
 *.pyc
-publish_s3_bucket.py
+auto_rel/publish_s3_bucket.py
 /build
 /dist
 /ParserAvitoOutput
