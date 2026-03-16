@@ -20,6 +20,7 @@ def run_command(command_list):
 
 VERSION_PROG_FILE = Path("version.txt")
 
+print(sys.argv)
 new_tag = sys.argv[1]
 commit_message = sys.argv[2]
 
