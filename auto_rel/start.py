@@ -2,7 +2,6 @@
 import sys
 import subprocess
 sys.path.append("")
-from audio.audio_notes import AudioNotesMixin
 from auto_rel.settings import VERSION_PROG_FILE
 
 """Модуль для автоматизации рутинных команд для релиза, добавлен в репозиторий чтобы не забыть"""
@@ -38,7 +37,7 @@ run_command(git_add_new_tag)
 pyinstaller_compile = ["pyinstaller", "parser.spec"]
 run_command(pyinstaller_compile)
 
-upload_in_bucket = ["python", "publish_s3_bucket.py"]
+upload_in_bucket = ["python", "auto_rel/publish_s3_bucket.py"]
 run_command(upload_in_bucket)
 
 git_push = ["git", "push", "origin", "main"]
