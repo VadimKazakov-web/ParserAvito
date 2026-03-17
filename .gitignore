@@ -7,7 +7,7 @@ __pycache__
 *.wav
 *.pyc
 auto_rel/publish_s3_bucket.py
-icon_origin.ico
+icon.ico
 /build
 /dist
 /ParserAvitoOutput
