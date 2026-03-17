@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from pathlib import Path
-from utills.utils import get_desktop_path, get_pyinstaller_work_dir, get_drive_path, get_version_prog
-from auto_rel.settings import VERSION_PROG_FILE
+from utills.utils import get_desktop_path, get_pyinstaller_work_dir, get_drive_path
+from version import version
 
 APP_NAME = "ParserAvito"
 
-VERSION = get_version_prog(VERSION_PROG_FILE)
+VERSION = version
 
 SCHTASKS_NAME = "parser_avito"
 

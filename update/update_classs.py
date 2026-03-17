@@ -7,10 +7,8 @@ from settings import *
 import requests
 import re
 from tkinter_frontend.window_root.build import window
-from update.utills.utills import (run_task_for_update,
-                                  check_current_version_and_new_tag, reach_new_path,
-                                  create_task_for_update, delete_task, get_datetime, rename_path)
-from version import version
+from update.utills.utills import (check_current_version_and_new_tag, get_datetime, rename_path, run_command_subprocess)
+from utills.utils import get_version_prog
 
 
 class Update:
@@ -28,24 +26,30 @@ class Update:
 
     _program_path = None
     _xml_path = PYINSTALLER_WORK_DIR / Path("parser.xml")
-    _version_prog_path = PYINSTALLER_WORK_DIR / Path("version.txt")
+    _version_prog_path = PYINSTALLER_WORK_DIR / Path("version.py")
 
     @classmethod
     def check_update(cls, *args, **kwargs):
+        PYINSTALLER_WORK_DIR.mkdir(exist_ok=True)
         tag = cls._request_new_tag()
-        if not check_current_version_and_new_tag(tag, version):
-            text = f'доступна новая версия: {tag}'
-            cls._program_path = PYINSTALLER_WORK_DIR / Path(f'{cls._repo_name}[{tag}].exe')
-            connector.update_version(text=text)
-            connector.gen_install_event()
-        else:
-            text = f'нет новой версии'
-            connector.update_version(text=text)
+        if tag:
+            if not check_current_version_and_new_tag(tag, VERSION):
+                text = f'доступна новая версия: {tag}'
+                cls._program_path = PYINSTALLER_WORK_DIR / Path(f'{cls._repo_name}[{tag}].exe')
+                connector.update_version(text=text)
+                connector.gen_install_event()
+            else:
+                text = 'нет новой версии'
+                connector.update_version(text=text)
+        shutil.rmtree(PYINSTALLER_WORK_DIR)
 
     @classmethod
     def update(cls, *args, **kwargs):
-        delete_task(task=SCHTASKS_NAME)
-        PYINSTALLER_WORK_DIR.mkdir(parents=True, exist_ok=True)
+        command_delete_task = f"schtasks -delete -tn {SCHTASKS_NAME} -f"
+        run_command_subprocess(command_delete_task)
+
+        PYINSTALLER_WORK_DIR.mkdir(exist_ok=True)
+
         cls._download_file(url=URL_S3_BUCKET_PROG, path_file=cls._program_path)
         cls._download_file(url=URL_S3_BUCKET_XML, path_file=cls._xml_path)
         logging.info("cls._program_path: {}".format(cls._program_path))
@@ -58,8 +62,12 @@ class Update:
                 cls._program_path = shutil.move(src=cls._program_path, dst=BASE_DIR.parent)
         logging.info("cls._program_path: {}".format(cls._program_path))
         cls._create_xml_settings()
-        create_task_for_update(path=cls._xml_path, t_name=SCHTASKS_NAME)
-        run_task_for_update(task=SCHTASKS_NAME)
+
+        command_create_task = "schtasks /create /tn {name} /xml {path}".format(name=cls._xml_path, path=SCHTASKS_NAME)
+        run_command_subprocess(command_create_task)
+        command_run_task = f"schtasks /run /tn {SCHTASKS_NAME}"
+        run_command_subprocess(command_run_task)
+
         shutil.rmtree(PYINSTALLER_WORK_DIR)
         window.exit()
 
@@ -92,8 +100,8 @@ class Update:
         else:
             logging.warning(f'_request_new_tag: response.status_code == {st_code}')
             cls._download_file(URL_S3_BUCKET_VERSION_PROG, cls._version_prog_path)
-            version = get_version_prog(cls._version_prog_path)
-            return version
+            ver = get_version_prog(cls._version_prog_path)
+            return ver
 
     @classmethod
     def _download_file(cls, url: str, path_file: Path) -> None:

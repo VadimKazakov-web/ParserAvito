@@ -18,7 +18,7 @@ def search_file(path: Path, suffix) -> Path:
 
 
 def random_str(num):
-    text = [random.choice('qwertyuioplkjhgfdsazxcvbnm') for _ in range(num)]
+    text = [random.choice('qwertyuioplkhgfdsazxcvbnm') for _ in range(num)]
     result = ''.join(text)
     return result
 
@@ -93,11 +93,8 @@ def norm_hours_and_minute(hour, minute):
     return result
 
 
-def create_task_for_update(path, t_name):
-    command = "schtasks /create /tn {name} /xml {path}".format(
-        name=t_name, path=path
-    )
-    logging.info("schtasks command: \n{}".format(command))
+def run_command_subprocess(command):
+    logging.info("run command: \n{}".format(command))
     completed_process = subprocess.run(
         command, shell=True,
         capture_output=True)
@@ -108,29 +105,3 @@ def create_task_for_update(path, t_name):
         logging.info("schtasks create: done")
         logging.info(completed_process.stdout.decode(encoding="oem", errors="replace"))
 
-
-def run_task_for_update(task):
-    command = f"schtasks /run /tn {task}"
-    logging.info("schtasks command: \n{}".format(command))
-    completed_process = subprocess.run(
-        command, shell=True,
-        capture_output=True)
-    if completed_process.returncode != 0:
-        # сработала только кодировка "oem"
-        logging.warning(completed_process.stderr.decode(encoding="oem", errors="replace"))
-    else:
-        logging.info("schtasks create: done")
-        logging.info(completed_process.stdout.decode(encoding="oem", errors="replace"))
-
-
-def delete_task(task):
-    command = f"schtasks -delete -tn {task} -f"
-    logging.info("schtasks command: \n{}".format(command))
-    completed_process = subprocess.run(
-        command, shell=True,
-        capture_output=True)
-    if completed_process.returncode != 0:
-        # сработала только кодировка "oem"
-        logging.warning(completed_process.stderr.decode(encoding="oem", errors="replace"))
-    else:
-        logging.info(completed_process.stdout.decode(encoding="oem", errors="replace"))

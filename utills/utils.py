@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import re
 import shutil
 import subprocess
 import winreg
@@ -67,5 +68,8 @@ def get_desktop_path():
 
 
 def get_version_prog(path: Path):
-    version = path.read_text()
-    return version
+    text = path.read_text()
+    match = re.search(r'"(?P<tag>.+)"', text)
+    tag = match.group("tag")
+    print(tag)
+    return tag
