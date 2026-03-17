@@ -45,8 +45,6 @@ new_icon(tag=new_tag, path=icon_origin, new_path=icon_new)
 pyinstaller_compile = ["pyinstaller", "parser.spec"]
 run_command(pyinstaller_compile)
 
-icon_new.unlink()
-
 upload_in_bucket = ["python", "auto_rel/publish_s3_bucket.py"]
 run_command(upload_in_bucket)
 
@@ -55,3 +53,6 @@ run_command(git_push)
 
 git_push_tags = ["git", "push", "origin", "--tags"]
 run_command(git_push_tags)
+
+icon_new.unlink()
+
