@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
 import shutil
-from exceptions import ManyExeFile
 from objects import connector
 from settings import *
 import requests

@@ -35,5 +35,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='free-icon-web-crawler-11892629.ico'
+    icon='icon.png'
 )
