@@ -22,8 +22,8 @@ def run_command(command_list):
         print(f'{command_list} error')
 
 
-icon_origin = Path(os.getcwd()).parent / Path("icon_origin.ico")
-icon_new = Path(os.getcwd()).parent / Path("icon.ico")
+icon_origin = Path("icon_origin.ico")
+icon_new = Path("icon.ico")
 argv = sys.argv
 new_tag = argv[1]
 commit_message = argv[2]
