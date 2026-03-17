@@ -62,7 +62,7 @@ class Update:
         logging.info("cls._program_path: {}".format(cls._program_path))
         cls._create_xml_settings()
 
-        command_create_task = "schtasks /create /tn {name} /xml {path}".format(name=cls._xml_path, path=SCHTASKS_NAME)
+        command_create_task = "schtasks /create /tn {name} /xml {path}".format(name=SCHTASKS_NAME, path=cls._xml_path)
         run_command_subprocess(command_create_task)
         command_run_task = f"schtasks /run /tn {SCHTASKS_NAME}"
         run_command_subprocess(command_run_task)
