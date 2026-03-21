@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+import threading
 from pathlib import Path
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.webdriver import WebDriver
@@ -50,6 +51,7 @@ def definition_data(data):
         """
         Нажатие кнопки "выход"
         """
+        logging.info("id thread: {}".format(threading.get_native_id()))
         raise PushExit
 
 
