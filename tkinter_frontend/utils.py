@@ -1,6 +1,40 @@
 # -*- coding: utf-8 -*-
 from objects import connector
 from tkinter_frontend.classes.button import Button, ButtonForUpdate
+import threading
+from update.update_classs import Update
+import datetime
+
+
+class CheckUpdateProgThread:
+
+    first_click = None
+    permissible_delta = 15
+
+    @classmethod
+    def check_jackass(cls):
+        if not cls.first_click:
+            cls.first_click = datetime.datetime.now()
+            return True
+        else:
+            click = datetime.datetime.now()
+            delta = click - cls.first_click
+            print(f"delta: {delta.seconds}")
+            if delta.seconds > cls.permissible_delta:
+                cls.first_click = click
+                return True
+
+    @classmethod
+    def reset_attr(cls):
+        cls.first_click = None
+        cls.second_click = None
+
+    @classmethod
+    def start(cls, *args, **kwargs):
+        print(datetime.datetime.now().minute, datetime.datetime.now().second)
+        if cls.check_jackass():
+            t = threading.Thread(target=Update.check_update)
+            t.start()
 
 
 def unbind_return(*args, **kwargs):

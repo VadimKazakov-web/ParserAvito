@@ -11,6 +11,7 @@ from utills.utils import get_version_prog
 
 
 class Update:
+    PYINSTALLER_WORK_DIR.mkdir(exist_ok=True)
     _pattern_tags = re.compile(r'href="/VadimKazakov-web/ParserAvito/releases/tag/(?P<tag>.+?)"')
     _repo_tags = REPOSITORY_TAGS
     _unpack_project_root = ""
@@ -29,7 +30,6 @@ class Update:
 
     @classmethod
     def check_update(cls, *args, **kwargs):
-        PYINSTALLER_WORK_DIR.mkdir(exist_ok=True)
         tag = cls._request_new_tag()
         if tag:
             if not check_current_version_and_new_tag(tag, VERSION):
@@ -40,15 +40,11 @@ class Update:
             else:
                 text = 'нет новой версии'
                 connector.update_version(text=text)
-        shutil.rmtree(PYINSTALLER_WORK_DIR)
 
     @classmethod
     def update(cls, *args, **kwargs):
         command_delete_task = f"schtasks -delete -tn {SCHTASKS_NAME} -f"
         run_command_subprocess(command_delete_task)
-
-        PYINSTALLER_WORK_DIR.mkdir(exist_ok=True)
-
         cls._download_file(url=URL_S3_BUCKET_PROG, path_file=cls._program_path)
         cls._download_file(url=URL_S3_BUCKET_XML, path_file=cls._xml_path)
         logging.info("cls._program_path: {}".format(cls._program_path))
@@ -61,13 +57,10 @@ class Update:
                 cls._program_path = shutil.move(src=cls._program_path, dst=BASE_DIR.parent)
         logging.info("cls._program_path: {}".format(cls._program_path))
         cls._create_xml_settings()
-
         command_create_task = "schtasks /create /tn {name} /xml {path}".format(name=SCHTASKS_NAME, path=cls._xml_path)
         run_command_subprocess(command_create_task)
         command_run_task = f"schtasks /run /tn {SCHTASKS_NAME}"
         run_command_subprocess(command_run_task)
-
-        shutil.rmtree(PYINSTALLER_WORK_DIR)
         window.exit()
 
     @classmethod
