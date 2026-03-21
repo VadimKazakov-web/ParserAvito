@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import logging
+
 from objects import connector
 from tkinter_frontend.classes.button import Button, ButtonForUpdate
 import threading
@@ -33,7 +35,7 @@ class CheckUpdateProgThread:
     @classmethod
     def start(cls, *args, **kwargs):
         if cls.check_jackass():
-            t = threading.Thread(target=Update.check_update)
+            t = threading.Thread(target=Update.check_update, daemon=True)
             t.start()
 
 
@@ -57,7 +59,7 @@ class UpdateProgThread:
     @classmethod
     def start(cls, *args, **kwargs):
         cls.create_plug()
-        t = threading.Thread(target=Update.update)
+        t = threading.Thread(target=Update.update, daemon=True)
         t.start()
 
 

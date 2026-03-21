@@ -3,7 +3,7 @@ import logging
 from objects import connector
 from tkinter_frontend import Frame
 from tkinter_frontend.handlers.input_handlers import HandlersClass
-from tkinter_frontend.window_root.build import ROOT
+from tkinter_frontend.window_root.build import ROOT, window
 import functools
 from tkinter_frontend.utils import (create_progress, update_progress, update_info,
                                     update_time, update_version, create_install_prog_btn)
@@ -20,6 +20,8 @@ frame.bind(connector.update_info_event, update_info)
 frame.bind(connector.update_time_event, update_time)
 frame.bind(connector.update_version_event, update_version)
 frame.bind(connector.create_install_prog_event, create_install_prog_btn)
+frame.bind(connector.exit_event, window.exit)
+
 connector.add_widget(frame)
 
 logging.info("{}: done".format(__name__))

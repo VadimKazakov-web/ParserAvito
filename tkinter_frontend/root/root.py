@@ -28,11 +28,10 @@ class WindowRoot:
         self.root.protocol("WM_DELETE_WINDOW", self.exit)
         self.root.mainloop()
 
-    def exit(self):
+    def exit(self, *args, **kwargs):
         connector.post_data(data="exit")
         self.root.destroy()
         shutil.rmtree(PYINSTALLER_WORK_DIR)
-        time.sleep(1)
         # программа завершается корректно только так
         os._exit(0)
 

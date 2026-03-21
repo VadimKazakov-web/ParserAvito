@@ -11,6 +11,7 @@ from exceptions import BadInternetConnection, PushExit
 from exceptions import PushStopButton
 from objects import connector
 from settings import *
+from tkinter_frontend.window_root.build import window
 
 
 def open_pages(*args, **kwargs):

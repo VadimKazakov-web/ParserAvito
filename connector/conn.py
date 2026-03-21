@@ -22,10 +22,14 @@ class Connector(ClientMixin):
         self.create_install_prog_event = "<<CreateInstallBtnProg>>"
         self.update_time_event = "<<UpdateTime>>"
         self.push_button_event = "<<PushButton>>"
+        self.exit_event = "<<ExitEvent>>"
         self.exit_flag = False
         self.widget = None
         self._callbacks_for_start_list = [self.update_time, self.update_info, self.update_title, self.update_progress]
         self._callbacks_for_stop_list = []
+
+    def gen_exit_event(self):
+        self.widget.event_generate(self.exit_event)
 
     def callbacks_for_start_prog(self):
         """
