@@ -20,9 +20,9 @@ class CheckTitleMixin(AudioNotesMixin):
 
     @classmethod
     def check_title(cls, driver):
+        from parser_avito_manager.worker import check_chanel
         while True:
             if cls._pattern_problem_ip.search(driver.title):
-                from parser_avito_manager.worker import check_chanel
                 text = "page title: {}".format(driver.title)
                 connector.update_info(text=text)
                 check_chanel()
