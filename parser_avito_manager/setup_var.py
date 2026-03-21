@@ -8,7 +8,6 @@ from exceptions import PushExit
 from objects import connector
 from parser_avito_manager import PreparationLinksForPages
 from settings import BASE_DIR, DATABASE_DIR, DATABASE
-from tkinter_frontend.window_root.build import window
 
 
 def preparation_links(url, pages):
