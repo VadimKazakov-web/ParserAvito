@@ -90,13 +90,8 @@ class SetupVarMixin:
     def setup_var(self):
         self.driver = setup_options()
         data = get_data_from_interface()
-        try:
-            data = definition_data(data)
-            self._setup_variables(data)
-        except PushExit:
-            self.driver.quit()
-            raise PushExit
-        else:
-            self._initial_text()
-            self._links_dict = preparation_links(self._url, self._pages)
+        data = definition_data(data)
+        self._setup_variables(data)
+        self._initial_text()
+        self._links_dict = preparation_links(self._url, self._pages)
 

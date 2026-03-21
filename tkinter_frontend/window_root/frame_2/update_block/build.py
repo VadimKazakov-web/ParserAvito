@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 import logging
 from objects import connector
-from tkinter_frontend.utils import ActiveInactiveButton, CheckUpdateProgThread
+from tkinter_frontend.utils import ActiveInactiveButton
 from tkinter_frontend.classes.label import Label, LabelForUpdate
 from tkinter_frontend.classes.button import Button, ButtonForUpdate
 from tkinter_frontend.window_root.frame_2.build import frame_2
+from update.update_thread import CheckUpdateProgThread
 
 label = LabelForUpdate(master=frame_2, text="", column=0, row=0)
 label_instance = label.get_instance()

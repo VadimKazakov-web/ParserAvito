@@ -5,7 +5,7 @@ from selenium.webdriver.common.by import By
 from objects import connector
 import logging
 import selenium.common
-from exceptions import BreakWhile, BadInternetConnection, PushStopButton, MaxPageError, NamedParametersError
+from exceptions import BreakWhile, BadInternetConnection, PushStopButton, MaxPageError, NamedParametersError, PushExit
 from parser_avito_manager import CheckTitleMixin, TimeMeasurementMixin
 from settings import TIMEOUT_EXCEPTIONS_COUNTER, TIMEOUT
 import time
@@ -22,6 +22,8 @@ def check_chanel():
     else:
         if data == "push_stop_button":
             raise PushStopButton
+        elif data == "exit":
+            raise PushExit
 
 
 class Worker(CheckTitleMixin, TimeMeasurementMixin):
