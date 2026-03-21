@@ -108,6 +108,7 @@ class ParserAvitoManager(SetupVarMixin, TimeMeasurementMixin):
                 self._bond_methods()
             except PushExit as err:
                 logging.info(err)
+                self.driver.quit()
                 break
             except Exception as err:
                 connector.update_info(text=err)
