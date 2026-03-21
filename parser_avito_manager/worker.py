@@ -157,6 +157,7 @@ class Worker(CheckTitleMixin, TimeMeasurementMixin):
             connector.update_info(text="Плохое соединение, "
                                        "перезагружаю страницу")
         except PushStopButton:
+            TimeMeasurementMixin.reset_time()
             raise PushStopButton
         except Exception as err:
             self._read_err_obj_timeout(err)

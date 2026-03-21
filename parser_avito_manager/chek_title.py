@@ -22,18 +22,17 @@ class CheckTitleMixin(AudioNotesMixin):
     def check_title(cls, driver):
         while True:
             if cls._pattern_problem_ip.search(driver.title):
-
+                from parser_avito_manager.worker import check_chanel
+                text = "page title: {}".format(driver.title)
+                connector.update_info(text=text)
+                check_chanel()
                 if not cls._show_problem_ip_title:
-                    text = "page title: {}".format(driver.title)
                     logging.info(text)
-                    connector.update_info(text=text)
                     cls._show_problem_ip_title = True
-                    # cls.access_restricted_audio()
                 time.sleep(3)
 
             elif cls._pattern_404.search(driver.title):
-                # logging.info("\npage title: {}".format(driver.title))
-                # cls.page_not_found_audio()
                 raise BreakWhile
             else:
+                cls._show_problem_ip_title = False
                 return None

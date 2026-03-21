@@ -15,6 +15,12 @@ class TimeMeasurementMixin:
         cls.time_start = None
 
     @classmethod
+    def reset_time(cls):
+        cls.time_start = None
+        cls.time_end = None
+        cls.time_result = None
+
+    @classmethod
     def time_measurement_start(cls):
         if not cls.time_start:
             cls.time_start = datetime.datetime.today()

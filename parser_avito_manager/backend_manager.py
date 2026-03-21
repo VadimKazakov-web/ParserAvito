@@ -79,8 +79,9 @@ class ParserAvitoManager(SetupVarMixin, TimeMeasurementMixin):
             logging.warning("err in bond_methods()")
             logging.warning(err)
         finally:
-            self._total_data = data.get("total_data")
-            self._count_new_row_in_database = data.get("count_new_row_in_database")
+            if data:
+                self._total_data = data.get("total_data")
+                self._count_new_row_in_database = data.get("count_new_row_in_database")
             self._exit()
             connector.callbacks_for_stop_prog()
 
