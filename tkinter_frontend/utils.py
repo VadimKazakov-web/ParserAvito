@@ -2,6 +2,8 @@
 from objects import connector
 from tkinter_frontend.classes.button import Button, ButtonForUpdate
 import threading
+
+from tkinter_frontend.classes.label import Label
 from update.update_classs import Update
 import datetime
 
@@ -19,7 +21,6 @@ class CheckUpdateProgThread:
         else:
             click = datetime.datetime.now()
             delta = click - cls.first_click
-            print(f"delta: {delta.seconds}")
             if delta.seconds > cls.permissible_delta:
                 cls.first_click = click
                 return True
@@ -31,10 +32,33 @@ class CheckUpdateProgThread:
 
     @classmethod
     def start(cls, *args, **kwargs):
-        print(datetime.datetime.now().minute, datetime.datetime.now().second)
         if cls.check_jackass():
             t = threading.Thread(target=Update.check_update)
             t.start()
+
+
+class UpdateProgThread:
+
+    @classmethod
+    def clear_frame(cls, frame):
+        for child in frame.winfo_children():
+            child.destroy()
+
+    @classmethod
+    def create_plug(cls):
+        from tkinter_frontend.window_root.frame_1.build import frame
+        from tkinter_frontend.window_root.frame_2.build import frame_2
+        cls.clear_frame(frame)
+        cls.clear_frame(frame_2)
+        frame_2.destroy()
+        label = Label(master=frame, text="Загрузка...", column=0, row=0)
+        label.build()
+
+    @classmethod
+    def start(cls, *args, **kwargs):
+        cls.create_plug()
+        t = threading.Thread(target=Update.update)
+        t.start()
 
 
 def unbind_return(*args, **kwargs):
@@ -78,7 +102,7 @@ def create_install_prog_btn(*args, **kwargs):
     button_custom.build()
     button_custom.make_hover()
     button_instance = button_custom.get_instance()
-    act_inact_button = ActiveInactiveButton(button_custom, button_instance, Update.update)
+    act_inact_button = ActiveInactiveButton(button_custom, button_instance, UpdateProgThread.start)
     act_inact_button.make_active_button()
     connector.set_callbacks_for_start_prog(act_inact_button.make_inactive_button)
     connector.set_callbacks_for_stop_prog(act_inact_button.make_active_button)
