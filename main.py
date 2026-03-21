@@ -2,6 +2,8 @@
 import functools
 import threading
 import logging.handlers
+import time
+
 from tkinter_frontend.window_root.build import window as tk_interface
 from tkinter_frontend.build_tk import build_tk_interface
 from parser_avito_manager.backend_manager import ParserAvitoManager

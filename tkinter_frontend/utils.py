@@ -2,6 +2,7 @@
 from objects import connector
 from tkinter_frontend.classes.button import Button, ButtonForUpdate
 
+
 def unbind_return(*args, **kwargs):
     event = args[0]
     widget = event.widget
@@ -39,16 +40,14 @@ def update_version(*args, **kwargs):
 def create_install_prog_btn(*args, **kwargs):
     from tkinter_frontend.window_root.frame_2.build import frame_2
     from update.update_classs import Update
-    button_custom = ButtonForUpdate(master=frame_2, text="установить обновление\n"
-                                                         "и перезапустить программу", column=0, row=2)
+    button_custom = ButtonForUpdate(master=frame_2, text="загрузить новую версию", column=0, row=2)
     button_custom.build()
     button_custom.make_hover()
     button_instance = button_custom.get_instance()
-    button_instance.bind("<ButtonPress-1>", Update.update)
-
-
-# def update_program(*args, **kwargs):
-#     Update.update()
+    act_inact_button = ActiveInactiveButton(button_custom, button_instance, Update.update)
+    act_inact_button.make_active_button()
+    connector.set_callbacks_for_start_prog(act_inact_button.make_inactive_button)
+    connector.set_callbacks_for_stop_prog(act_inact_button.make_active_button)
 
 
 def update_time(*args, **kwargs):
