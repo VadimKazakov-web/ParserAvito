@@ -23,7 +23,7 @@ class ResultInHtml:
 
     @staticmethod
     def _preparation_title(counter):
-        content = "Oтсканировано: {length} объявлений".format(length=counter)
+        content = "Сканировано: {length} объявлений".format(length=counter)
         return content
 
     @staticmethod
@@ -76,13 +76,12 @@ class ResultInHtml:
         total_views = self._data.get("total_views")
         today_views = self._data.get("today_views")
         reviews = self._data.get("reviews")
-        file = open(self.file_name, 'w', encoding='utf-8')
-        content = self._header_content_pattern.sub(self._preparation_title(self._count), self._str_base_html)
-        content = self._total_views_pattern.sub(self._preparation_elements(total_views), content)
-        content = self._today_views_pattern.sub(self._preparation_elements(today_views), content)
-        content = self._review_count_pattern.sub(self._preparation_elements(reviews), content)
-        file.write(content)
-        file.close()
+        with open(self.file_name, 'w', encoding='utf-8') as file:
+            content = self._header_content_pattern.sub(self._preparation_title(self._count), self._str_base_html)
+            content = self._total_views_pattern.sub(self._preparation_elements(total_views), content)
+            content = self._today_views_pattern.sub(self._preparation_elements(today_views), content)
+            content = self._review_count_pattern.sub(self._preparation_elements(reviews), content)
+            file.write(content)
 
     def __call__(self, *args, **kwargs):
         try:

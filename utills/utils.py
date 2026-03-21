@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
 import re
-import shutil
 import subprocess
 import winreg
 import logging
@@ -9,30 +8,38 @@ import logging.handlers
 import platform
 from pathlib import Path
 from exceptions import PlatformError
-from auto_rel.settings import VERSION_PROG_FILE
 
 
-def logging_settings(maxBytes=7000, backupCount=6, file_handler=True):
+def logging_settings(max_bytes=7000, backup_count=6, file_handler=True):
+    """
+    Настройки ведения журнала
+    :param max_bytes:
+    :param backup_count:
+    :param file_handler:
+    :return:
+    """
     from settings import LOG_DIR, LOG_FILE
-    FORMAT = '[%(asctime)s] %(message)s'
-    formatter = logging.Formatter(FORMAT)
+    format_message = '[%(asctime)s] %(message)s'
+    formatter = logging.Formatter(format_message)
     if not file_handler:
         handler = logging.StreamHandler()
     else:
-        handler = logging.handlers.RotatingFileHandler(filename=LOG_DIR / LOG_FILE, maxBytes=maxBytes, backupCount=backupCount)
+        handler = logging.handlers.RotatingFileHandler(filename=LOG_DIR / LOG_FILE,
+                                                       maxBytes=max_bytes, backupCount=backup_count)
     handler.setFormatter(formatter)
     logging.root.setLevel(logging.INFO)
     logging.root.handlers.clear()
     logging.root.addHandler(handler)
 
 
-def get_pyinstaller_work_dir(work_dir):
+def app_work_dir(work_dir):
     command = "whoami"
     completed_process = subprocess.run(command, executable=None, capture_output=True, shell=True)
     if completed_process.returncode == 0:
-        logging.info("_compile_repo: done")
+        logging.info("command = 'whoami': done")
         std_out = completed_process.stdout.decode(encoding="utf-8")
         comp, username = std_out.split("\\")
+        # удалить пробелы по краям
         username = username.strip()
         path = Path(get_drive_path()) / Path("Users") / Path(username) / Path(work_dir)
         return path
@@ -71,5 +78,4 @@ def get_version_prog(path: Path):
     text = path.read_text()
     match = re.search(r'"(?P<tag>.+)"', text)
     tag = match.group("tag")
-    print(tag)
     return tag

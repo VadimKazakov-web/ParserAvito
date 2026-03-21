@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import logging
-import time
 
 
 def build_tk_interface():

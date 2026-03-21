@@ -77,11 +77,11 @@ class ParserAvitoManager(SetupVarMixin, TimeMeasurementMixin):
             logging.warning("err in bond_methods()")
             logging.warning(err)
         finally:
+            connector.callbacks_for_stop_prog()
             if data:
                 self._total_data = data.get("total_data")
                 self._count_new_row_in_database = data.get("count_new_row_in_database")
-            self._exit()
-            connector.callbacks_for_stop_prog()
+                self._exit()
 
     def _exit(self):
         """
@@ -89,14 +89,13 @@ class ParserAvitoManager(SetupVarMixin, TimeMeasurementMixin):
         """
         # Закрытие браузера
         self.driver.quit()
-        if self._total_data:
-            logging.info("new row in database: {}".format(self._count_new_row_in_database))
-            result_in_html = ResultInHtml(file_name=self._file_name, default_filename=self._default_filename,
-                                          data=self._total_data,
-                                          count=self._count_new_row_in_database)
-            # Запись результата в файл
-            result_in_html()
-            webbrowser.open(str(result_in_html.file_name))
+        logging.info("new row in database: {}".format(self._count_new_row_in_database))
+        result_in_html = ResultInHtml(file_name=self._file_name, default_filename=self._default_filename,
+                                      data=self._total_data,
+                                      count=self._count_new_row_in_database)
+        # Запись результата в файл
+        result_in_html()
+        webbrowser.open(str(result_in_html.file_name))
 
     def start(self):
         """
