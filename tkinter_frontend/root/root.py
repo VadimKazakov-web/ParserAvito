@@ -29,7 +29,6 @@ class WindowRoot:
         self.root.mainloop()
 
     def exit(self, *args, **kwargs):
-        connector.post_data(data="exit")
         self.root.destroy()
         shutil.rmtree(PYINSTALLER_WORK_DIR)
         # программа завершается корректно только так
