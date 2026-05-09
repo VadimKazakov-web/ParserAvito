@@ -4,7 +4,7 @@ import shutil
 import time
 from tkinter import *
 from objects import connector
-from settings import PYINSTALLER_WORK_DIR
+from settings import APP_TEMPORARY
 
 
 class WindowRoot:
@@ -13,6 +13,7 @@ class WindowRoot:
         self.root = Tk()
         self.root.title(self.name)
         self.setup_weight()
+        self.root.protocol("WM_DELETE_WINDOW", self.exit)
 
     def get_root(self):
         return self.root
@@ -25,14 +26,13 @@ class WindowRoot:
         self.root.rowconfigure(0, weight=1)
 
     def start(self):
-        self.root.protocol("WM_DELETE_WINDOW", self.exit)
         self.root.mainloop()
 
     def exit(self, *args, **kwargs):
         connector.post_data(data="exit")
         self.root.destroy()
         time.sleep(3)
-        shutil.rmtree(PYINSTALLER_WORK_DIR)
+        shutil.rmtree(APP_TEMPORARY)
         # программа завершается корректно только так
         os._exit(0)
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from tkinter_frontend.classes import ConfigClass
+from tkinter_frontend.classes.config_class import ConfigClass
 
 
 class HoverEffectMixin(ConfigClass):

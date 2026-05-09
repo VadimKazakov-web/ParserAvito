@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from tkinter_frontend.handlers.validation import ValidationVarClass
 from settings import WIDTH_LABEL
-from objects import connector
 import datetime
+from tkinter_frontend.events import Events
 
 
 class HandlersClass(ValidationVarClass):
@@ -20,7 +20,7 @@ class HandlersClass(ValidationVarClass):
         if check:
             icon.make_verified()
             label["text"] = f'Cсылка введена: \n{check[0:cls.width_text]}\n{check[cls.width_text:]}'
-            cls.data["link"] = check
+            cls.data["url"] = check
         else:
             icon.make_unchecked()
             label["text"] = "Недействительная ссылка, введите еще раз"
@@ -62,7 +62,7 @@ class HandlersClass(ValidationVarClass):
             case True:
                 icon.make_verified()
                 label["text"] = f'Количество страниц для сканирования: {val}'
-                cls.data["count_pages"] = val
+                cls.data["pages"] = int(val)
             case 'ValueError':
                 icon.make_unchecked()
                 label["text"] = "Значение не является целым числом, введите еще раз"
@@ -77,12 +77,14 @@ class HandlersClass(ValidationVarClass):
     @classmethod
     def valid_all_vars(cls, *args, **kwargs):
         master = kwargs.get("master")
-        if cls.data.get("link") and cls.data.get("filename") and cls.data.get("count_pages"):
+        if cls.data.get("url") and cls.data.get("filename") and cls.data.get("pages"):
+            from tkinter_frontend.window_root.frame_1.start_button.build import button_instance as start_btn
+            from tkinter_frontend.window_root.frame_1.stop_button.build import button_instance as stop_btn
             cls.data["default_filename"] = cls.default_filename()
-            connector.update_info(text="все данные введены")
-            master.event_generate(connector.post_data_event)
-            master.event_generate(connector.create_progress_event)
+            # cls.data["widget"] = master
+            master.event_generate(Events.post_var_event)
+            start_btn.event_generate(Events.post_var_event)
+            stop_btn.event_generate(Events.post_var_event)
             return True
         else:
-            connector.update_info(text="не все данные введены")
             return False

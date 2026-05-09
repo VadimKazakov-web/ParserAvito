@@ -148,7 +148,8 @@ class DataBaseMixin:
 
         else:
             self._cursor.execute(
-                "UPDATE announcement SET title=:title, link=:link, total_views=:total_views, today_views=:today_views, rating=:rating, "
+                "UPDATE announcement SET title=:title, link=:link, total_views=:total_views, "
+                "today_views=:today_views, rating=:rating,"
                 "reviews=:reviews WHERE id=:id",
                 data)
             self.count_update_row_in_database += 1

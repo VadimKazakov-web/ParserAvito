@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from tkinter import ttk, W
-from tkinter_frontend.classes import Base
+from tkinter_frontend.classes.base import Base
 
 
 class Label(Base):

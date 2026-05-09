@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 import logging
+import re
 import traceback
 import webbrowser
 import selenium.common
 from parser_avito_manager import ResultInHtml, TimeMeasurementMixin, SetupVarMixin
+from parser_avito_manager.interceptor import InterceptorMixin
 from parser_avito_manager.open_page import OpenPage
 from parser_avito_manager.open_announcement import OpenAnnouncement
 from parser_avito_manager.worker import WorkerForPage, WorkerForAnnouncement
@@ -20,8 +22,7 @@ def open_pages(*args, **kwargs):
     links_dict = kwargs.get("links_dict")
     connector.update_info(text="Открываются страницы")
     instance = OpenPage(driver)
-    worker = WorkerForPage(driver=driver, instance=instance, links_dict=links_dict,
-                           start_method=instance.start)
+    worker = WorkerForPage(driver=driver, instance=instance, links_dict=links_dict)
     instance = worker.start()
     return instance.data
 
@@ -35,8 +36,7 @@ def open_announcement(*args, **kwargs):
     connector.update_info(text="Открываются объявления")
     instance = OpenAnnouncement(driver, links)
     try:
-        worker = WorkerForAnnouncement(driver=driver, instance=instance, links=links,
-                                       start_method=instance.start)
+        worker = WorkerForAnnouncement(driver=driver, instance=instance, links=links)
         instance = worker.start()
     finally:
         WorkerForAnnouncement.reset_time_start()
@@ -46,7 +46,7 @@ def open_announcement(*args, **kwargs):
         }
 
 
-class ParserAvitoManager(SetupVarMixin, TimeMeasurementMixin):
+class ParserAvitoManager(SetupVarMixin, TimeMeasurementMixin, InterceptorMixin):
     """
     Класс в котором заключена главная логика работы программы
     """
@@ -57,7 +57,15 @@ class ParserAvitoManager(SetupVarMixin, TimeMeasurementMixin):
         self._count_new_row_in_database = 0
 
     def _bond_methods(self):
-        self.setup_var()
+        try:
+            self.setup_var()
+        except selenium.common.exceptions.SessionNotCreatedException as err:
+            if re.search(r"This version of ChromeDriver only supports Chrome version", err.args[0]):
+                logging.warning(err.args[0])
+                connector.update_info(text="Обновите Google Chrome\nдо последней версии:\n"
+                                           "{}".format(err.args[0]))
+        self.driver.request_interceptor = self.interceptor_req
+        self.driver.response_interceptor = self.interceptor_res
         connector.callbacks_for_start_prog()
         data = None
         try:
@@ -65,7 +73,7 @@ class ParserAvitoManager(SetupVarMixin, TimeMeasurementMixin):
             data = open_announcement(driver=self.driver, links=links_announcement)
         except selenium.common.exceptions.WebDriverException as err:
             logging.warning(err)
-            connector.update_info(text="WebDriverException, Проверьте интернет соединение")
+            connector.update_info(text="WebDriverException, Проверьте интернет соединение\nи/или попробуйте ещё раз")
         except BadInternetConnection:
             logging.warning("bad connections in avito.ru")
             connector.update_info(text="Плохое соединение с www.avito.ru")

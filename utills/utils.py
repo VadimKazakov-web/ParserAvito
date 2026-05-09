@@ -27,7 +27,7 @@ def logging_settings(max_bytes=7000, backup_count=6, file_handler=True):
         handler = logging.handlers.RotatingFileHandler(filename=LOG_DIR / LOG_FILE,
                                                        maxBytes=max_bytes, backupCount=backup_count)
     handler.setFormatter(formatter)
-    logging.root.setLevel(logging.INFO)
+    logging.root.setLevel(logging.WARNING)
     logging.root.handlers.clear()
     logging.root.addHandler(handler)
 

@@ -24,10 +24,11 @@ class CheckTitleMixin(AudioNotesMixin):
         while True:
             if cls._pattern_problem_ip.search(driver.title):
                 text = "page title: {}".format(driver.title)
-                connector.update_info(text=text)
+                # connector.update_info(text=text)
                 check_chanel()
                 if not cls._show_problem_ip_title:
                     logging.info(text)
+                    print(text)
                     cls._show_problem_ip_title = True
                 time.sleep(3)
 

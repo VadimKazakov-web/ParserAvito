@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+from tkinter_frontend.events import Events
 from objects import connector
 from tkinter_frontend.utils import ActiveInactiveButton
 from tkinter_frontend.window_root.frame_1.frame_for_buttons.build import frame_for_buttons
@@ -13,13 +14,12 @@ button_custom.build()
 button_custom.make_hover()
 button_instance = button_custom.get_instance()
 active_inactive_start_button = ActiveInactiveButton(button_custom, button_instance,
-                                                    functools.partial(HandlersClass.valid_all_vars,
-                                                                      widget=button_custom,
-                                                                      master=frame))
+                                                    lambda _: frame.event_generate(Events.push_start_event))
 active_inactive_start_button.make_active_button()
-
-connector.set_callbacks_for_start_prog(active_inactive_start_button.make_inactive_button)
-connector.set_callbacks_for_stop_prog(active_inactive_start_button.make_active_button)
-
-button_instance.bind(connector.push_button_event, active_inactive_start_button.make_inactive_button)
+button_instance.bind(Events.post_var_event, func=lambda _: active_inactive_start_button.make_inactive_button())
+#
+# connector.set_callbacks_for_start_prog(active_inactive_start_button.make_inactive_button)
+# connector.set_callbacks_for_stop_prog(active_inactive_start_button.make_active_button)
+#
+# button_instance.bind(connector.push_button_event, active_inactive_start_button.make_inactive_button)
 logging.info("{}: done".format(__name__))

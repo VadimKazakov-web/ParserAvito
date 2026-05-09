@@ -40,8 +40,4 @@ class PreparationLinksForPages:
 
     def start(self):
         self._create_result_dict()
-        url = self._check_url(self._url)
-        while self._pages > 1:
-            self._result.insert(0, url + f'&p={self._pages}')
-            self._pages -= 1
-        self._result.insert(0, url)
+        return self._result_dict

@@ -11,7 +11,7 @@ from utills.utils import get_version_prog
 
 
 class Update:
-    PYINSTALLER_WORK_DIR.mkdir(exist_ok=True)
+    APP_TEMPORARY.mkdir(exist_ok=True)
     _pattern_tags = re.compile(r'href="/VadimKazakov-web/ParserAvito/releases/tag/(?P<tag>.+?)"')
     _repo_tags = REPOSITORY_TAGS
     _unpack_project_root = ""
@@ -25,8 +25,8 @@ class Update:
     _repo_dir = _repo_name
 
     _program_path = None
-    _xml_path = PYINSTALLER_WORK_DIR / Path("parser.xml")
-    _version_prog_path = PYINSTALLER_WORK_DIR / Path("version.py")
+    _xml_path = APP_TEMPORARY / Path("parser.xml")
+    _version_prog_path = APP_TEMPORARY / Path("version.py")
 
     @classmethod
     def check_update(cls, *args, **kwargs):
@@ -34,7 +34,7 @@ class Update:
         if tag:
             if not check_current_version_and_new_tag(tag, VERSION):
                 text = f'доступна новая версия: {tag}'
-                cls._program_path = PYINSTALLER_WORK_DIR / Path(f'{cls._repo_name}[{tag}].exe')
+                cls._program_path = APP_TEMPORARY / Path(f'{cls._repo_name}[{tag}].exe')
                 connector.update_version(text=text)
                 connector.gen_install_event()
             else:
@@ -43,7 +43,7 @@ class Update:
 
     @classmethod
     def update(cls, *args, **kwargs):
-        PYINSTALLER_WORK_DIR.mkdir(exist_ok=True)
+        APP_TEMPORARY.mkdir(exist_ok=True)
         cls._download_file(url=URL_S3_BUCKET_PROG, path_file=cls._program_path)
         cls._download_file(url=URL_S3_BUCKET_XML, path_file=cls._xml_path)
         logging.info("cls._program_path: {}".format(cls._program_path))

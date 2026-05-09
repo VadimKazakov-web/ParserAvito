@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-from settings import *
+from settings import (FONT_SIZE, BACKGROUND_COLOR, FOREGROUND_COLOR, BACKGROUND_COLOR_BTN,
+                      BACKGROUND_COLOR_ENTRY, FOREGROUND_COLOR_BTN, FOREGROUND_COLOR_ENTRY,
+                      WIDTH_LABEL, COLOR_FOR_HOVER)
 
 
 class ConfigClass:

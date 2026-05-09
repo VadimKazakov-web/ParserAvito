@@ -1,6 +1,12 @@
+import time
+
 from selenium.webdriver.common.by import By
-import logging
 from parser_avito_manager.base import OpenUrl
+
+
+def open_page(driver, url):
+    driver.get(url)
+    time.sleep(8)
 
 
 class OpenPage(OpenUrl):
@@ -13,6 +19,7 @@ class OpenPage(OpenUrl):
         # целевой css селектор, где гипотетически находятся данные
         self.target_block = '.iva-item-title-KE8A9'
         self._data = []
+        open_page(driver, self.url_root)
 
     def _find_blocks(self):
         """
@@ -28,9 +35,9 @@ class OpenPage(OpenUrl):
         data = []
         for block in blocks:
             link = block.find_element(by=By.TAG_NAME, value='h2').find_element(by=By.TAG_NAME, value='a')
-            data.append(self._url_root + link.get_dom_attribute('href'))
+            data.append(self.url_root + link.get_dom_attribute('href'))
         return data
 
-    def start(self, url: str) -> list:
+    def __call__(self, url: str) -> list:
         data = super().start(url)
         return data

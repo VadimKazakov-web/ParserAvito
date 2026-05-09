@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import queue
+import random
 import re
 from selenium.webdriver.common.by import By
 from objects import connector
@@ -34,25 +35,12 @@ class Worker(CheckTitleMixin, TimeMeasurementMixin):
     Ловит ошибки таймаутов и перезагружает страницу.
     """
 
-    def __init__(self, driver, instance, start_method, **kwargs):
+    def __init__(self, driver, instance, **kwargs):
         TimeMeasurementMixin.time_measurement_start()
-        self._driver = driver
-        self._instance = instance
+        self.driver = driver
+        self.instance = instance
         self._links = kwargs.get("links")
         self._links_dict = kwargs.get("links_dict")
-        # self._links_dict = {
-        #     1: "https://www.avito.ru/moskva/tovary_dlya_kompyutera/komplektuyuschie/cd_dvd_i_blu-ray_privody-ASgBAgICAkTGB~pm7gmSZw?cd=1&localPriority=0",
-        #     10: "https://www.avito.ru/moskva/tovary_dlya_kompyutera/komplektuyuschie/cd_dvd_i_blu-ray_privody-ASgBAgICAkTGB~pm7gmSZw?cd=1&localPriority=0&p=10",
-        #     20: "https://www.avito.ru/moskva/tovary_dlya_kompyutera/komplektuyuschie/cd_dvd_i_blu-ray_privody-ASgBAgICAkTGB~pm7gmSZw?cd=1&localPriority=0&p=20",
-        #     30: "https://www.avito.ru/moskva/tovary_dlya_kompyutera/komplektuyuschie/cd_dvd_i_blu-ray_privody-ASgBAgICAkTGB~pm7gmSZw?cd=1&localPriority=0&p=30",
-        #     40: "https://www.avito.ru/moskva/tovary_dlya_kompyutera/komplektuyuschie/cd_dvd_i_blu-ray_privody-ASgBAgICAkTGB~pm7gmSZw?cd=1&localPriority=0&p=40",
-        #     50: "https://www.avito.ru/moskva/tovary_dlya_kompyutera/komplektuyuschie/cd_dvd_i_blu-ray_privody-ASgBAgICAkTGB~pm7gmSZw?cd=1&localPriority=0&p=50",
-        #     60: "https://www.avito.ru/moskva/tovary_dlya_kompyutera/komplektuyuschie/cd_dvd_i_blu-ray_privody-ASgBAgICAkTGB~pm7gmSZw?cd=1&localPriority=0&p=60",
-        #     70: "https://www.avito.ru/moskva/tovary_dlya_kompyutera/komplektuyuschie/cd_dvd_i_blu-ray_privody-ASgBAgICAkTGB~pm7gmSZw?cd=1&localPriority=0&p=70",
-        #     80: "https://www.avito.ru/moskva/tovary_dlya_kompyutera/komplektuyuschie/cd_dvd_i_blu-ray_privody-ASgBAgICAkTGB~pm7gmSZw?cd=1&localPriority=0&p=80",
-        #
-        # }
-        self._start = start_method
         self._timeout_exceptions_counter = TIMEOUT_EXCEPTIONS_COUNTER
         self._timeout = TIMEOUT
         self._counter = 0
@@ -60,6 +48,10 @@ class Worker(CheckTitleMixin, TimeMeasurementMixin):
         self._selected_page_selector = '.styles-module-pagination-enter_done-iw8uW'
         self._pattern_timeout = re.compile(r'Timed out|timed out')
         self._target_block_page = '.styles-module-pagination-enter_done-iw8uW'
+
+    @staticmethod
+    def _choice_num(a=6, b=9):
+        return round(random.uniform(a, b), 2)
 
     @classmethod
     def reset_time_start(cls):
@@ -71,8 +63,9 @@ class Worker(CheckTitleMixin, TimeMeasurementMixin):
         Проверка очереди данных.
         Измерение время работы программы.
         """
+        self._timeout = self._choice_num()
         check_chanel()
-        self._driver.get(url)
+        self.driver.get(url)
         TimeMeasurementMixin.time_measurement_end()
         check_chanel()
         time.sleep(self._timeout / 2)
@@ -83,7 +76,7 @@ class Worker(CheckTitleMixin, TimeMeasurementMixin):
 
     def start(self):
         self._go_to_url()
-        return self._instance
+        return self.instance
 
     def _go_to_url(self):
         """
@@ -131,7 +124,7 @@ class Worker(CheckTitleMixin, TimeMeasurementMixin):
         current_page = None
         while counter:
             try:
-                block = self._driver.find_element(by=By.CSS_SELECTOR, value=self._target_block_page)
+                block = self.driver.find_element(by=By.CSS_SELECTOR, value=self._target_block_page)
                 if block:
                     page_block = block.find_element(by=By.TAG_NAME, value='span').find_element(by=By.TAG_NAME, value='span')
                     current_page = page_block.get_attribute('innerHTML')
@@ -153,7 +146,7 @@ class Worker(CheckTitleMixin, TimeMeasurementMixin):
         """
         try:
             self._driver_and_timeout(url)
-            self.check_title(self._driver)
+            self.check_title(self.driver)
         except selenium.common.exceptions.TimeoutException:
             logging.warning("TimeoutException")
             connector.update_info(text="Плохое соединение, "
@@ -164,7 +157,7 @@ class Worker(CheckTitleMixin, TimeMeasurementMixin):
         except Exception as err:
             self._read_err_obj_timeout(err)
         else:
-            connector.update_title(text=self._driver.title)
+            connector.update_title(text=self.driver.title)
             raise BreakWhile
 
 
@@ -184,7 +177,7 @@ class WorkerForPage(Worker):
             try:
                 self._create_while(url=url)
                 self._check_limit_max_page(requested_page=page)
-                self._start(url)
+                self.instance(url)
             except MaxPageError:
                 break
 
@@ -204,5 +197,8 @@ class WorkerForAnnouncement(Worker):
         # обход ссылок на страницы
         for url in self._links:
             self._create_while(url=url)
-            self._start(url)
-
+            self.driver.execute_script("window.scrollBy(0, 500);")
+            time.sleep(1.5)
+            self.driver.execute_script("window.scrollBy(0, 500);")
+            time.sleep(1.5)
+            self.instance(url)

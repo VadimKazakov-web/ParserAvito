@@ -18,8 +18,8 @@ button_custom.make_hover()
 button_instance = button_custom.get_instance()
 logging.info("{}: done".format(__name__))
 
-act_inact_button = ActiveInactiveButton(button_custom, button_instance, CheckUpdateProgThread.start)
-act_inact_button.make_active_button()
-
-connector.set_callbacks_for_start_prog(act_inact_button.make_inactive_button)
-connector.set_callbacks_for_stop_prog(act_inact_button.make_active_button)
+# act_inact_button = ActiveInactiveButton(button_custom, button_instance, CheckUpdateProgThread.start)
+# act_inact_button.make_active_button()
+#
+# connector.set_callbacks_for_start_prog(act_inact_button.make_inactive_button)
+# connector.set_callbacks_for_stop_prog(act_inact_button.make_active_button)

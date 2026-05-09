@@ -1,7 +1,20 @@
 # -*- coding: utf-8 -*-
 from objects import connector
-from tkinter_frontend.classes.button import Button, ButtonForUpdate
+from tkinter_frontend.classes.button import ButtonForUpdate
 from update.update_thread import UpdateProgThread
+from backend.variables import Variables
+
+
+def new_flow_btn(*args, **kwargs):
+    from tkinter_frontend.window_root.frame_1.stop_button.build import active_inactive_stop_button
+    from tkinter_frontend.window_root.frame_1.start_button.build import active_inactive_start_button
+    active_inactive_stop_button.make_inactive_button()
+    active_inactive_start_button.make_active_button()
+
+
+def update_info(*args, **kwargs):
+    from tkinter_frontend.window_root.frame_1.frame_for_info.build import label_text_info
+    label_text_info["text"] = Variables.get_info()
 
 
 def unbind_return(*args, **kwargs):
@@ -26,11 +39,6 @@ def update_progress(*args, **kwargs):
         title_chunk = title
     label_title_page_origin["text"] = title_chunk
     label_progress_origin["text"] = progr
-
-
-def update_info(*args, **kwargs):
-    from tkinter_frontend.window_root.frame_1.frame_for_info.build import label_text_info
-    label_text_info["text"] = connector.get_info()
 
 
 def update_version(*args, **kwargs):
@@ -73,4 +81,6 @@ class ActiveInactiveButton:
         self.button_instance["background"] = "white"
         self.button_instance["cursor"] = "hand2"
         self.button_custom.make_hover()
-        self.button_instance.bind("<ButtonPress-1>", self.callback)
+        self.button_instance.bind("<ButtonPress-1>", func=self.callback)
+
+

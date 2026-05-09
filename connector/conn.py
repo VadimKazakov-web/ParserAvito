@@ -35,8 +35,8 @@ class Connector(ClientMixin):
         """
         коллбэки выпоняются перед началом работы программы
         """
-        for elem in self._callbacks_for_start_list:
-            elem()
+        for func in self._callbacks_for_start_list:
+            func()
 
     def callbacks_for_stop_prog(self):
         """

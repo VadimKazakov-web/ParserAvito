@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from pathlib import Path
-from utills.utils import get_desktop_path, get_drive_path, app_work_dir
 from version import version
+from backend.utils.utils import get_desktop_path, get_drive_path, app_work_dir
 
 APP_NAME = "ParserAvito"
 
@@ -28,9 +28,9 @@ DATABASE = DATABASE_DIR / Path('data.db')
 
 DB_TABLE_NAME = "announcement"
 
-TIMEOUT_EXCEPTIONS_COUNTER = 4
+TIMEOUT_EXCEPTIONS_COUNTER = 8
 
-TIMEOUT = 6
+TIMEOUT = 9
 
 TOP_ANNOUNCEMENT = 100
 
@@ -48,8 +48,7 @@ WIDTH_LABEL = 50
 REPOSITORY = "https://github.com/VadimKazakov-web/ParserAvito.git"
 REPOSITORY_TAGS = "https://github.com/VadimKazakov-web/ParserAvito/tags"
 
-PYINSTALLER_WORK_DIR_RM = False
-PYINSTALLER_WORK_DIR = app_work_dir("parser_avito_work_folder")
+APP_TEMPORARY = app_work_dir("parser_avito_temp")
 
 # parsing
 LEFT_BLOCK_ANNOUNCEMENT_CSS = ".d9134745e0e171a2"

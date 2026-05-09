@@ -10,7 +10,7 @@ class OpenUrl:
     def __init__(self, driver):
         self._driver = driver
         self._data = None
-        self._url_root = 'https://www.avito.ru'
+        self.url_root = 'https://www.avito.ru'
         self._url = None
 
     @property

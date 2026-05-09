@@ -114,7 +114,7 @@ class OpenAnnouncement(OpenUrl, DataBaseMixin):
         progress_text = f'отсканировано объявлений: {self.counter}/{self._length_links} ({round(self.counter / self._length_links * 100)}%)'
         connector.update_progress(text=progress_text)
 
-    def start(self, url: str) -> list:
+    def __call__(self, url: str) -> list:
         data = super().start(url)
         self.insert_in_database(self._data)
         self._update_progress()
