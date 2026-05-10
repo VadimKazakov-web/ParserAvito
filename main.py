@@ -2,7 +2,7 @@
 from threading import Thread
 import logging.handlers
 from multiprocessing import Process
-from backend import BackendManager
+from backend.backend_manager import BackendManager
 from tkinter_frontend.events import Events, InfoUpdateEvent
 from tkinter_frontend.window_root.build import window as tk_window
 from tkinter_frontend.build_tk import build_tk_interface

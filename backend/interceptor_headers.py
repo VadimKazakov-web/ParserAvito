@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 import re
 from seleniumwire.request import Request, Response
-from backend.user_agent import UserAgentMixin
 
 
-class InterceptorHeaders(UserAgentMixin):
+class InterceptorHeaders:
 
     # словарь предварительно заполнен, чтобы избежать проверок на True в каждом запросе
     cookie_dict = {

@@ -52,7 +52,7 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
                 self._channel_work_flow.put(Events.push_stop_event)
                 self._start.clear()
                 self._show_result()
-                time.sleep(1)
+                time.sleep(4)
                 kill_work_flow(self._pid_work_flow)
 
     def __call__(self, *args, **kwargs):

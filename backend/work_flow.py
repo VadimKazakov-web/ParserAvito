@@ -2,8 +2,9 @@
 import threading
 import time
 from threading import Thread
-from backend import CreateDriverMixin, DataBaseMixin, InterceptorHeaders, \
+from backend import CreateDriverMixin, DataBaseMixin, \
     SearchLinks, CollectData
+from backend.interceptor_headers import InterceptorHeaders
 from backend.open_url import OpenUrl
 from backend.open_advertisement import OpenAdvertisement
 from backend.utils import CreatingLinks

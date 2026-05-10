@@ -22,6 +22,7 @@ class OpenUrl(CloseAuthPopupMixin, TimeoutMixin, CheckTitleMixin):
 
     def __call__(self, *args, **kwargs) -> bool:
         self._open()
+        print("url load")
         # переключиться на новую вкладку
         self._switch_to()
         self._update_title()
