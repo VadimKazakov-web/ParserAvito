@@ -1,6 +1,6 @@
 import re
 from backend.index import base
-from settings import BASE_DIR
+from settings import BASE_DIR, TOP_ANNOUNCEMENT
 
 
 class ResultInHtml:

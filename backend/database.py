@@ -65,15 +65,17 @@ class DataBaseMixin:
             result = res.fetchone()
             return int(result[0])
 
-    @staticmethod
-    def insert_in_database(data: dict):
+    @classmethod
+    def insert_in_database(cls, data: dict):
         with Connection() as cursor:
             """
             Вставка данных одного объявления в таблицу
             """
-            cursor.execute(
-                "INSERT OR IGNORE INTO announcement VALUES(:id, :title, :link, :total_views, :today_views, :rating, :reviews);",
-                data)
+            result = cursor.execute("SELECT id FROM {} WHERE id = {}".format(cls._table_name, data.get("id")))
+            if not result.fetchall():
+                cursor.execute(
+                    "INSERT OR IGNORE INTO announcement VALUES(:id, :title, :link, :total_views, :today_views, :rating, :reviews);",
+                    data)
 
     @staticmethod
     def _list_tuple_in_list_dict(data):
