@@ -9,10 +9,12 @@ from tkinter_frontend.events import Events, InfoUpdateEvent
 from tkinter_frontend.window_root.build import window as tk_window
 from tkinter_frontend.build_tk import build_tk_interface
 from utills.utils import logging_settings
-from backend import connector, channel_backend
+from backend import connector
 from backend.variables import Variables
 from tkinter_frontend.utils import (create_progress, update_progress, update_info,
                                     update_time, update_version, create_install_prog_btn, new_flow_btn)
+
+channel_backend = multiprocessing.JoinableQueue()
 
 
 def _receiver():
@@ -46,7 +48,7 @@ def main(*args, **kwargs):
 
     # запуск серверной части в отдельном процессе
     proc = Process(target=BackendManager, kwargs={
-        # процесс будет получать данные с канала
+        # процесс будет получать данные из канала
         "channel_get": channel_backend,
         # процесс будет отправлять данные в канал
         "channel_put": connector,

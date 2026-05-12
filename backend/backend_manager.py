@@ -61,9 +61,11 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
             elif data == Events.push_stop_event:
                 self._show_result()
                 self._channel_put.put(Events.new_flow_event)
-                self._channel_get_for_work_flow.put(Events.push_stop_event)
+                self._channel_workflow_put.put(Events.push_stop_event)
             elif data == Events.exit_event:
                 self._show_result()
+                self._channel_workflow_put.put(Events.push_stop_event)
+                self._channel_workflow_put.join()
             self._channel_get.task_done()
 
     def _receiver_for_workflow(self):
@@ -71,11 +73,10 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
         Метод получает данные из процесса WorkFlow
         """
         while True:
-            data = self._channel_put_for_work_flow.get()
+            data = self._channel_workflow_get.get()
             # print("data in BackendManager's _receiver_for_workflow: {}".format(data))
             if isinstance(data, InfoUpdateEvent):
                 self._channel_put.put(data)
-                # self._channel_put.join()
             elif data == Events.new_flow_event:
                 self._channel_put.join()
                 kill_process(self._pid_work_flow)
@@ -95,25 +96,25 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
             print("-" * 10, "waiting for the start", "-" * 10)
             self._start.wait()
             try:
-                # канал передачи данных из процесса BackendManager в дочерний процесс WorkFlow,
                 # после завершения процесса WorkFlow, нужно передавать новый объект Queue
-                self._channel_get_for_work_flow = Queue(maxsize=20)
                 # канал получения данных из процесса WorkFlow процесс BackendManager
-                self._channel_put_for_work_flow = Queue(maxsize=20)
+                self._channel_workflow_get = Queue(maxsize=20)
+                # канал передачи данных из процесса BackendManager в дочерний процесс WorkFlow
+                self._channel_workflow_put = JoinableQueue(maxsize=20)
                 receiver_2 = Thread(target=self._receiver_for_workflow)
                 receiver_2.start()
                 # при указании параметра name в Process, процесс BackendManager.__call__() вызывался рекурсивно
                 proc = Process(target=WorkFlow, kwargs={
                     # процесс будет получать данные с канала
-                    "channel_get": self._channel_get_for_work_flow,
+                    "channel_get": self._channel_workflow_put,
                     # процесс будет отправлять данные в канал
-                    "channel_put": self._channel_put_for_work_flow,
+                    "channel_put": self._channel_workflow_get,
                 })
                 proc.start()
                 self._pid_work_flow = str(proc.ident)
                 print("pid work_flow proc: {}".format(self._pid_work_flow))
                 time.sleep(1)
-                self._channel_get_for_work_flow.put(self.data)
+                self._channel_workflow_put.put(self.data)
                 proc.join()
                 print("proc.join() done")
                 receiver_2.join()

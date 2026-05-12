@@ -30,9 +30,9 @@ class WindowRoot:
 
     def exit(self, *args, **kwargs):
         self.root.destroy()
-        shutil.rmtree(APP_TEMPORARY)
         connector.put(Events.exit_event)
         connector.join()
+        shutil.rmtree(APP_TEMPORARY)
         # программа завершается корректно только так
         os._exit(0)
 

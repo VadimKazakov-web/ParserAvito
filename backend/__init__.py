@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from .data_queue import connector, channel_backend
+from .data_queue import connector
 from .collect_data import CollectData
 from .variables import Variables
 from .create_driver import CreateDriverMixin

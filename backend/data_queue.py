@@ -2,4 +2,3 @@
 import multiprocessing
 
 connector = multiprocessing.JoinableQueue()
-channel_backend = multiprocessing.JoinableQueue()

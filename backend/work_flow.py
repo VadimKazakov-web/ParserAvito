@@ -29,7 +29,7 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
     var = None
 
     def __init__(self, *args, **kwargs):
-        self._channel_get: multiprocessing.Queue = kwargs.get("channel_get")
+        self._channel_get: multiprocessing.JoinableQueue = kwargs.get("channel_get")
         self._channel_put: multiprocessing.Queue = kwargs.get("channel_put")
         self._open_pages_global_counter = 0
         self._open_advertisement_global_counter = 0
@@ -68,6 +68,10 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
                 # remote_server_addr = self.driver.command_executor._client_config.remote_server_addr
                 # url = "{}/session/{}/window".format(remote_server_addr, self.driver.session_id)
                 # response = requests.delete(url)
+            elif data == Events.exit_event:
+                self.driver.quit()
+            self._channel_get.task_done()
+
 
     def __call__(self, *args, **kwargs):
         receiver = Thread(target=self._receiver, daemon=True)
