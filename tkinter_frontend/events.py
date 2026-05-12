@@ -9,6 +9,7 @@ class Events:
     push_stop_event = "<<PushStopEvent>>"
     new_flow_event = "<<NewFlowEvent>>"
     info_update_event = "<<InfoUpdateEvent>>"
+    window_close_event = "<<WindowCloseEvent>>"
 
 
 class InfoUpdateEvent(Events):

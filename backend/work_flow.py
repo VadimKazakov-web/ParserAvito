@@ -48,6 +48,7 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
                 print(err)
         finally:
             self.driver.quit()
+            self._channel_put.put(Events.window_close_event)
             print("after WorkFlow's self.__call__()")
 
     def __str__(self):
@@ -55,28 +56,23 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
 
     def _receiver(self):
         while True:
-            try:
-                data = self._channel_get.get(timeout=10)
-                print("data in WorkFlow's _receiver: {}".format(data))
-            except queue.Empty:
-                print("data in WorkFlow's _receiver: {}".format("Empty"))
-            else:
-                if isinstance(data, Variables):
-                    self.data = data.variables
-                    self._start.set()
-                elif data == Events.push_stop_event:
-                    self.driver.quit()
-                    # экспериментальный, более низкоуровневый способ закрытия окна браузера
-                    # remote_server_addr = self.driver.command_executor._client_config.remote_server_addr
-                    # url = "{}/session/{}/window".format(remote_server_addr, self.driver.session_id)
-                    # response = requests.delete(url)
+            data = self._channel_get.get()
+            print("data in WorkFlow's _receiver: {}".format(data))
+            if isinstance(data, Variables):
+                self.data = data.variables
+                self._start.set()
+            elif data == Events.push_stop_event:
+                self.driver.quit()
+                self._channel_put.put(Events.new_flow_event)
+                # экспериментальный, более низкоуровневый способ закрытия окна браузера
+                # remote_server_addr = self.driver.command_executor._client_config.remote_server_addr
+                # url = "{}/session/{}/window".format(remote_server_addr, self.driver.session_id)
+                # response = requests.delete(url)
 
     def __call__(self, *args, **kwargs):
         receiver = Thread(target=self._receiver, daemon=True)
         receiver.start()
-        print("wait in WorkFlow")
         self._start.wait()
-        print("start in WorkFlow")
         self._work_flow(*args, **kwargs)
 
     def _work_flow(self, pages=0, advertisement=0):

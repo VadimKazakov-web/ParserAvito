@@ -27,6 +27,7 @@ class OpenUrl(CloseAuthPopupMixin, TimeoutMixin, CheckTitleMixin):
         self._switch_to()
         self._update_title()
         if not self.check_title(self._driver):
+            self._driver.close()
             return False
         else:
             self._update_title()

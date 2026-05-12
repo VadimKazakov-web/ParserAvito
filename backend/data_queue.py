@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
 import multiprocessing
 
-connector = multiprocessing.Queue()
+connector = multiprocessing.JoinableQueue()
 channel_backend = multiprocessing.Queue()

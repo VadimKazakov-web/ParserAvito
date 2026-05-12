@@ -6,7 +6,7 @@ from threading import Event, Thread
 from backend import (Variables, DataBaseMixin, ResultInHtml, CreateDriverMixin)
 import webbrowser
 from tkinter_frontend.events import Events, InfoUpdateEvent
-from multiprocessing import Process, Queue
+from multiprocessing import Process, Queue, JoinableQueue
 from backend.work_flow import WorkFlow
 import os
 
@@ -22,11 +22,9 @@ def kill_process(pid: str):
 class BackendManager(DataBaseMixin, CreateDriverMixin):
 
     def __init__(self, *args, **kwargs):
-        # self._channel_get_for_work_flow = Queue(maxsize=20)
-
         # канал получения данных из main в процесс BackendManager
         self._channel_get: multiprocessing.Queue = kwargs.get("channel_get")
-        self._channel_put: multiprocessing.Queue = kwargs.get("channel_put")
+        self._channel_put: multiprocessing.JoinableQueue = kwargs.get("channel_put")
         self._start = Event()
         self._pid_work_flow = None
         self.__call__()
@@ -51,6 +49,9 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
         webbrowser.open(self.data.get_filename())
 
     def _receiver_for_main(self):
+        """
+        Метод получает данные из процесса main
+        """
         while True:
             data = self._channel_get.get()
             print("data in BackendManager's _receiver_for_main: {}".format(data))
@@ -58,32 +59,34 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
                 self.data = data
                 self._start.set()
             elif data == Events.push_stop_event:
-                self._channel_get_for_work_flow.put(Events.push_stop_event)
                 self._show_result()
-                time.sleep(2)
-                kill_process(self._pid_work_flow)
+                self._channel_put.put(Events.new_flow_event)
+                self._channel_get_for_work_flow.put(Events.push_stop_event)
 
     def _receiver_for_workflow(self):
+        """
+        Метод получает данные из процесса WorkFlow
+        """
         while True:
-            try:
-                data = self._channel_put_for_work_flow.get()
-                print("data in BackendManager's _receiver_for_workflow: {}".format(data))
-            except AttributeError:
-                time.sleep(2)
-            else:
-                if isinstance(data, InfoUpdateEvent):
-                    self._channel_put.put(data)
-                elif data == Events.new_flow_event:
-                    self._channel_put.put(Events.new_flow_event)
-                    time.sleep(2)
-                    kill_process(self._pid_work_flow)
+            data = self._channel_put_for_work_flow.get()
+            print("data in BackendManager's _receiver_for_workflow: {}".format(data))
+            if isinstance(data, InfoUpdateEvent):
+                self._channel_put.put(data)
+            elif data == Events.new_flow_event:
+                self._channel_put.join()
+                kill_process(self._pid_work_flow)
+                return
+            elif data == Events.window_close_event:
+                self._channel_put.put(Events.new_flow_event)
+                self._channel_put.join()
+                self._show_result()
+                kill_process(self._pid_work_flow)
+                return
 
     def __call__(self, *args, **kwargs):
         print("pid BackendManager proc: {}".format(os.getpid()))
         receiver_1 = Thread(target=self._receiver_for_main, daemon=True)
         receiver_1.start()
-        receiver_2 = Thread(target=self._receiver_for_workflow, daemon=True)
-        receiver_2.start()
         while True:
             print("-" * 10, "waiting for the start", "-" * 10)
             self._start.wait()
@@ -93,6 +96,8 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
                 self._channel_get_for_work_flow = Queue(maxsize=20)
                 # канал получения данных из процесса WorkFlow процесс BackendManager
                 self._channel_put_for_work_flow = Queue(maxsize=20)
+                receiver_2 = Thread(target=self._receiver_for_workflow)
+                receiver_2.start()
                 # при указании параметра name в Process, процесс BackendManager.__call__() вызывался рекурсивно
                 proc = Process(target=WorkFlow, kwargs={
                     # процесс будет получать данные с канала
@@ -106,7 +111,8 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
                 time.sleep(1)
                 self._channel_get_for_work_flow.put(self.data)
                 proc.join()
+                print("proc.join() done")
+                receiver_2.join()
+                print("receiver_2.join() done")
             finally:
                 self._start.clear()
-                print("+ put data in main's _receiver in BackendManager.__call__()")
-                self._channel_put.put(Events.new_flow_event)
