@@ -54,7 +54,7 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
         """
         while True:
             data = self._channel_get.get()
-            print("data in BackendManager's _receiver_for_main: {}".format(data))
+            # print("data in BackendManager's _receiver_for_main: {}".format(data))
             if isinstance(data, Variables):
                 self.data = data
                 self._start.set()
@@ -72,9 +72,10 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
         """
         while True:
             data = self._channel_put_for_work_flow.get()
-            print("data in BackendManager's _receiver_for_workflow: {}".format(data))
+            # print("data in BackendManager's _receiver_for_workflow: {}".format(data))
             if isinstance(data, InfoUpdateEvent):
                 self._channel_put.put(data)
+                # self._channel_put.join()
             elif data == Events.new_flow_event:
                 self._channel_put.join()
                 kill_process(self._pid_work_flow)

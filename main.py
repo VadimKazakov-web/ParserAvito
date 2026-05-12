@@ -18,10 +18,11 @@ from tkinter_frontend.utils import (create_progress, update_progress, update_inf
 def _receiver():
     while True:
         data = connector.get()
-        print("data in main's _receiver: {}".format(data))
+        # print("data in main's _receiver: {}".format(data))
         if isinstance(data, Variables):
             channel_backend.put(data)
         if isinstance(data, InfoUpdateEvent):
+            # print("InfoUpdateEvent data: {}".format(data.data))
             update_info(data.data)
         elif data == Events.push_stop_event:
             channel_backend.put(data)

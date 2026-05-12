@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import time
+
 from seleniumwire.webdriver import Chrome
 from backend import CheckTitleMixin
 from backend.utils.close_popup import CloseAuthPopupMixin
@@ -11,7 +13,7 @@ class OpenUrl(CloseAuthPopupMixin, TimeoutMixin, CheckTitleMixin):
     Базовый класс для открытия web-страницы
     """
 
-    def __init__(self, driver: Chrome, url: str, update_title_callback=lambda: None, *args, **kwargs):
+    def __init__(self, driver: Chrome, url: str, update_title_callback=lambda _: None, *args, **kwargs):
         super(OpenUrl, self).__init__(driver)
         self._driver = driver
         self._url = url
@@ -25,12 +27,12 @@ class OpenUrl(CloseAuthPopupMixin, TimeoutMixin, CheckTitleMixin):
         self._open()
         # переключиться на новую вкладку
         self._switch_to()
-        self._update_title()
+        self._update_title(self._driver)
         if not self.check_title(self._driver):
             self._driver.close()
             return False
         else:
-            self._update_title()
+            self._update_title(self._driver)
             # закрытия всплывающего окна с предложением авторизоваться, если оно есть
             self.close_popup()
             # задержка случайным таймаутом

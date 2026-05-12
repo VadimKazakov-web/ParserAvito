@@ -57,7 +57,7 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
     def _receiver(self):
         while True:
             data = self._channel_get.get()
-            print("data in WorkFlow's _receiver: {}".format(data))
+            # print("data in WorkFlow's _receiver: {}".format(data))
             if isinstance(data, Variables):
                 self.data = data.variables
                 self._start.set()
@@ -129,8 +129,10 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
                             advertisement=self._open_advertisement_global_counter)
             return
 
-    def _update_title(self):
-        info_upd = InfoUpdateEvent(self.driver.title)
+    def _update_title(self, driver):
+        # задержка для получения актуального заголовка страницы
+        time.sleep(2)
+        info_upd = InfoUpdateEvent(driver.title)
         self._channel_put.put(info_upd)
 
     def _open_page_script(self, url_page):
