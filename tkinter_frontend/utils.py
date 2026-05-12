@@ -2,7 +2,6 @@
 from objects import connector
 from tkinter_frontend.classes.button import ButtonForUpdate
 from update.update_thread import UpdateProgThread
-from backend.variables import Variables
 
 
 def new_flow_btn(*args, **kwargs):
@@ -12,9 +11,9 @@ def new_flow_btn(*args, **kwargs):
     active_inactive_start_button.make_active_button()
 
 
-def update_info(*args, **kwargs):
+def update_info(data):
     from tkinter_frontend.window_root.frame_1.frame_for_info.build import label_text_info
-    label_text_info["text"] = Variables.get_info()
+    label_text_info["text"] = data
 
 
 def unbind_return(*args, **kwargs):

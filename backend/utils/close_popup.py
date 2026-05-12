@@ -27,6 +27,9 @@ class CloseAuthPopupMixin:
         block.click()
 
     def close_popup(self, *args, **kwargs):
+        self._driver.implicitly_wait(2)
         block = self._find()
         if block:
             self._click(block)
+        self._driver.implicitly_wait(30)
+

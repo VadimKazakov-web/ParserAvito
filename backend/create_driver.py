@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import logging
 from selenium.webdriver.chrome.options import ChromiumOptions as Options
 from seleniumwire.webdriver import Chrome
 

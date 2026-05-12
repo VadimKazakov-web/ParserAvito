@@ -81,7 +81,6 @@ class HandlersClass(ValidationVarClass):
             from tkinter_frontend.window_root.frame_1.start_button.build import button_instance as start_btn
             from tkinter_frontend.window_root.frame_1.stop_button.build import button_instance as stop_btn
             cls.data["default_filename"] = cls.default_filename()
-            # cls.data["widget"] = master
             master.event_generate(Events.post_var_event)
             start_btn.event_generate(Events.post_var_event)
             stop_btn.event_generate(Events.post_var_event)

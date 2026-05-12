@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
+import multiprocessing
 import subprocess
 import time
 from threading import Event, Thread
 from backend import (Variables, DataBaseMixin, ResultInHtml, CreateDriverMixin)
 import webbrowser
-from tkinter_frontend.events import Events
+from tkinter_frontend.events import Events, InfoUpdateEvent
 from multiprocessing import Process, Queue
 from backend.work_flow import WorkFlow
 import os
 
 
-def kill_work_flow(pid):
+def kill_process(pid: str):
     complete_process = subprocess.run(["taskkill", "/F", "/PID", pid], capture_output=True, shell=True)
     if complete_process.returncode == 0:
         print(complete_process.stdout.decode(encoding='oem'))
@@ -20,13 +21,21 @@ def kill_work_flow(pid):
 
 class BackendManager(DataBaseMixin, CreateDriverMixin):
 
-    def __init__(self, ):
-        # канал передачи данных из процесса BackendManager в дочерний процесс WorkFlow
-        self._channel_work_flow = Queue()
+    def __init__(self, *args, **kwargs):
+        # self._channel_get_for_work_flow = Queue(maxsize=20)
+
+        # канал получения данных из main в процесс BackendManager
+        self._channel_get: multiprocessing.Queue = kwargs.get("channel_get")
+        self._channel_put: multiprocessing.Queue = kwargs.get("channel_put")
+        self._start = Event()
         self._pid_work_flow = None
+        self.__call__()
+
+    def __str__(self):
+        return "BackendManager"
 
     def _show_result(self):
-        result_html = ResultInHtml(file_name=Variables.get_filename(), count=self.count_row_in_database())
+        result_html = ResultInHtml(file_name=self.data.get_filename(), count=self.count_row_in_database())
         result_gen = self.extraction_and_sorting_generator()
         # порядок выдачи отсортированных результатов:
         # по просмотрам за всё время
@@ -39,45 +48,65 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
         data = next(result_gen)
         result_html.write_result(flag="reviews", data=data)
         # открыть файл с результатами в браузере по умолчанию
-        webbrowser.open(Variables.get_filename())
+        webbrowser.open(self.data.get_filename())
 
-    def _receiver(self):
+    def _receiver_for_main(self):
         while True:
-            data = self._channel.get()
-            print("data in _receiver BackendManager: {}".format(data))
-            if isinstance(data, dict):
-                if Variables.set_var(data):
-                    self._start.set()
+            data = self._channel_get.get()
+            print("data in BackendManager's _receiver_for_main: {}".format(data))
+            if isinstance(data, Variables):
+                self.data = data
+                self._start.set()
             elif data == Events.push_stop_event:
-                self._channel_work_flow.put(Events.push_stop_event)
-                self._start.clear()
+                self._channel_get_for_work_flow.put(Events.push_stop_event)
                 self._show_result()
-                time.sleep(4)
-                kill_work_flow(self._pid_work_flow)
+                time.sleep(2)
+                kill_process(self._pid_work_flow)
+
+    def _receiver_for_workflow(self):
+        while True:
+            try:
+                data = self._channel_put_for_work_flow.get()
+                print("data in BackendManager's _receiver_for_workflow: {}".format(data))
+            except AttributeError:
+                time.sleep(2)
+            else:
+                if isinstance(data, InfoUpdateEvent):
+                    self._channel_put.put(data)
+                elif data == Events.new_flow_event:
+                    self._channel_put.put(Events.new_flow_event)
+                    time.sleep(2)
+                    kill_process(self._pid_work_flow)
 
     def __call__(self, *args, **kwargs):
         print("pid BackendManager proc: {}".format(os.getpid()))
-        # канал получения данных из tkinter в процесс BackendManager
-        self._channel = kwargs.get("channel")
-        # канал передачи данных из процесса BackendManager в главный процесс
-        self._channel_for_main_proc = kwargs.get("channel_for_main_proc")
-        self._start = Event()
+        receiver_1 = Thread(target=self._receiver_for_main, daemon=True)
+        receiver_1.start()
+        receiver_2 = Thread(target=self._receiver_for_workflow, daemon=True)
+        receiver_2.start()
         while True:
-            receiver = Thread(target=self._receiver, daemon=True)
-            receiver.start()
-            time.sleep(0.1)
             print("-" * 10, "waiting for the start", "-" * 10)
             self._start.wait()
             try:
+                # канал передачи данных из процесса BackendManager в дочерний процесс WorkFlow,
+                # после завершения процесса WorkFlow, нужно передавать новый объект Queue
+                self._channel_get_for_work_flow = Queue(maxsize=20)
+                # канал получения данных из процесса WorkFlow процесс BackendManager
+                self._channel_put_for_work_flow = Queue(maxsize=20)
+                # при указании параметра name в Process, процесс BackendManager.__call__() вызывался рекурсивно
                 proc = Process(target=WorkFlow, kwargs={
-                    "channel": self._channel_work_flow,
-                    "channel_for_main_proc": self._channel_for_main_proc,
+                    # процесс будет получать данные с канала
+                    "channel_get": self._channel_get_for_work_flow,
+                    # процесс будет отправлять данные в канал
+                    "channel_put": self._channel_put_for_work_flow,
                 })
                 proc.start()
                 self._pid_work_flow = str(proc.ident)
                 print("pid work_flow proc: {}".format(self._pid_work_flow))
-                self._channel_work_flow.put(Variables())
+                time.sleep(1)
+                self._channel_get_for_work_flow.put(self.data)
                 proc.join()
             finally:
                 self._start.clear()
-                self._channel_for_main_proc.put(Events.new_flow_event)
+                print("+ put data in main's _receiver in BackendManager.__call__()")
+                self._channel_put.put(Events.new_flow_event)

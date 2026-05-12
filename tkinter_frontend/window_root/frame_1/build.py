@@ -7,7 +7,7 @@ from tkinter_frontend.window_root.build import ROOT, window
 from tkinter_frontend.utils import (create_progress, update_progress, update_info,
                                     update_time, update_version, create_install_prog_btn)
 from tkinter_frontend.utils import new_flow_btn
-from backend import connector
+from backend import connector, Variables
 from tkinter_frontend.events import Events
 
 frame_custom = Frame(column=1, row=0, master=ROOT)
@@ -16,7 +16,7 @@ frame = frame_custom.get_instance()
 frame.columnconfigure(1, weight=0)
 frame.columnconfigure(2, weight=1)
 frame.bind(Events.push_start_event, func=lambda _: HandlersClass.valid_all_vars(master=frame))
-frame.bind(Events.post_var_event, func=lambda _: connector.put(HandlersClass.data))
+frame.bind(Events.post_var_event, func=lambda _: connector.put(Variables(HandlersClass.data)))
 frame.bind(Events.push_stop_event, func=lambda _: connector.put(Events.push_stop_event))
 # frame.bind(Events.new_flow_event, func=lambda _: new_flow_btn)
 # frame.bind(Events.info_update_event, func=lambda _: update_info)

@@ -21,8 +21,8 @@ class OpenUrl(CloseAuthPopupMixin, TimeoutMixin, CheckTitleMixin):
         self._driver.get(self._url)
 
     def __call__(self, *args, **kwargs) -> bool:
+        self._checking_number_tabs(3)
         self._open()
-        print("url load")
         # переключиться на новую вкладку
         self._switch_to()
         self._update_title()
@@ -38,3 +38,8 @@ class OpenUrl(CloseAuthPopupMixin, TimeoutMixin, CheckTitleMixin):
 
     def _switch_to(self):
         pass
+
+    def _checking_number_tabs(self, num):
+        if len(self._driver.window_handles) > num:
+            print("emergency closure window: lots of tabs {}".format(num))
+            self._driver.quit()

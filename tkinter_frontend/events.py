@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+import textwrap
+from settings import WIDTH_LABEL
+
 
 class Events:
     post_var_event = "<<PostVarEvent>>"
@@ -11,5 +14,11 @@ class Events:
 class InfoUpdateEvent(Events):
 
     def __init__(self, data):
-        self.data = data
+        self.width_label = WIDTH_LABEL
+        self.data = self.transformation(data)
+
+    def transformation(self, *args, **kwargs):
+        # https://docs.python.org/3/library/textwrap.html#textwrap.TextWrapper.wrap
+        data = textwrap.fill(text=args[0], width=self.width_label)
+        return data
 
