@@ -23,7 +23,7 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
 
     def __init__(self, *args, **kwargs):
         # канал получения данных из main в процесс BackendManager
-        self._channel_get: multiprocessing.Queue = kwargs.get("channel_get")
+        self._channel_get: multiprocessing.JoinableQueue = kwargs.get("channel_get")
         self._channel_put: multiprocessing.JoinableQueue = kwargs.get("channel_put")
         self._start = Event()
         self._pid_work_flow = None
@@ -62,6 +62,9 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
                 self._show_result()
                 self._channel_put.put(Events.new_flow_event)
                 self._channel_get_for_work_flow.put(Events.push_stop_event)
+            elif data == Events.exit_event:
+                self._show_result()
+            self._channel_get.task_done()
 
     def _receiver_for_workflow(self):
         """

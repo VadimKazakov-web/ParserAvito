@@ -10,6 +10,7 @@ class Events:
     new_flow_event = "<<NewFlowEvent>>"
     info_update_event = "<<InfoUpdateEvent>>"
     window_close_event = "<<WindowCloseEvent>>"
+    exit_event = "<<ExitEvent>>"
 
 
 class InfoUpdateEvent(Events):

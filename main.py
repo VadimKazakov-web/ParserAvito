@@ -27,6 +27,9 @@ def _receiver():
             channel_backend.put(data)
         elif data == Events.new_flow_event:
             new_flow_btn()
+        elif data == Events.exit_event:
+            channel_backend.put(data)
+            channel_backend.join()
         connector.task_done()
 
 
