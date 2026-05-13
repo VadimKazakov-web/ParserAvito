@@ -49,8 +49,7 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
                 raise err
         finally:
             self.driver.quit()
-            self._channel_put.put(Events.window_close_event)
-            print("after WorkFlow's self.__call__()")
+            EventsConnector.window_close()
             # экспериментальный, более низкоуровневый способ закрытия окна браузера
             # remote_server_addr = self.driver.command_executor._client_config.remote_server_addr
             # url = "{}/session/{}/window".format(remote_server_addr, self.driver.session_id)

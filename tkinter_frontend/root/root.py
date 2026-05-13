@@ -33,7 +33,7 @@ class WindowRoot:
     def exit(self, *args, **kwargs):
         self.root.destroy()
         connector.put(Events.exit_event)
-        EventsConnector.window_close_wait()
+        EventsConnector.destroy_tkinter_wait()
         shutil.rmtree(APP_TEMPORARY)
         # программа завершается корректно только так
         os._exit(0)

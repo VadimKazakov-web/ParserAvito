@@ -70,6 +70,8 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
                 EventsConnector.push_stop()
             elif data == Events.exit_event:
                 EventsConnector.push_stop()
+                EventsConnector.window_close_wait()
+                EventsConnector.destroy_tkinter()
 
     def _receiver_for_workflow(self):
         """
