@@ -67,8 +67,6 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
             if isinstance(data, Variables):
                 self.data = data.variables
                 self._start.set()
-            elif data == Events.exit_event:
-                self.driver.quit()
             self._channel_get.task_done()
 
     def __call__(self, *args, **kwargs):

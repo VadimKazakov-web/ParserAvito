@@ -65,9 +65,8 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
                 self._channel_put.put(Events.new_flow_event)
                 EventsConnector.push_stop()
             elif data == Events.exit_event:
-                self._show_result()
-                self._channel_workflow_put.put(Events.push_stop_event)
-                self._channel_workflow_put.join()
+                EventsConnector.push_stop()
+                time.sleep(3)
             self._channel_get.task_done()
 
     def _receiver_for_workflow(self):
@@ -79,13 +78,9 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
             # print("data in BackendManager's _receiver_for_workflow: {}".format(data))
             if isinstance(data, InfoUpdateEvent):
                 self._channel_put.put(data)
-            elif data == Events.new_flow_event:
-                self._channel_put.join()
-                return
             elif data == Events.window_close_event:
-                self._channel_put.put(Events.new_flow_event)
-                self._channel_put.join()
                 self._show_result()
+                self._channel_put.put(Events.new_flow_event)
                 return
 
     def __call__(self, *args, **kwargs):

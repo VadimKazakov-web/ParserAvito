@@ -28,6 +28,7 @@ def _receiver():
             update_info(data.data)
         elif data == Events.push_stop_event:
             channel_backend.put(data)
+            new_flow_btn()
         elif data == Events.new_flow_event:
             new_flow_btn()
         elif data == Events.exit_event:

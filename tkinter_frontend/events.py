@@ -20,7 +20,8 @@ class InfoUpdateEvent(Events):
         self.data = self.transformation(data)
 
     def transformation(self, *args, **kwargs):
-        # https://docs.python.org/3/library/textwrap.html#textwrap.TextWrapper.wrap
-        data = textwrap.fill(text=args[0], width=self.width_label)
-        return data
+        if args[0]:
+            # https://docs.python.org/3/library/textwrap.html#textwrap.TextWrapper.wrap
+            data = textwrap.fill(text=args[0], width=self.width_label)
+            return data
 
