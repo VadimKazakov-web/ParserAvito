@@ -8,26 +8,23 @@ class TimeoutMixin:
     stop = 7
 
     def __init__(self, *args, **kwargs):
-        pass
+        self._events_handler = lambda: None
 
-    @classmethod
-    def _choice_num(cls) -> float:
-        return round(random.uniform(cls.start, cls.stop), 2)
+    def _choice_num(self) -> float:
+        return round(random.uniform(self.start, self.stop), 2)
     
-    @classmethod
-    def _timeout(cls) -> None:
+    def _timeout(self) -> None:
         part = 15
-        chunk = cls._choice_num() / part
+        chunk = self._choice_num() / part
         for i in range(0, part):
             time.sleep(chunk)
+            self._events_handler()
             
-    @classmethod
-    def timeout(cls, *args, **kwargs):
-        cls._timeout()
+    def timeout(self, *args, **kwargs):
+        self._timeout()
 
-    @classmethod
-    def timeout_add_one(cls):
-        cls.start += 1
-        cls.stop += 1
+    def timeout_add_one(self):
+        self.start += 1
+        self.stop += 1
 
 

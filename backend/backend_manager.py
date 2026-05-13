@@ -4,6 +4,7 @@ import subprocess
 import time
 from threading import Event, Thread
 from backend import (Variables, DataBaseMixin, ResultInHtml, CreateDriverMixin)
+from backend.events import EventsConnector
 import webbrowser
 from tkinter_frontend.events import Events, InfoUpdateEvent
 from multiprocessing import Process, Queue, JoinableQueue
@@ -12,6 +13,9 @@ import os
 
 
 def kill_process(pid: str):
+    """
+    Не используется
+    """
     complete_process = subprocess.run(["taskkill", "/F", "/PID", pid], capture_output=True, shell=True)
     if complete_process.returncode == 0:
         print(complete_process.stdout.decode(encoding='oem'))
@@ -26,7 +30,6 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
         self._channel_get: multiprocessing.JoinableQueue = kwargs.get("channel_get")
         self._channel_put: multiprocessing.JoinableQueue = kwargs.get("channel_put")
         self._start = Event()
-        self._pid_work_flow = None
         self.__call__()
 
     def __str__(self):
@@ -59,9 +62,8 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
                 self.data = data
                 self._start.set()
             elif data == Events.push_stop_event:
-                self._show_result()
                 self._channel_put.put(Events.new_flow_event)
-                self._channel_workflow_put.put(Events.push_stop_event)
+                EventsConnector.push_stop()
             elif data == Events.exit_event:
                 self._show_result()
                 self._channel_workflow_put.put(Events.push_stop_event)
@@ -79,13 +81,11 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
                 self._channel_put.put(data)
             elif data == Events.new_flow_event:
                 self._channel_put.join()
-                kill_process(self._pid_work_flow)
                 return
             elif data == Events.window_close_event:
                 self._channel_put.put(Events.new_flow_event)
                 self._channel_put.join()
                 self._show_result()
-                kill_process(self._pid_work_flow)
                 return
 
     def __call__(self, *args, **kwargs):
@@ -104,18 +104,16 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
                 receiver_2 = Thread(target=self._receiver_for_workflow)
                 receiver_2.start()
                 # при указании параметра name в Process, процесс BackendManager.__call__() вызывался рекурсивно
-                proc = Process(target=WorkFlow, kwargs={
+                thread = Thread(target=WorkFlow, kwargs={
                     # процесс будет получать данные с канала
                     "channel_get": self._channel_workflow_put,
                     # процесс будет отправлять данные в канал
                     "channel_put": self._channel_workflow_get,
                 })
-                proc.start()
-                self._pid_work_flow = str(proc.ident)
-                print("pid work_flow proc: {}".format(self._pid_work_flow))
+                thread.start()
                 time.sleep(1)
                 self._channel_workflow_put.put(self.data)
-                proc.join()
+                thread.join()
                 print("proc.join() done")
                 receiver_2.join()
                 print("receiver_2.join() done")

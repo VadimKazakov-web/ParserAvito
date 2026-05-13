@@ -11,6 +11,7 @@ from backend.open_url import OpenUrl
 from backend.open_advertisement import OpenAdvertisement
 from backend.utils import CreatingLinks
 from backend.utils.scroll_page import scroll_page
+from backend.events import EventsConnector
 from tkinter_frontend.events import Events, InfoUpdateEvent
 from backend.variables import Variables
 from backend.utils.timeout import TimeoutMixin
@@ -42,14 +43,19 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
         try:
             self.__call__()
         except Exception as err:
-            if re.search(r"no such window|session deleted|cannot determine loading status", str(err)):
+            if re.search(r'no such window|session deleted|'
+                         r'cannot determine loading status|The "Stop" button is pressed', str(err)):
                 pass
             else:
-                print(err)
+                raise err
         finally:
             self.driver.quit()
             self._channel_put.put(Events.window_close_event)
             print("after WorkFlow's self.__call__()")
+            # экспериментальный, более низкоуровневый способ закрытия окна браузера
+            # remote_server_addr = self.driver.command_executor._client_config.remote_server_addr
+            # url = "{}/session/{}/window".format(remote_server_addr, self.driver.session_id)
+            # response = requests.delete(url)
 
     def __str__(self):
         return "WorkFlow"
@@ -61,17 +67,9 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
             if isinstance(data, Variables):
                 self.data = data.variables
                 self._start.set()
-            elif data == Events.push_stop_event:
-                self.driver.quit()
-                self._channel_put.put(Events.new_flow_event)
-                # экспериментальный, более низкоуровневый способ закрытия окна браузера
-                # remote_server_addr = self.driver.command_executor._client_config.remote_server_addr
-                # url = "{}/session/{}/window".format(remote_server_addr, self.driver.session_id)
-                # response = requests.delete(url)
             elif data == Events.exit_event:
                 self.driver.quit()
             self._channel_get.task_done()
-
 
     def __call__(self, *args, **kwargs):
         receiver = Thread(target=self._receiver, daemon=True)
@@ -89,6 +87,7 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
             flag_page = self._open_page_script(url_page)
             if flag_page == self._continue:
                 continue
+            EventsConnector.events_handler()
             # установка заголовка "referer"
             InterceptorHeaders.referer = url_page
             # поиск ссылок на каждое объявление
@@ -116,15 +115,16 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
                 self.driver.switch_to.window(self.driver.window_handles[0])
                 time.sleep(0.5)
                 # прокрутка страницы
-                scroll_page(driver=self.driver, height=340)
+                scroll_page(driver=self.driver, height=340, callback=EventsConnector.events_handler)
                 self._open_advertisement_global_counter += 1
+                EventsConnector.events_handler()
             self._open_pages_global_counter += 1
 
     def _connection_failure_script(self):
         if self.driver.title == "www.avito.ru":
             print("connection failure, restart...")
             # добавить в диапазон таймаута по одной секунде в начало и в конец
-            TimeoutMixin.timeout_add_one()
+            # TimeoutMixin.timeout_add_one()
             # закрыть окно браузера
             self.driver.quit()
             # создать новое окно браузера
@@ -141,14 +141,17 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
 
     def _open_page_script(self, url_page):
         print("current page: {}".format(self._open_pages_global_counter + 1))
-        open_url = OpenUrl(driver=self.driver, url=url_page, update_title_callback=self._update_title)
+        open_url = OpenUrl(driver=self.driver, url=url_page,
+                           update_title_callback=self._update_title,
+                           events_handler=EventsConnector.events_handler)
         if not open_url():
             return self._continue
 
     def _open_adv_script(self, url_advertisement):
         # открытие ссылки в новой вкладке
         open_adv = OpenAdvertisement(driver=self.driver, url=url_advertisement,
-                                     update_title_callback=self._update_title)
+                                     update_title_callback=self._update_title,
+                                     events_handler=EventsConnector.events_handler)
         if not open_adv():
             self.driver.switch_to.window(self.driver.window_handles[0])
             return self._continue
