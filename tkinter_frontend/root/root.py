@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 import os
 import shutil
+import time
 from tkinter import *
 from settings import APP_TEMPORARY
 from backend import connector
 from tkinter_frontend.events import Events
+from backend.events import EventsConnector
 
 
 class WindowRoot:
@@ -31,7 +33,7 @@ class WindowRoot:
     def exit(self, *args, **kwargs):
         self.root.destroy()
         connector.put(Events.exit_event)
-        connector.join()
+        EventsConnector.window_close_wait()
         shutil.rmtree(APP_TEMPORARY)
         # программа завершается корректно только так
         os._exit(0)

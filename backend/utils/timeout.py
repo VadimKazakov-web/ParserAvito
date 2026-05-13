@@ -23,8 +23,9 @@ class TimeoutMixin:
     def timeout(self, *args, **kwargs):
         self._timeout()
 
-    def timeout_add_one(self):
-        self.start += 1
-        self.stop += 1
+    @classmethod
+    def timeout_add_one(cls):
+        cls.start += 1
+        cls.stop += 1
 
 

@@ -1,4 +1,4 @@
 # -*- coding: utf-8 -*-
-import multiprocessing
+import queue
 
-connector = multiprocessing.JoinableQueue()
+connector = queue.Queue()

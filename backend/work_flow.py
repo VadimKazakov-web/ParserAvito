@@ -122,7 +122,7 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
         if self.driver.title == "www.avito.ru":
             print("connection failure, restart...")
             # добавить в диапазон таймаута по одной секунде в начало и в конец
-            # TimeoutMixin.timeout_add_one()
+            TimeoutMixin.timeout_add_one()
             # закрыть окно браузера
             self.driver.quit()
             # создать новое окно браузера

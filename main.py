@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-import multiprocessing
+import queue
 import os
 from threading import Thread
 import logging.handlers
-from multiprocessing import Process
 from backend.backend_manager import BackendManager
 from tkinter_frontend.events import Events, InfoUpdateEvent
 from tkinter_frontend.window_root.build import window as tk_window
@@ -14,7 +13,7 @@ from backend.variables import Variables
 from tkinter_frontend.utils import (create_progress, update_progress, update_info,
                                     update_time, update_version, create_install_prog_btn, new_flow_btn)
 
-channel_backend = multiprocessing.JoinableQueue()
+channel_backend = queue.Queue()
 
 
 def _receiver():
@@ -33,8 +32,6 @@ def _receiver():
             new_flow_btn()
         elif data == Events.exit_event:
             channel_backend.put(data)
-            channel_backend.join()
-        connector.task_done()
 
 
 def main(*args, **kwargs):
@@ -48,19 +45,19 @@ def main(*args, **kwargs):
     receiver_t.start()
 
     # запуск серверной части в отдельном процессе
-    proc = Process(target=BackendManager, kwargs={
+    thread = Thread(target=BackendManager, kwargs={
         # процесс будет получать данные из канала
         "channel_get": channel_backend,
         # процесс будет отправлять данные в канал
         "channel_put": connector,
     })
-    proc.start()
+    thread.start()
 
     # создание всех элементов интерфейса tkinter
     build_tk_interface()
     # запуск главного цикла tkinter
     tk_window.start()
-    proc.join()
+    thread.join()
 
 
 if __name__ == '__main__':

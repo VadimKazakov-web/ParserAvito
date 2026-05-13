@@ -2,7 +2,7 @@
 import multiprocessing
 import subprocess
 import time
-from threading import Event, Thread
+from threading import Event, Thread, Lock
 from backend import (Variables, DataBaseMixin, ResultInHtml, CreateDriverMixin)
 from backend.events import EventsConnector
 import webbrowser
@@ -30,12 +30,15 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
         self._channel_get: multiprocessing.JoinableQueue = kwargs.get("channel_get")
         self._channel_put: multiprocessing.JoinableQueue = kwargs.get("channel_put")
         self._start = Event()
+        self._lock = Lock()
+        # self._show_result = False
         self.__call__()
 
     def __str__(self):
         return "BackendManager"
 
     def _show_result(self):
+        self._lock.acquire()
         result_html = ResultInHtml(file_name=self.data.get_filename(), count=self.count_row_in_database())
         result_gen = self.extraction_and_sorting_generator()
         # порядок выдачи отсортированных результатов:
@@ -50,6 +53,7 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
         result_html.write_result(flag="reviews", data=data)
         # открыть файл с результатами в браузере по умолчанию
         webbrowser.open(self.data.get_filename())
+        self._lock.release()
 
     def _receiver_for_main(self):
         """
@@ -66,14 +70,13 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
                 EventsConnector.push_stop()
             elif data == Events.exit_event:
                 EventsConnector.push_stop()
-                time.sleep(3)
-            self._channel_get.task_done()
 
     def _receiver_for_workflow(self):
         """
         Метод получает данные из процесса WorkFlow
         """
         while True:
+            EventsConnector.window_close_event.clear()
             data = self._channel_workflow_get.get()
             # print("data in BackendManager's _receiver_for_workflow: {}".format(data))
             if isinstance(data, InfoUpdateEvent):
@@ -81,10 +84,10 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
             elif data == Events.window_close_event:
                 self._show_result()
                 self._channel_put.put(Events.new_flow_event)
+                EventsConnector.window_close()
                 return
 
     def __call__(self, *args, **kwargs):
-        print("pid BackendManager proc: {}".format(os.getpid()))
         receiver_1 = Thread(target=self._receiver_for_main, daemon=True)
         receiver_1.start()
         while True:

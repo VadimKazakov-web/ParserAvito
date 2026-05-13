@@ -10,7 +10,7 @@ class ValidationVarClass:
     """
     Класс проверяет необходимые переменные для парсера
     """
-    url = 'https://www.avito.ru/moskva/knigi_i_zhurnaly?cd=1&localPriority=0'
+    url = 'https://www.avito.ru/moskva/odezhda_obuv_aksessuary/obuv_muzhskaya-ASgBAgICAUTeArqp1gI'
     file_name = 'result'
     pages = 2
     max_pages = 100
