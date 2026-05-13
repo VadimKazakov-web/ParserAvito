@@ -29,15 +29,9 @@ def create_progress(*args):
 
 def update_progress(*args, **kwargs):
     from tkinter_frontend.window_root.frame_1.progress_bar.build import label_progress_origin, label_title_page_origin
-    chunk = 55
-    title = connector.get_title()
-    progr = connector.get_progress()
-    if len(title) >= chunk:
-        title_chunk = title[0:chunk] + "\n" + title[chunk:]
-    else:
-        title_chunk = title
-    label_title_page_origin["text"] = title_chunk
-    label_progress_origin["text"] = progr
+    title, progr = kwargs.get("data")
+    label_title_page_origin["text"] = title
+    label_progress_origin["text"] = "обработано: {}".format(progr)
 
 
 def update_version(*args, **kwargs):

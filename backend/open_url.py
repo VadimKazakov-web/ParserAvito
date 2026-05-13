@@ -12,40 +12,39 @@ class OpenUrl(CloseAuthPopupMixin, TimeoutMixin, CheckTitleMixin):
     Базовый класс для открытия web-страницы
     """
 
-    def __init__(self, driver: Chrome, url: str, update_title_callback=lambda driver: None,
+    def __init__(self, driver: Chrome, url: str, update_progress=lambda driver: None,
                  events_handler=lambda: None, *args, **kwargs):
         super(OpenUrl, self).__init__(driver)
         self._driver = driver
         self._url = url
-        self._update_title = update_title_callback
+        self._update_progress = update_progress
         self._events_handler = events_handler
 
     def _open(self):
         self._driver.get(self._url)
 
     def _work_gen(self):
-        yield True
+        yield 
         self._checking_number_tabs(3)
-        yield True
+        yield 
         self._open()
-        yield True
+        yield 
         # переключиться на новую вкладку
         self._switch_to()
-        yield True
-        self._update_title(self._driver)
-        yield True
+        yield 
+        self._update_progress(self._driver)
+        yield 
         if not self.check_title(self._driver):
             self._driver.close()
             return False
-        else:
-            self._update_title(self._driver)
-            yield True
-            # закрытия всплывающего окна с предложением авторизоваться, если оно есть
-            self.close_popup()
-            yield True
-            # задержка случайным таймаутом
-            self.timeout()
-            return True
+        self._update_progress(self._driver)
+        yield
+        # закрытия всплывающего окна с предложением авторизоваться, если оно есть
+        self.close_popup()
+        yield
+        # задержка случайным таймаутом
+        self.timeout()
+        return True
 
     def __call__(self, *args, **kwargs) -> bool:
         gen = self._work_gen()

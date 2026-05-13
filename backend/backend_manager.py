@@ -84,7 +84,6 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
             elif data == Events.window_close_event:
                 self._show_result()
                 self._channel_put.put(Events.new_flow_event)
-                EventsConnector.window_close()
                 return
 
     def __call__(self, *args, **kwargs):

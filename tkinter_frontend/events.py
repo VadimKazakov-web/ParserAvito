@@ -13,15 +13,26 @@ class Events:
     exit_event = "<<ExitEvent>>"
 
 
-class InfoUpdateEvent(Events):
+class InfoUpdateEvent:
+    width_label = WIDTH_LABEL
 
     def __init__(self, data):
-        self.width_label = WIDTH_LABEL
-        self.data = self.transformation(data)
+        self.text = self.transformation(data)
 
     def transformation(self, *args, **kwargs):
-        if args[0]:
-            # https://docs.python.org/3/library/textwrap.html#textwrap.TextWrapper.wrap
-            data = textwrap.fill(text=args[0], width=self.width_label)
-            return data
+        text = ""
+        if isinstance(args[0], tuple):
+            if isinstance(args[0][0], str):
+                text = args[0][0]
+        elif isinstance(args[0], str):
+            text = args[0]
+        # https://docs.python.org/3/library/textwrap.html#textwrap.TextWrapper.wrap
+        data = textwrap.fill(text=text, width=self.width_label)
+        return data
 
+
+class ProgressUpdateEvent(InfoUpdateEvent):
+
+    def __init__(self, data):
+        super().__init__(data)
+        self.num = data[1]

@@ -12,7 +12,7 @@ from backend.open_advertisement import OpenAdvertisement
 from backend.utils import CreatingLinks
 from backend.utils.scroll_page import scroll_page
 from backend.events import EventsConnector
-from tkinter_frontend.events import Events, InfoUpdateEvent
+from tkinter_frontend.events import Events, InfoUpdateEvent, ProgressUpdateEvent
 from backend.variables import Variables
 from backend.utils.timeout import TimeoutMixin
 import multiprocessing
@@ -27,7 +27,6 @@ def rewind_gen(num, gen):
 
 
 class WorkFlow(CreateDriverMixin, DataBaseMixin):
-    var = None
 
     def __init__(self, *args, **kwargs):
         self._channel_get: multiprocessing.JoinableQueue = kwargs.get("channel_get")
@@ -73,7 +72,12 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
         receiver = Thread(target=self._receiver, daemon=True)
         receiver.start()
         self._start.wait()
-        self._work_flow(*args, **kwargs)
+        self._start_gen(*args, **kwargs)
+
+    def _start_gen(self, *args, **kwargs):
+        for _ in self._work_flow(*args, **kwargs):
+            EventsConnector.events_handler()
+            self._update_progress(self.driver)
 
     def _work_flow(self, pages=0, advertisement=0):
         # создание ссылок на страницы
@@ -85,7 +89,7 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
             flag_page = self._open_page_script(url_page)
             if flag_page == self._continue:
                 continue
-            EventsConnector.events_handler()
+            yield
             # установка заголовка "referer"
             InterceptorHeaders.referer = url_page
             # поиск ссылок на каждое объявление
@@ -98,7 +102,10 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
                 if flag_adv == self._continue:
                     continue
                 print("\ntitle: {}".format(self.driver.title))
-                self._connection_failure_script()
+                flag_conn = self._connection_failure_script()
+                if flag_conn:
+                    return flag_conn
+                yield
                 # прокрутка страницы
                 scroll_page(driver=self.driver, height=1200)
                 # сбор данных из объявления
@@ -107,6 +114,8 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
                 print("data adv: {}\n".format(result))
                 # внесение объявления в базу данных
                 self.insert_in_database(result)
+                self._open_advertisement_global_counter += 1
+                yield
                 # закрыть вкладку
                 self.driver.close()
                 # вернуться на вкладку страницы
@@ -114,9 +123,8 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
                 time.sleep(0.5)
                 # прокрутка страницы
                 scroll_page(driver=self.driver, height=340, callback=EventsConnector.events_handler)
-                self._open_advertisement_global_counter += 1
-                EventsConnector.events_handler()
-            self._open_pages_global_counter += 1
+                self._open_pages_global_counter += 1
+                yield
 
     def _connection_failure_script(self):
         if self.driver.title == "www.avito.ru":
@@ -127,20 +135,18 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
             self.driver.quit()
             # создать новое окно браузера
             self.driver = self.create_driver()
-            self._work_flow(pages=self._open_pages_global_counter,
+            self._start_gen(pages=self._open_pages_global_counter,
                             advertisement=self._open_advertisement_global_counter)
-            return
+            return True
 
-    def _update_title(self, driver):
-        # задержка для получения актуального заголовка страницы
-        time.sleep(2)
-        info_upd = InfoUpdateEvent(driver.title)
-        self._channel_put.put(info_upd)
+    def _update_progress(self, driver):
+        progr_upd = ProgressUpdateEvent((driver.title, self._open_advertisement_global_counter))
+        self._channel_put.put(progr_upd)
 
     def _open_page_script(self, url_page):
         print("current page: {}".format(self._open_pages_global_counter + 1))
         open_url = OpenUrl(driver=self.driver, url=url_page,
-                           update_title_callback=self._update_title,
+                           update_progress=self._update_progress,
                            events_handler=EventsConnector.events_handler)
         if not open_url():
             return self._continue
@@ -148,7 +154,7 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
     def _open_adv_script(self, url_advertisement):
         # открытие ссылки в новой вкладке
         open_adv = OpenAdvertisement(driver=self.driver, url=url_advertisement,
-                                     update_title_callback=self._update_title,
+                                     update_progress=self._update_progress,
                                      events_handler=EventsConnector.events_handler)
         if not open_adv():
             self.driver.switch_to.window(self.driver.window_handles[0])

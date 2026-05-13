@@ -4,7 +4,7 @@ import os
 from threading import Thread
 import logging.handlers
 from backend.backend_manager import BackendManager
-from tkinter_frontend.events import Events, InfoUpdateEvent
+from tkinter_frontend.events import Events, InfoUpdateEvent, ProgressUpdateEvent
 from tkinter_frontend.window_root.build import window as tk_window
 from tkinter_frontend.build_tk import build_tk_interface
 from utills.utils import logging_settings
@@ -22,9 +22,8 @@ def _receiver():
         # print("data in main's _receiver: {}".format(data))
         if isinstance(data, Variables):
             channel_backend.put(data)
-        if isinstance(data, InfoUpdateEvent):
-            # print("InfoUpdateEvent data: {}".format(data.data))
-            update_info(data.data)
+        if isinstance(data, ProgressUpdateEvent):
+            update_progress(data=(data.text, data.num))
         elif data == Events.push_stop_event:
             channel_backend.put(data)
             new_flow_btn()

@@ -24,3 +24,5 @@ class EventsConnector:
     @classmethod
     def window_close_wait(cls):
         cls.window_close_event.wait()
+        cls.window_close_event.clear()
+
