@@ -17,6 +17,7 @@ from backend.variables import Variables
 from backend.utils.timeout import TimeoutMixin
 import multiprocessing
 from seleniumwire.webdriver import Chrome
+from exceptions import PushStopButton
 
 
 def rewind_gen(num, gen):
@@ -43,8 +44,8 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
             self.__call__()
         except Exception as err:
             if re.search(r'no such window|session deleted|'
-                         r'cannot determine loading status|The "Stop" button is pressed', str(err)):
-                pass
+                         r'cannot determine loading status', str(err)):
+                self._channel_put.put(Events.window_close_event)
             else:
                 raise err
         finally:
@@ -85,7 +86,7 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
         creating_links_gen = rewind_gen(pages, creating_links_gen())
         # переход на каждую страницу
         for url_page in creating_links_gen:
-            flag_page = self._open_page_script(url_page)
+            flag_page = yield from self._open_page_script(url_page)
             if flag_page == self._continue:
                 continue
             yield
@@ -97,7 +98,7 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
             search_links_gen = rewind_gen(advertisement, search_links_gen())
             # переход на каждое объявление
             for url_advertisement in search_links_gen:
-                flag_adv = self._open_adv_script(url_advertisement)
+                flag_adv = yield from self._open_adv_script(url_advertisement)
                 if flag_adv == self._continue:
                     continue
                 print("\ntitle: {}".format(self.driver.title))
@@ -106,7 +107,7 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
                     return flag_conn
                 yield
                 # прокрутка страницы
-                scroll_page(driver=self.driver, height=1200)
+                yield from scroll_page(driver=self.driver, height=1200)
                 # сбор данных из объявления
                 collect_data = CollectData(self.driver)
                 result = collect_data()
@@ -121,9 +122,8 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
                 self.driver.switch_to.window(self.driver.window_handles[0])
                 time.sleep(0.5)
                 # прокрутка страницы
-                scroll_page(driver=self.driver, height=340, callback=EventsConnector.events_handler)
+                yield from scroll_page(driver=self.driver, height=340)
                 self._open_pages_global_counter += 1
-                yield
 
     def _connection_failure_script(self):
         if self.driver.title == "www.avito.ru":
@@ -147,14 +147,15 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
         open_url = OpenUrl(driver=self.driver, url=url_page,
                            update_progress=self._update_progress,
                            events_handler=EventsConnector.events_handler)
-        if not open_url():
-            return self._continue
+        result = yield from open_url()
+        return result
 
     def _open_adv_script(self, url_advertisement):
         # открытие ссылки в новой вкладке
         open_adv = OpenAdvertisement(driver=self.driver, url=url_advertisement,
                                      update_progress=self._update_progress,
                                      events_handler=EventsConnector.events_handler)
-        if not open_adv():
+        result = yield from open_adv()
+        if result == OpenAdvertisement.page_not_found:
             self.driver.switch_to.window(self.driver.window_handles[0])
             return self._continue

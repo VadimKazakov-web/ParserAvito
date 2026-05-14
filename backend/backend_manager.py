@@ -65,28 +65,21 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
             if isinstance(data, Variables):
                 self.data = data
                 self._start.set()
+            elif isinstance(data, InfoUpdateEvent):
+                self._channel_put.put(data)
             elif data == Events.push_stop_event:
                 self._channel_put.put(Events.new_flow_event)
                 EventsConnector.push_stop()
+                self._show_result()
             elif data == Events.exit_event:
                 EventsConnector.push_stop()
+                self._show_result()
+                # дождаться закрытия браузера, иначе когда завершается программа, браузер остаётся открытым
                 EventsConnector.window_close_wait()
                 EventsConnector.destroy_tkinter()
-
-    def _receiver_for_workflow(self):
-        """
-        Метод получает данные из процесса WorkFlow
-        """
-        while True:
-            EventsConnector.window_close_event.clear()
-            data = self._channel_workflow_get.get()
-            # print("data in BackendManager's _receiver_for_workflow: {}".format(data))
-            if isinstance(data, InfoUpdateEvent):
-                self._channel_put.put(data)
             elif data == Events.window_close_event:
-                self._show_result()
                 self._channel_put.put(Events.new_flow_event)
-                return
+                self._show_result()
 
     def __call__(self, *args, **kwargs):
         receiver_1 = Thread(target=self._receiver_for_main, daemon=True)
@@ -96,25 +89,19 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
             self._start.wait()
             try:
                 # после завершения процесса WorkFlow, нужно передавать новый объект Queue
-                # канал получения данных из процесса WorkFlow процесс BackendManager
-                self._channel_workflow_get = Queue(maxsize=20)
                 # канал передачи данных из процесса BackendManager в дочерний процесс WorkFlow
                 self._channel_workflow_put = JoinableQueue(maxsize=20)
-                receiver_2 = Thread(target=self._receiver_for_workflow)
-                receiver_2.start()
                 # при указании параметра name в Process, процесс BackendManager.__call__() вызывался рекурсивно
                 thread = Thread(target=WorkFlow, kwargs={
                     # процесс будет получать данные с канала
                     "channel_get": self._channel_workflow_put,
                     # процесс будет отправлять данные в канал
-                    "channel_put": self._channel_workflow_get,
+                    "channel_put": self._channel_get,
                 })
                 thread.start()
                 time.sleep(1)
                 self._channel_workflow_put.put(self.data)
                 thread.join()
-                print("proc.join() done")
-                receiver_2.join()
-                print("receiver_2.join() done")
+                print("thread.join() done")
             finally:
                 self._start.clear()

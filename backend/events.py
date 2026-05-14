@@ -17,6 +17,8 @@ class EventsConnector:
         if cls.push_stop_event.is_set():
             cls.push_stop_event.clear()
             raise PushStopButton
+        elif cls.window_close_event.is_set():
+            pass
 
     @classmethod
     def destroy_tkinter(cls):
@@ -24,8 +26,12 @@ class EventsConnector:
 
     @classmethod
     def destroy_tkinter_wait(cls):
-        cls.destroy_tkinter_event.wait()
-        cls.destroy_tkinter_event.clear()
+        cls.destroy_tkinter_event.wait(timeout=10)
+        if cls.destroy_tkinter_event.is_set():
+            cls.destroy_tkinter_event.clear()
+            return True
+        else:
+            return False
 
     @classmethod
     def window_close(cls):
@@ -34,5 +40,9 @@ class EventsConnector:
     @classmethod
     def window_close_wait(cls):
         cls.window_close_event.wait(timeout=3)
-        cls.window_close_event.clear()
+        if cls.window_close_event.is_set():
+            cls.window_close_event.clear()
+            return True
+        else:
+            return False
 

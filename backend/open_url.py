@@ -7,6 +7,7 @@ from backend.utils.timeout import TimeoutMixin
 
 
 class OpenUrl(CloseAuthPopupMixin, TimeoutMixin, CheckTitleMixin):
+    page_not_found = "page_not_found"
 
     """
     Базовый класс для открытия web-страницы
@@ -24,39 +25,27 @@ class OpenUrl(CloseAuthPopupMixin, TimeoutMixin, CheckTitleMixin):
         self._driver.get(self._url)
 
     def _work_gen(self):
-        yield 
         self._checking_number_tabs(3)
-        yield 
         self._open()
         yield 
         # переключиться на новую вкладку
         self._switch_to()
-        yield 
         self._update_progress(self._driver)
         yield 
         if not self.check_title(self._driver):
             self._driver.close()
-            return False
+            return self.page_not_found
         self._update_progress(self._driver)
         yield
         # закрытия всплывающего окна с предложением авторизоваться, если оно есть
         self.close_popup()
-        yield
         # задержка случайным таймаутом
-        self.timeout()
+        yield from self.timeout()
         return True
 
     def __call__(self, *args, **kwargs) -> bool:
-        gen = self._work_gen()
-        while True:
-            try:
-                next(gen)
-                self._events_handler()
-            except StopIteration as err:
-                if not err.value:
-                    return False
-                else:
-                    return True
+        result = yield from self._work_gen()
+        return result
 
     def _switch_to(self):
         pass

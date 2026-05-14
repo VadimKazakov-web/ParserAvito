@@ -18,10 +18,10 @@ class TimeoutMixin:
         chunk = self._choice_num() / part
         for i in range(0, part):
             time.sleep(chunk)
-            self._events_handler()
+            yield
             
     def timeout(self, *args, **kwargs):
-        self._timeout()
+        yield from self._timeout()
 
     @classmethod
     def timeout_add_one(cls):
