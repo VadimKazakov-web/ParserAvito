@@ -7,6 +7,8 @@ class EventsConnector:
     push_stop_event = threading.Event()
     window_close_event = threading.Event()
     destroy_tkinter_event = threading.Event()
+    var_event = threading.Event()
+    var = None
 
     @classmethod
     def push_stop(cls):
@@ -45,4 +47,17 @@ class EventsConnector:
             return True
         else:
             return False
+
+    @classmethod
+    def variables_wait(cls):
+        cls.var_event.wait()
+        cls.var_event.clear()
+        return cls.var
+
+    @classmethod
+    def variables_put(cls, data):
+        cls.var = data
+        cls.var_event.set()
+
+
 

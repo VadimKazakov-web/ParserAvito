@@ -31,7 +31,6 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
         self._channel_put: multiprocessing.JoinableQueue = kwargs.get("channel_put")
         self._start = Event()
         self._lock = Lock()
-        # self._show_result = False
         self.__call__()
 
     def __str__(self):
@@ -65,6 +64,8 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
             if isinstance(data, Variables):
                 self.data = data
                 self._start.set()
+                time.sleep(1)
+                EventsConnector.variables_put(data.variables)
             elif isinstance(data, InfoUpdateEvent):
                 self._channel_put.put(data)
             elif data == Events.push_stop_event:
@@ -88,19 +89,12 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
             print("-" * 10, "waiting for the start", "-" * 10)
             self._start.wait()
             try:
-                # после завершения процесса WorkFlow, нужно передавать новый объект Queue
-                # канал передачи данных из процесса BackendManager в дочерний процесс WorkFlow
-                self._channel_workflow_put = JoinableQueue(maxsize=20)
                 # при указании параметра name в Process, процесс BackendManager.__call__() вызывался рекурсивно
                 thread = Thread(target=WorkFlow, kwargs={
-                    # процесс будет получать данные с канала
-                    "channel_get": self._channel_workflow_put,
                     # процесс будет отправлять данные в канал
                     "channel_put": self._channel_get,
                 })
                 thread.start()
-                time.sleep(1)
-                self._channel_workflow_put.put(self.data)
                 thread.join()
                 print("thread.join() done")
             finally:

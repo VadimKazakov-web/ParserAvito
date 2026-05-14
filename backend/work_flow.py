@@ -42,6 +42,8 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
         self._continue = "continue"
         try:
             self.__call__()
+        except PushStopButton:
+            pass
         except Exception as err:
             if re.search(r'no such window|session deleted|'
                          r'cannot determine loading status', str(err)):
@@ -59,19 +61,9 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
     def __str__(self):
         return "WorkFlow"
 
-    def _receiver(self):
-        while True:
-            data = self._channel_get.get()
-            # print("data in WorkFlow's _receiver: {}".format(data))
-            if isinstance(data, Variables):
-                self.data = data.variables
-                self._start.set()
-            self._channel_get.task_done()
-
     def __call__(self, *args, **kwargs):
-        receiver = Thread(target=self._receiver, daemon=True)
-        receiver.start()
-        self._start.wait()
+        data = EventsConnector.variables_wait()
+        self.data = data
         self._start_gen(*args, **kwargs)
 
     def _start_gen(self, *args, **kwargs):
