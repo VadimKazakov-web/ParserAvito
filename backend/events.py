@@ -3,12 +3,27 @@ import threading
 from exceptions import PushStopButton
 
 
+class MutexVar:
+
+    def __init__(self, var):
+        self._lock = threading.Lock()
+        self._var = var
+
+    def get(self):
+        with self._lock:
+            return self._var
+
+    def set(self, var):
+        with self._lock:
+            self._var = var
+
+
 class EventsConnector:
     push_stop_event = threading.Event()
     window_close_event = threading.Event()
     destroy_tkinter_event = threading.Event()
     var_event = threading.Event()
-    var = None
+    var = MutexVar(None)
 
     @classmethod
     def push_stop(cls):
@@ -41,7 +56,7 @@ class EventsConnector:
 
     @classmethod
     def window_close_wait(cls):
-        cls.window_close_event.wait(timeout=3)
+        cls.window_close_event.wait()
         if cls.window_close_event.is_set():
             cls.window_close_event.clear()
             return True
@@ -52,11 +67,11 @@ class EventsConnector:
     def variables_wait(cls):
         cls.var_event.wait()
         cls.var_event.clear()
-        return cls.var
+        return cls.var.get()
 
     @classmethod
     def variables_put(cls, data):
-        cls.var = data
+        cls.var.set(data)
         cls.var_event.set()
 
 

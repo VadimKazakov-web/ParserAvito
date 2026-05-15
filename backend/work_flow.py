@@ -3,7 +3,6 @@ import queue
 import re
 import threading
 import time
-from threading import Thread
 from backend import CreateDriverMixin, DataBaseMixin, \
     SearchLinks, CollectData
 from backend.interceptor_headers import InterceptorHeaders
@@ -12,10 +11,8 @@ from backend.open_advertisement import OpenAdvertisement
 from backend.utils import CreatingLinks
 from backend.utils.scroll_page import scroll_page
 from backend.events import EventsConnector
-from tkinter_frontend.events import Events, InfoUpdateEvent, ProgressUpdateEvent
-from backend.variables import Variables
+from tkinter_frontend.events import Events, ProgressUpdateEvent
 from backend.utils.timeout import TimeoutMixin
-import multiprocessing
 from seleniumwire.webdriver import Chrome
 from exceptions import PushStopButton
 
@@ -30,8 +27,7 @@ def rewind_gen(num, gen):
 class WorkFlow(CreateDriverMixin, DataBaseMixin):
 
     def __init__(self, *args, **kwargs):
-        self._channel_get: multiprocessing.JoinableQueue = kwargs.get("channel_get")
-        self._channel_put: multiprocessing.Queue = kwargs.get("channel_put")
+        self._channel_put: queue.Queue = kwargs.get("channel_put")
         self._open_pages_global_counter = 0
         self._open_advertisement_global_counter = 0
         self.driver: Chrome = self.create_driver()

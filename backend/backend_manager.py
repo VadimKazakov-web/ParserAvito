@@ -1,15 +1,12 @@
 # -*- coding: utf-8 -*-
-import multiprocessing
 import subprocess
-import time
 from threading import Event, Thread, Lock
 from backend import (Variables, DataBaseMixin, ResultInHtml, CreateDriverMixin)
 from backend.events import EventsConnector
 import webbrowser
-from tkinter_frontend.events import Events, InfoUpdateEvent
-from multiprocessing import Process, Queue, JoinableQueue
+from tkinter_frontend.events import Events, ProgressUpdateEvent
 from backend.work_flow import WorkFlow
-import os
+import queue
 
 
 def kill_process(pid: str):
@@ -27,8 +24,7 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
 
     def __init__(self, *args, **kwargs):
         # канал получения данных из main в процесс BackendManager
-        self._channel_get: multiprocessing.JoinableQueue = kwargs.get("channel_get")
-        self._channel_put: multiprocessing.JoinableQueue = kwargs.get("channel_put")
+        self._channel_get: queue.Queue = kwargs.get("channel_get")
         self._start = Event()
         self._lock = Lock()
         self.__call__()
@@ -55,6 +51,7 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
         self._lock.release()
 
     def _receiver_for_main(self):
+        from tkinter_frontend.utils import new_flow_btn, update_progress
         """
         Метод получает данные из процесса main
         """
@@ -64,22 +61,23 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
             if isinstance(data, Variables):
                 self.data = data
                 self._start.set()
-                time.sleep(1)
                 EventsConnector.variables_put(data.variables)
-            elif isinstance(data, InfoUpdateEvent):
-                self._channel_put.put(data)
+            elif isinstance(data, ProgressUpdateEvent):
+                update_progress(data=(data.text, data.num))
             elif data == Events.push_stop_event:
-                self._channel_put.put(Events.new_flow_event)
+                new_flow_btn()
                 EventsConnector.push_stop()
+                EventsConnector.window_close_wait()
                 self._show_result()
             elif data == Events.exit_event:
                 EventsConnector.push_stop()
-                self._show_result()
                 # дождаться закрытия браузера, иначе когда завершается программа, браузер остаётся открытым
                 EventsConnector.window_close_wait()
                 EventsConnector.destroy_tkinter()
+                self._show_result()
             elif data == Events.window_close_event:
-                self._channel_put.put(Events.new_flow_event)
+                new_flow_btn()
+                EventsConnector.window_close_wait()
                 self._show_result()
 
     def __call__(self, *args, **kwargs):
