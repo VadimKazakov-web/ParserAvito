@@ -67,12 +67,14 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
             elif isinstance(data, ProgressUpdateEvent):
                 update_progress(data=(data.text, data.num))
             elif data == Events.push_stop_event:
+                print(data)
                 new_flow_btn()
                 EventsConnector.push_stop()
                 self._show_result()
                 self.delete_database_table()
                 EventsConnector.window_close_wait()
             elif data == Events.exit_event:
+                print(data)
                 EventsConnector.push_stop()
                 self._show_result()
                 self.delete_database_table()
@@ -80,10 +82,16 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
                 EventsConnector.window_close_wait()
                 EventsConnector.destroy_tkinter()
             elif data == Events.window_close_event:
+                print(data)
                 new_flow_btn()
                 self._show_result()
                 self.delete_database_table()
                 EventsConnector.window_close_wait()
+            elif data == Events.start_again_event:
+                print(data)
+                EventsConnector.window_close_wait()
+                self._start.set()
+                EventsConnector.variables_put(self.data)
 
     def __call__(self, *args, **kwargs):
         receiver_1 = Thread(target=self._receiver_for_main, daemon=True)

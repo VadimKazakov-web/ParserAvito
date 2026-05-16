@@ -15,6 +15,7 @@ from tkinter_frontend.events import Events, ProgressUpdateEvent
 from backend.utils.timeout import TimeoutMixin
 from seleniumwire.webdriver import Chrome
 from exceptions import PushStopButton, BadInternetConnection
+import selenium.common
 
 
 def rewind_gen(num, gen):
@@ -41,12 +42,19 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
         self.test_num = 0
         try:
             self.__call__()
-        except PushStopButton:
-            pass
+        except PushStopButton as err:
+            print(err)
+        # except selenium.common.exceptions.WebDriverException as err:
+        #     err_info = str(err)[0:100]
+        #     if re.search(r"unknown error", err_info):
+        #         self._channel_put.put(Events.start_again_event)
+        #         print(err_info)
         except Exception as err:
+            err_info = str(err)[0:100]
             if re.search(r'no such window|session deleted|'
-                         r'cannot determine loading status', str(err)):
+                         r'cannot determine loading status', err_info):
                 self._channel_put.put(Events.window_close_event)
+                print(err_info)
             else:
                 raise err
         finally:

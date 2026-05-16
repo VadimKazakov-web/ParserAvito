@@ -12,18 +12,15 @@ SCHTASKS_NAME = "parser_avito"
 
 DRIVE_PATH = get_drive_path()
 BASE_DIR = Path(get_desktop_path()) / Path("ParserAvitoOutput")
-if not BASE_DIR.exists():
-    BASE_DIR.mkdir(parents=True, exist_ok=True)
+BASE_DIR.mkdir(parents=True, exist_ok=True)
 
 LOG_DIR = BASE_DIR / Path("log")
-if not LOG_DIR.exists():
-    LOG_DIR.mkdir(parents=True, exist_ok=True)
+LOG_DIR.mkdir(parents=True, exist_ok=True)
 
 LOG_FILE = Path("logbook.log")
 
 DATABASE_DIR = BASE_DIR / Path('database')
-if not DATABASE_DIR.exists():
-    DATABASE_DIR.mkdir(parents=True, exist_ok=True)
+DATABASE_DIR.mkdir(parents=True, exist_ok=True)
 
 DATABASE = DATABASE_DIR / Path('data.db')
 
@@ -37,7 +34,7 @@ TOP_ANNOUNCEMENT = 100
 
 # tkinter interface
 FONT_SIZE = 13
-BACKGROUND_COLOR = "#2eab49"
+BACKGROUND_COLOR = "#3f704a"
 FOREGROUND_COLOR = "white"
 BACKGROUND_COLOR_ENTRY = "white"
 FOREGROUND_COLOR_ENTRY = "#000000"
@@ -50,6 +47,7 @@ REPOSITORY = "https://github.com/VadimKazakov-web/ParserAvito.git"
 REPOSITORY_TAGS = "https://github.com/VadimKazakov-web/ParserAvito/tags"
 
 APP_TEMPORARY = app_work_dir("parser_avito_temp")
+APP_TEMPORARY.mkdir(exist_ok=True)
 
 # parsing
 LEFT_BLOCK_ANNOUNCEMENT_CSS = ".d9134745e0e171a2"
