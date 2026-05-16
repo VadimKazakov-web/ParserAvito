@@ -35,7 +35,7 @@ def create_database():
         """
         # привязки (? или :name) не работают c CREATE TABLE
         cursor.execute(
-            "CREATE TABLE IF NOT EXISTS {} (id INTEGER, title TEXT, link TEXT, total_views, today_views, rating, reviews);".format(DB_TABLE_NAME))
+            "CREATE TABLE IF NOT EXISTS {} (id INTEGER, title TEXT, date TEXT, link TEXT, total_views, today_views, rating, reviews);".format(DB_TABLE_NAME))
 
 
 class DataBaseMixin:
@@ -47,7 +47,7 @@ class DataBaseMixin:
     _table_name = DB_TABLE_NAME
     create_database()
 
-    def delete_table(self):
+    def delete_database_table(self):
         with Connection() as cursor:
             """
             Удаление таблицы
@@ -74,7 +74,7 @@ class DataBaseMixin:
             result = cursor.execute("SELECT id FROM {} WHERE id = {}".format(cls._table_name, data.get("id")))
             if not result.fetchall():
                 cursor.execute(
-                    "INSERT OR IGNORE INTO announcement VALUES(:id, :title, :link, :total_views, :today_views, :rating, :reviews);",
+                    "INSERT OR IGNORE INTO announcement VALUES(:id, :title, :date, :link, :total_views, :today_views, :rating, :reviews);",
                     data)
 
     @staticmethod
@@ -83,10 +83,11 @@ class DataBaseMixin:
         Конвертация списка кортежей в список словарей
         """
         result_list = []
-        for _id, title, link, total_views, today_views, rating, reviews in data:
+        for _id, title, date, link, total_views, today_views, rating, reviews in data:
             result_list.append({
                 "id": _id,
                 "title": title,
+                "date": date,
                 "link": link,
                 "total_views": total_views,
                 "today_views": today_views,
@@ -94,6 +95,17 @@ class DataBaseMixin:
                 "reviews": reviews,
             })
         return result_list
+
+    def check_count_item(self):
+        with Connection() as cursor:
+            items = cursor.execute("SELECT * FROM {};".format(
+                self._table_name))
+            result = items.fetchone()
+            if result:
+                return True
+            else:
+                return False
+
 
     def extraction_and_sorting_generator(self):
         with Connection() as cursor:

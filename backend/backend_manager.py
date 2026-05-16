@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import subprocess
 from threading import Event, Thread, Lock
-from backend import (Variables, DataBaseMixin, ResultInHtml, CreateDriverMixin)
+from backend import (Variables, DataBaseMixin, ResultInHtml, CreateDriverMixin, create_database)
 from backend.events import EventsConnector
 import webbrowser
 from tkinter_frontend.events import Events, ProgressUpdateEvent
@@ -33,22 +33,23 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
         return "BackendManager"
 
     def _show_result(self):
-        self._lock.acquire()
-        result_html = ResultInHtml(file_name=self.data.get_filename(), count=self.count_row_in_database())
-        result_gen = self.extraction_and_sorting_generator()
-        # порядок выдачи отсортированных результатов:
-        # по просмотрам за всё время
-        data = next(result_gen)
-        result_html.write_result(flag="total_views", data=data)
-        # по просмотрам сегодня
-        data = next(result_gen)
-        result_html.write_result(flag="today_views", data=data)
-        # по отзывам
-        data = next(result_gen)
-        result_html.write_result(flag="reviews", data=data)
-        # открыть файл с результатами в браузере по умолчанию
-        webbrowser.open(self.data.get_filename())
-        self._lock.release()
+        if not self.check_count_item():
+            return
+        with self._lock:
+            result_html = ResultInHtml(file_name=self.data.get_filename(), count=self.count_row_in_database())
+            result_gen = self.extraction_and_sorting_generator()
+            # порядок выдачи отсортированных результатов:
+            # по просмотрам за всё время
+            data = next(result_gen)
+            result_html.write_result(flag="total_views", data=data)
+            # по просмотрам сегодня
+            data = next(result_gen)
+            result_html.write_result(flag="today_views", data=data)
+            # по отзывам
+            data = next(result_gen)
+            result_html.write_result(flag="reviews", data=data)
+            # открыть файл с результатами в браузере по умолчанию
+            webbrowser.open(self.data.get_filename())
 
     def _receiver_for_main(self):
         from tkinter_frontend.utils import new_flow_btn, update_progress
@@ -59,6 +60,7 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
             data = self._channel_get.get()
             # print("data in BackendManager's _receiver_for_main: {}".format(data))
             if isinstance(data, Variables):
+                create_database()
                 self.data = data
                 self._start.set()
                 EventsConnector.variables_put(data.variables)
@@ -67,18 +69,21 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
             elif data == Events.push_stop_event:
                 new_flow_btn()
                 EventsConnector.push_stop()
-                EventsConnector.window_close_wait()
                 self._show_result()
+                self.delete_database_table()
+                EventsConnector.window_close_wait()
             elif data == Events.exit_event:
                 EventsConnector.push_stop()
+                self._show_result()
+                self.delete_database_table()
                 # дождаться закрытия браузера, иначе когда завершается программа, браузер остаётся открытым
                 EventsConnector.window_close_wait()
                 EventsConnector.destroy_tkinter()
-                self._show_result()
             elif data == Events.window_close_event:
                 new_flow_btn()
-                EventsConnector.window_close_wait()
                 self._show_result()
+                self.delete_database_table()
+                EventsConnector.window_close_wait()
 
     def __call__(self, *args, **kwargs):
         receiver_1 = Thread(target=self._receiver_for_main, daemon=True)
@@ -94,6 +99,5 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
                 })
                 thread.start()
                 thread.join()
-                print("thread.join() done")
             finally:
                 self._start.clear()

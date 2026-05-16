@@ -10,7 +10,7 @@ from backend import connector
 
 
 def main(*args, **kwargs):
-    print("pid main proc: {}".format(os.getpid()))
+    print("process pid: {}".format(os.getpid()))
     # настройка ведения журнала
     logging_settings(file_handler=False)
     logging.info("start program")

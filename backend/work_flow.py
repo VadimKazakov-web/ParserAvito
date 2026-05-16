@@ -14,7 +14,7 @@ from backend.events import EventsConnector
 from tkinter_frontend.events import Events, ProgressUpdateEvent
 from backend.utils.timeout import TimeoutMixin
 from seleniumwire.webdriver import Chrome
-from exceptions import PushStopButton
+from exceptions import PushStopButton, BadInternetConnection
 
 
 def rewind_gen(num, gen):
@@ -36,6 +36,9 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
         self._start = threading.Event()
         self.data = None
         self._continue = "continue"
+        self._connection_failure = "connection failure"
+        # удалить
+        self.test_num = 0
         try:
             self.__call__()
         except PushStopButton:
@@ -63,17 +66,23 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
         self._start_gen(*args, **kwargs)
 
     def _start_gen(self, *args, **kwargs):
-        for _ in self._work_flow(*args, **kwargs):
-            EventsConnector.events_handler()
-            self._update_progress(self.driver)
+        while True:
+            self.test_num += 2
+            for step in self._work_flow(advertisement=self._open_advertisement_global_counter):
+                if step == self._connection_failure:
+                    break
+                EventsConnector.events_handler()
+                self._update_progress(self.driver)
+            else:
+                return
 
     def _work_flow(self, pages=0, advertisement=0):
         # создание ссылок на страницы
         creating_links_gen = CreatingLinks(url=self.data.get("url"), pages=self.data.get("pages"))
-        # перемотка вперёд, если нужно
-        creating_links_gen = rewind_gen(pages, creating_links_gen())
+        # # перемотка вперёд, если нужно
+        # creating_links_gen = rewind_gen(pages, creating_links_gen())
         # переход на каждую страницу
-        for url_page in creating_links_gen:
+        for url_page in creating_links_gen():
             flag_page = yield from self._open_page_script(url_page)
             if flag_page == self._continue:
                 continue
@@ -90,9 +99,9 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
                 if flag_adv == self._continue:
                     continue
                 print("\ntitle: {}".format(self.driver.title))
-                flag_conn = self._connection_failure_script()
+                flag_conn = yield from self._connection_failure_script()
                 if flag_conn:
-                    return flag_conn
+                    yield flag_conn
                 yield
                 # прокрутка страницы
                 yield from scroll_page(driver=self.driver, height=1200)
@@ -111,7 +120,7 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
                 time.sleep(0.5)
                 # прокрутка страницы
                 yield from scroll_page(driver=self.driver, height=340)
-                self._open_pages_global_counter += 1
+            self._open_pages_global_counter += 1
 
     def _connection_failure_script(self):
         if self.driver.title == "www.avito.ru":
@@ -122,9 +131,7 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
             self.driver.quit()
             # создать новое окно браузера
             self.driver = self.create_driver()
-            self._start_gen(pages=self._open_pages_global_counter,
-                            advertisement=self._open_advertisement_global_counter)
-            return True
+            yield self._connection_failure
 
     def _update_progress(self, driver):
         progr_upd = ProgressUpdateEvent((driver.title, self._open_advertisement_global_counter))

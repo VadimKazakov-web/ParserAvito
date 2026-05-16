@@ -2,6 +2,7 @@
 import logging
 import re
 from typing import Any
+from settings import DEFAULT_AVITO_CATEGORY
 
 log = logging.getLogger(__name__)
 
@@ -10,7 +11,7 @@ class ValidationVarClass:
     """
     Класс проверяет необходимые переменные для парсера
     """
-    url = 'https://www.avito.ru/moskva/odezhda_obuv_aksessuary/obuv_muzhskaya-ASgBAgICAUTeArqp1gI'
+    url = DEFAULT_AVITO_CATEGORY
     file_name = 'result'
     pages = 2
     max_pages = 100

@@ -86,10 +86,14 @@ class CollectData:
         if result_total_views:
             result['total_views'] = int(result_total_views.group("total_views"))
             end_point = result_total_views.end()
+        else:
+            result['total_views'] = 0
 
         result_today_views = self.pattern_today_views.search(block_left[end_point:])
         if result_today_views:
             result['today_views'] = int(result_today_views.group("today_views"))
+        else:
+            result['today_views'] = 0
 
         result_rating = self.pattern_rating.search(block_right)
         if result_rating:
