@@ -4,7 +4,8 @@ import re
 import threading
 import time
 from backend import CreateDriverMixin, DataBaseMixin, \
-    SearchLinks, CollectData
+    SearchLinks
+from backend.collect_data import CollectData
 from backend.interceptor_headers import InterceptorHeaders
 from backend.open_url import OpenUrl
 from backend.open_advertisement import OpenAdvertisement
@@ -14,8 +15,7 @@ from backend.events import EventsConnector
 from tkinter_frontend.events import Events, ProgressUpdateEvent
 from backend.utils.timeout import TimeoutMixin
 from seleniumwire.webdriver import Chrome
-from exceptions import PushStopButton, BadInternetConnection
-import selenium.common
+from exceptions import PushStopButton
 
 
 def rewind_gen(num, gen):
