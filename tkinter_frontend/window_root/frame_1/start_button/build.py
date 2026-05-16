@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
 import logging
 from tkinter_frontend.events import Events
-from objects import connector
 from tkinter_frontend.utils import ActiveInactiveButton
 from tkinter_frontend.window_root.frame_1.frame_for_buttons.build import frame_for_buttons
 from tkinter_frontend.classes.button import Button
 from tkinter_frontend.window_root.frame_1.build import frame
-from tkinter_frontend.handlers.input_handlers import HandlersClass
-import functools
 
 button_custom = Button(master=frame_for_buttons, text="Start", column=0, row=0)
 button_custom.build()
@@ -16,7 +13,7 @@ button_instance = button_custom.get_instance()
 active_inactive_start_button = ActiveInactiveButton(button_custom, button_instance,
                                                     lambda _: frame.event_generate(Events.push_start_event))
 active_inactive_start_button.make_active_button()
-button_instance.bind(Events.post_var_event, func=lambda _: active_inactive_start_button.make_inactive_button())
+# button_instance.bind(Events.post_var_event, func=lambda _: active_inactive_start_button.make_inactive_button())
 #
 # connector.set_callbacks_for_start_prog(active_inactive_start_button.make_inactive_button)
 # connector.set_callbacks_for_stop_prog(active_inactive_start_button.make_active_button)

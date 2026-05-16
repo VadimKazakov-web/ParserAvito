@@ -5,7 +5,6 @@ from objects import connector
 from settings import *
 import requests
 import re
-from tkinter_frontend.window_root.build import window
 from update.utills.utills import (check_current_version_and_new_tag, get_datetime, rename_path, run_command_subprocess)
 from utills.utils import get_version_prog
 
@@ -30,16 +29,17 @@ class Update:
 
     @classmethod
     def check_update(cls, *args, **kwargs):
-        tag = cls._request_new_tag()
-        if tag:
-            if not check_current_version_and_new_tag(tag, VERSION):
-                text = f'доступна новая версия: {tag}'
-                cls._program_path = APP_TEMPORARY / Path(f'{cls._repo_name}[{tag}].exe')
+        from tkinter_frontend.window_root.frame_2.update_block.build import label_instance
+        # ver = cls._request_new_ver()
+        ver = cls._get_version()
+        if ver:
+            if not check_current_version_and_new_tag(ver, VERSION):
+                text = f'доступна новая версия: {ver}'
+                cls._program_path = APP_TEMPORARY / Path(f'{cls._repo_name}[{ver}].exe')
                 connector.update_version(text=text)
                 connector.gen_install_event()
             else:
-                text = 'нет новой версии'
-                connector.update_version(text=text)
+                label_instance["text"] = 'нет новой версии'
 
     @classmethod
     def update(cls, *args, **kwargs):
@@ -98,7 +98,13 @@ class Update:
             cls._download_file(URL_S3_BUCKET_VERSION_PROG, cls._version_prog_path)
             ver = get_version_prog(cls._version_prog_path)
             return ver
-
+        
+    @classmethod    
+    def _get_version(cls):
+        cls._download_file(URL_S3_BUCKET_VERSION_PROG, cls._version_prog_path)
+        ver = get_version_prog(cls._version_prog_path)
+        return ver
+    
     @classmethod
     def _download_file(cls, url: str, path_file: Path) -> None:
         response = requests.get(url, headers=cls._headers)

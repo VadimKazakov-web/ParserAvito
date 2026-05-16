@@ -16,6 +16,7 @@ button_custom = ButtonForUpdate(master=frame_2, text="проверить обн�
 button_custom.build()
 button_custom.make_hover()
 button_instance = button_custom.get_instance()
+button_instance.bind("<ButtonPress-1>", func=CheckUpdateProgThread.start)
 logging.info("{}: done".format(__name__))
 
 # act_inact_button = ActiveInactiveButton(button_custom, button_instance, CheckUpdateProgThread.start)
