@@ -26,6 +26,8 @@ def run_command(command_list):
 
 icon_origin = Path("icon_origin.ico")
 icon_new = Path("icon.png")
+icon_new.unlink()
+icon_new = Path("icon.png")
 argv = sys.argv
 new_tag = argv[1]
 commit_message = argv[2]
@@ -55,5 +57,3 @@ run_command(git_push)
 
 git_push_tags = ["git", "push", "origin", "--tags"]
 run_command(git_push_tags)
-
-# icon_new.unlink()
