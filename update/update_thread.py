@@ -1,6 +1,7 @@
 import datetime
 import threading
 from tkinter_frontend.classes.label import Label
+from tkinter_frontend.window_root.build import window
 from update.update_classs import Update
 from objects import connector
 
@@ -54,7 +55,7 @@ class UpdateProgThread:
     @classmethod
     def start(cls, *args, **kwargs):
         cls.create_plug()
-        connector.post_data(data="exit")
-        t = threading.Thread(target=Update.update)
+        t = threading.Thread(target=Update.update, daemon=True)
         t.start()
+
 

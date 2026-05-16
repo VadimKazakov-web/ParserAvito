@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 import logging
 import shutil
-from objects import connector
 from settings import *
 import requests
 import re
+from tkinter_frontend.events import Events
+from backend import connector
 from update.utills.utills import (check_current_version_and_new_tag, get_datetime, rename_path, run_command_subprocess)
 from utills.utils import get_version_prog
 
@@ -29,32 +30,30 @@ class Update:
 
     @classmethod
     def check_update(cls, *args, **kwargs):
+        from tkinter_frontend.utils import create_install_prog_btn
         from tkinter_frontend.window_root.frame_2.update_block.build import label_instance
-        # ver = cls._request_new_ver()
         ver = cls._get_version()
         if ver:
             if not check_current_version_and_new_tag(ver, VERSION):
-                text = f'доступна новая версия: {ver}'
+                label_instance["text"] = f'доступна новая версия: {ver}'
                 cls._program_path = APP_TEMPORARY / Path(f'{cls._repo_name}[{ver}].exe')
-                connector.update_version(text=text)
-                connector.gen_install_event()
+                create_install_prog_btn()
             else:
                 label_instance["text"] = 'нет новой версии'
 
     @classmethod
     def update(cls, *args, **kwargs):
-        APP_TEMPORARY.mkdir(exist_ok=True)
         cls._download_file(url=URL_S3_BUCKET_PROG, path_file=cls._program_path)
         cls._download_file(url=URL_S3_BUCKET_XML, path_file=cls._xml_path)
-        logging.info("cls._program_path: {}".format(cls._program_path))
+        print("cls._program_path: {}".format(cls._program_path))
         try:
             cls._program_path = shutil.move(src=cls._program_path, dst=BASE_DIR.parent)
         except shutil.Error as err:
-            logging.info(err)
+            print(err)
             if re.search(r'already exists', err.args[0]):
                 cls._program_path = rename_path(cls._program_path)
                 cls._program_path = shutil.move(src=cls._program_path, dst=BASE_DIR.parent)
-        logging.info("cls._program_path: {}".format(cls._program_path))
+        print("cls._program_path: {}".format(cls._program_path))
         cls._create_xml_settings()
 
         command_create_task = "schtasks /create /tn {name} /xml {path}".format(name=SCHTASKS_NAME, path=cls._xml_path)
@@ -63,9 +62,9 @@ class Update:
         command_run_task = f"schtasks /run /tn {SCHTASKS_NAME}"
         run_command_subprocess(command_run_task)
 
-        command_delete_task = f"schtasks -delete -tn {SCHTASKS_NAME} -f"
+        command_delete_task = f"schtasks /delete /tn {SCHTASKS_NAME} -f"
         run_command_subprocess(command_delete_task)
-        connector.gen_exit_event()
+        connector.put(Events.exit_after_update_event)
 
     @classmethod
     def _create_xml_settings(cls):

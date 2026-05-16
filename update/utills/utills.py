@@ -4,10 +4,10 @@ import re
 import shutil
 import subprocess
 import datetime
-import time
 import random
 from pathlib import Path
 from exceptions import ManyExeFile
+import string
 from objects import connector
 
 
@@ -18,8 +18,7 @@ def search_file(path: Path, suffix) -> Path:
 
 
 def random_str(num):
-    text = [random.choice('qwertyuioplkhgfdsazxcvbnm') for _ in range(num)]
-    result = ''.join(text)
+    result = "".join(random.choices(string.ascii_lowercase, k=num))
     return result
 
 
@@ -102,6 +101,5 @@ def run_command_subprocess(command):
         # сработала только кодировка "oem"
         logging.warning(completed_process.stderr.decode(encoding="oem", errors="replace"))
     else:
-        logging.info("schtasks create: done")
-        logging.info(completed_process.stdout.decode(encoding="oem", errors="replace"))
+        print(command)
 

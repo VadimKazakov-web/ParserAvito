@@ -10,9 +10,8 @@ import queue
 
 
 def kill_process(pid: str):
-    """
-    Не используется
-    """
+    if not isinstance(pid, str):
+        pid = str(pid)
     complete_process = subprocess.run(["taskkill", "/F", "/PID", pid], capture_output=True, shell=True)
     if complete_process.returncode == 0:
         print(complete_process.stdout.decode(encoding='oem'))
@@ -92,6 +91,12 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
                 EventsConnector.window_close_wait()
                 self._start.set()
                 EventsConnector.variables_put(self.data)
+            elif data == Events.exit_after_update_event:
+                from main import PROCESS_PID
+                print(data)
+                EventsConnector.push_stop()
+                EventsConnector.window_close_wait()
+                kill_process(PROCESS_PID)
 
     def __call__(self, *args, **kwargs):
         receiver_1 = Thread(target=self._receiver_for_main, daemon=True)

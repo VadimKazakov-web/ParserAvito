@@ -8,9 +8,11 @@ from tkinter_frontend.build_tk import build_tk_interface
 from utills.utils import logging_settings
 from backend import connector
 
+PROCESS_PID = os.getpid()
+
 
 def main(*args, **kwargs):
-    print("process pid: {}".format(os.getpid()))
+    print("process pid: {}".format(PROCESS_PID))
     # настройка ведения журнала
     logging_settings(file_handler=False)
     logging.info("start program")

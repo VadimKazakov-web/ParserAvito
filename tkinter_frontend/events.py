@@ -12,6 +12,7 @@ class Events:
     window_close_event = "<<WindowCloseEvent>>"
     exit_event = "<<ExitEvent>>"
     start_again_event = "<<StartAgain>>"
+    exit_after_update_event = "<<ExitAfterUpdateEvent>>"
 
 
 class InfoUpdateEvent:

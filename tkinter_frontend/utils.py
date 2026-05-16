@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import _tkinter
+
 from objects import connector
 from tkinter_frontend.classes.button import ButtonForUpdate
 from update.update_thread import UpdateProgThread
@@ -30,8 +32,11 @@ def create_progress(*args):
 def update_progress(*args, **kwargs):
     from tkinter_frontend.window_root.frame_1.progress_bar.build import label_progress_origin, label_title_page_origin
     title, progr = kwargs.get("data")
-    label_title_page_origin["text"] = title
-    label_progress_origin["text"] = "обработано: {}".format(progr)
+    try:
+        label_title_page_origin["text"] = title
+        label_progress_origin["text"] = "обработано: {}".format(progr)
+    except _tkinter.TclError:
+        pass
 
 
 def update_version(*args, **kwargs):
@@ -46,10 +51,7 @@ def create_install_prog_btn(*args, **kwargs):
     button_custom.build()
     button_custom.make_hover()
     button_instance = button_custom.get_instance()
-    act_inact_button = ActiveInactiveButton(button_custom, button_instance, UpdateProgThread.start)
-    act_inact_button.make_active_button()
-    connector.set_callbacks_for_start_prog(act_inact_button.make_inactive_button)
-    connector.set_callbacks_for_stop_prog(act_inact_button.make_active_button)
+    button_instance.bind("<ButtonPress-1>", func=UpdateProgThread.start)
 
 
 def update_time(*args, **kwargs):
