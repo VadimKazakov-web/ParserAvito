@@ -43,7 +43,7 @@ class EventsConnector:
 
     @classmethod
     def destroy_tkinter_wait(cls):
-        cls.destroy_tkinter_event.wait(timeout=4)
+        cls.destroy_tkinter_event.wait(timeout=7)
         cls.destroy_tkinter_event.clear()
 
     @classmethod

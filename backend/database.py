@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import sqlite3
-import logging
 from settings import *
 
 
@@ -28,16 +27,6 @@ class Connection:
         cls._cursor = cls._connection.cursor()
 
 
-def create_database():
-    with Connection() as cursor:
-        """
-        Создание новой таблицы
-        """
-        # привязки (? или :name) не работают c CREATE TABLE
-        cursor.execute(
-            "CREATE TABLE IF NOT EXISTS {} (id INTEGER, title TEXT, date TEXT, link TEXT, total_views, today_views, rating, reviews);".format(DB_TABLE_NAME))
-
-
 class DataBaseMixin:
     """
     Класс для работы с базой данных.
@@ -45,15 +34,29 @@ class DataBaseMixin:
     Созданная таблица используется для хранения данных объявлений полученных из одной сессии.
     """
     _table_name = DB_TABLE_NAME
-    create_database()
+    _exists_table = False
 
-    def delete_database_table(self):
+    @classmethod
+    def create_table(cls):
         with Connection() as cursor:
             """
-            Удаление таблицы
+            Создание новой таблицы
             """
+            # привязки (? или :name) не работают c CREATE TABLE
             cursor.execute(
-                "DROP TABLE {}".format(self._table_name))
+                "CREATE TABLE IF NOT EXISTS {} (id INTEGER, title TEXT, date TEXT, link TEXT, total_views, today_views, rating, reviews);".format(
+                    DB_TABLE_NAME))
+            cls._exists_table = True
+
+    def delete_database_table(self):
+        if self._exists_table:
+            with Connection() as cursor:
+                """
+                Удаление таблицы
+                """
+                cursor.execute(
+                    "DROP TABLE {}".format(self._table_name))
+                self._exists_table = False
 
     @staticmethod
     def count_row_in_database():
@@ -97,6 +100,8 @@ class DataBaseMixin:
         return result_list
 
     def check_count_item(self):
+        if not self._exists_table:
+            return False
         with Connection() as cursor:
             items = cursor.execute("SELECT * FROM {};".format(
                 self._table_name))
@@ -105,7 +110,6 @@ class DataBaseMixin:
                 return True
             else:
                 return False
-
 
     def extraction_and_sorting_generator(self):
         with Connection() as cursor:

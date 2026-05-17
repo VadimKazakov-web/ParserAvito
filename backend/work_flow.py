@@ -43,12 +43,7 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
         try:
             self.__call__()
         except PushStopButton as err:
-            print(err)
-        # except selenium.common.exceptions.WebDriverException as err:
-        #     err_info = str(err)[0:100]
-        #     if re.search(r"unknown error", err_info):
-        #         self._channel_put.put(Events.start_again_event)
-        #         print(err_info)
+            pass
         except Exception as err:
             err_info = str(err)[0:100]
             if re.search(r'no such window|session deleted|'

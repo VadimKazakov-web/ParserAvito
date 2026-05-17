@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import subprocess
 from threading import Event, Thread, Lock
-from backend import (Variables, DataBaseMixin, ResultInHtml, CreateDriverMixin, create_database)
+from backend import (Variables, DataBaseMixin, ResultInHtml, CreateDriverMixin)
 from backend.events import EventsConnector
 import webbrowser
 from tkinter_frontend.events import Events, ProgressUpdateEvent
@@ -62,41 +62,48 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
             data = self._channel_get.get()
             # print("data in BackendManager's _receiver_for_main: {}".format(data))
             if isinstance(data, Variables):
-                create_database()
+                print("data from connector: {}".format(data.variables))
+                self.create_table()
                 self.data = data
                 self._start.set()
                 EventsConnector.variables_put(data.variables)
+
             elif isinstance(data, ProgressUpdateEvent):
                 update_progress(data=(data.text, data.num))
+
             elif data == Events.push_stop_event:
-                print(data)
+                print("data from connector: {}".format(data))
                 new_flow_btn()
                 EventsConnector.push_stop()
                 self._show_result()
                 self.delete_database_table()
                 EventsConnector.window_close_wait()
+
             elif data == Events.exit_event:
-                print(data)
+                print("data from connector: {}".format(data))
                 EventsConnector.push_stop()
                 self._show_result()
                 self.delete_database_table()
                 # дождаться закрытия браузера, иначе когда завершается программа, браузер остаётся открытым
                 EventsConnector.window_close_wait()
                 EventsConnector.destroy_tkinter()
+
             elif data == Events.window_close_event:
-                print(data)
+                print("data from connector: {}".format(data))
                 new_flow_btn()
                 self._show_result()
                 self.delete_database_table()
                 EventsConnector.window_close_wait()
+
             elif data == Events.start_again_event:
-                print(data)
+                print("data from connector: {}".format(data))
                 EventsConnector.window_close_wait()
                 self._start.set()
                 EventsConnector.variables_put(self.data)
+
             elif data == Events.exit_after_update_event:
                 from main import PROCESS_PID
-                print(data)
+                print("data from connector: {}".format(data))
                 self._show_result()
                 EventsConnector.push_stop()
                 EventsConnector.window_close_wait()
