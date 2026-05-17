@@ -26,6 +26,7 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
         self._channel_get: queue.Queue = kwargs.get("channel_get")
         self._start = Event()
         self._lock = Lock()
+        self.data = {}
         self.__call__()
 
     def __str__(self):
@@ -33,6 +34,8 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
 
     def _show_result(self):
         if not self.check_count_item():
+            return
+        if not self.data:
             return
         with self._lock:
             result_html = ResultInHtml(file_name=self.data.get_filename(), count=self.count_row_in_database())
@@ -94,6 +97,7 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
             elif data == Events.exit_after_update_event:
                 from main import PROCESS_PID
                 print(data)
+                self._show_result()
                 EventsConnector.push_stop()
                 EventsConnector.window_close_wait()
                 kill_process(PROCESS_PID)
