@@ -55,9 +55,23 @@ class PushExit(Exception):
 
     def __str__(self):
         if self.message:
-            return "PushExit, {}".format(self.message)
+            return """The "exit" button is pressed, {}""".format(self.message)
         else:
-            return "PushExit"
+            return """The "exit" button is pressed"""
+
+
+class PushUpdate(Exception):
+    def __init__(self, *args):
+        if args:
+            self.message = args[0]
+        else:
+            self.message = None
+
+    def __str__(self):
+        if self.message:
+            return """update program..., {}""".format(self.message)
+        else:
+            return """update program..."""
 
 
 class BadInternetConnection(Exception):

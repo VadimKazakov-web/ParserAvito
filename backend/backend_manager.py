@@ -81,7 +81,7 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
 
             elif data == Events.exit_event:
                 print("data from connector: {}".format(data))
-                EventsConnector.push_stop()
+                EventsConnector.push_exit()
                 self._show_result()
                 self.delete_database_table()
                 # дождаться закрытия браузера, иначе когда завершается программа, браузер остаётся открытым
@@ -105,7 +105,7 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
                 from main import PROCESS_PID
                 print("data from connector: {}".format(data))
                 self._show_result()
-                EventsConnector.push_stop()
+                EventsConnector.push_update()
                 EventsConnector.window_close_wait()
                 kill_process(PROCESS_PID)
 

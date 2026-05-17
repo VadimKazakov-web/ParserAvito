@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import threading
-from exceptions import PushStopButton
+from exceptions import PushStopButton, PushExit, PushUpdate
 
 
 class MutexVar:
@@ -20,6 +20,8 @@ class MutexVar:
 
 class EventsConnector:
     push_stop_event = threading.Event()
+    push_exit_event = threading.Event()
+    push_update_event = threading.Event()
     window_close_event = threading.Event()
     destroy_tkinter_event = threading.Event()
     var_event = threading.Event()
@@ -30,12 +32,24 @@ class EventsConnector:
         cls.push_stop_event.set()
 
     @classmethod
+    def push_update(cls):
+        cls.push_update_event.set()
+
+    @classmethod
+    def push_exit(cls):
+        cls.push_exit_event.set()
+
+    @classmethod
     def events_handler(cls):
         if cls.push_stop_event.is_set():
             cls.push_stop_event.clear()
             raise PushStopButton
-        elif cls.window_close_event.is_set():
-            pass
+        elif cls.push_exit_event.is_set():
+            cls.push_exit_event.clear()
+            raise PushExit
+        elif cls.push_update_event.is_set():
+            cls.push_update_event.clear()
+            raise PushUpdate
 
     @classmethod
     def destroy_tkinter(cls):
@@ -52,7 +66,7 @@ class EventsConnector:
 
     @classmethod
     def window_close_wait(cls):
-        cls.window_close_event.wait(timeout=4)
+        cls.window_close_event.wait()
         cls.window_close_event.clear()
 
     @classmethod

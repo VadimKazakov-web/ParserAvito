@@ -15,8 +15,13 @@ from backend.events import EventsConnector
 from tkinter_frontend.events import Events, ProgressUpdateEvent
 from backend.utils.timeout import TimeoutMixin
 from seleniumwire.webdriver import Chrome
-from exceptions import PushStopButton
+from exceptions import PushStopButton, PushExit, PushUpdate
 
+
+# экспериментальный, более низкоуровневый способ закрытия окна браузера
+# remote_server_addr = self.driver.command_executor._client_config.remote_server_addr
+# url = "{}/session/{}/window".format(remote_server_addr, self.driver.session_id)
+# response = requests.delete(url)
 
 def rewind_gen(num, gen):
     while num != 0:
@@ -42,23 +47,20 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
         self.test_num = 0
         try:
             self.__call__()
-        except PushStopButton as err:
-            pass
+        except (PushStopButton, PushUpdate, PushExit) as err:
+            print(err)
+            self.driver.quit()
+            EventsConnector.window_close()
         except Exception as err:
             err_info = str(err)[0:100]
             if re.search(r'no such window|session deleted|'
                          r'cannot determine loading status|unknown error: net::ERR_CONNECTION_CLOSED', err_info):
-                self._channel_put.put(Events.window_close_event)
                 print(err_info)
+                self._channel_put.put(Events.window_close_event)
+                self.driver.quit()
+                EventsConnector.window_close()
             else:
                 raise err
-        finally:
-            self.driver.quit()
-            EventsConnector.window_close()
-            # экспериментальный, более низкоуровневый способ закрытия окна браузера
-            # remote_server_addr = self.driver.command_executor._client_config.remote_server_addr
-            # url = "{}/session/{}/window".format(remote_server_addr, self.driver.session_id)
-            # response = requests.delete(url)
 
     def __str__(self):
         return "WorkFlow"
