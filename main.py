@@ -8,7 +8,6 @@ from tkinter_frontend.window_root.build import window as tk_window
 from tkinter_frontend.build_tk import build_tk_interface
 from utills.utils import logging_settings
 from backend import connector
-print(sys.path)
 PROCESS_PID = os.getpid()
 
 
