@@ -34,7 +34,6 @@ class DataBaseMixin:
     Созданная таблица используется для хранения данных объявлений полученных из одной сессии.
     """
     _table_name = DB_TABLE_NAME
-    _exists_table = False
 
     @classmethod
     def create_table(cls):
@@ -46,17 +45,17 @@ class DataBaseMixin:
             cursor.execute(
                 "CREATE TABLE IF NOT EXISTS {} (id INTEGER, title TEXT, date TEXT, link TEXT, total_views, today_views, rating, reviews);".format(
                     DB_TABLE_NAME))
-            cls._exists_table = True
 
     def delete_database_table(self):
-        if self._exists_table:
-            with Connection() as cursor:
-                """
-                Удаление таблицы
-                """
+        with Connection() as cursor:
+            """
+            Удаление таблицы
+            """
+            try:
                 cursor.execute(
-                    "DROP TABLE {}".format(self._table_name))
-                self._exists_table = False
+                "DROP TABLE {}".format(self._table_name))
+            except sqlite3.OperationalError as err:
+                print("delete_database_table(): {}".format(err))
 
     @staticmethod
     def count_row_in_database():
@@ -100,16 +99,18 @@ class DataBaseMixin:
         return result_list
 
     def check_count_item(self):
-        if not self._exists_table:
-            return False
         with Connection() as cursor:
-            items = cursor.execute("SELECT * FROM {};".format(
+            try:
+                items = cursor.execute("SELECT * FROM {};".format(
                 self._table_name))
-            result = items.fetchone()
-            if result:
-                return True
+            except sqlite3.OperationalError as err:
+                print("check_count_item(): {}".format(err))
             else:
-                return False
+                result = items.fetchone()
+                if result:
+                    return True
+                else:
+                    return False
 
     def extraction_and_sorting_generator(self):
         with Connection() as cursor:
