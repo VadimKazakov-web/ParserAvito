@@ -41,7 +41,7 @@ run_command(git_add)
 git_commit = ["git", "commit", "-m", commit_message]
 run_command(git_commit)
 
-git_add_new_tag = ["git", "tag", "-a", new_tag, "-m", new_tag]
+git_add_new_tag = ["git", "tag", "-a", new_tag, "-m", commit_message]
 run_command(git_add_new_tag)
 
 new_icon(tag=new_tag, path=icon_origin, new_path=icon_new)

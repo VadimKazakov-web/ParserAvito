@@ -52,7 +52,7 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
         except Exception as err:
             err_info = str(err)[0:100]
             if re.search(r'no such window|session deleted|'
-                         r'cannot determine loading status', err_info):
+                         r'cannot determine loading status|unknown error: net::ERR_CONNECTION_CLOSED', err_info):
                 self._channel_put.put(Events.window_close_event)
                 print(err_info)
             else:
