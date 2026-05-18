@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import re
 import sqlite3
 from settings import *
 
@@ -55,7 +56,10 @@ class DataBaseMixin:
                 cursor.execute(
                 "DROP TABLE {}".format(self._table_name))
             except sqlite3.OperationalError as err:
-                print("delete_database_table(): {}".format(err))
+                if re.search(r"no such table", str(err)):
+                    print("delete_database_table(): {}".format(err))
+                else:
+                    raise
 
     @staticmethod
     def count_row_in_database():
@@ -104,10 +108,12 @@ class DataBaseMixin:
                 items = cursor.execute("SELECT * FROM {};".format(
                 self._table_name))
             except sqlite3.OperationalError as err:
-                print("check_count_item(): {}".format(err))
+                if re.search(r"no such table", str(err)):
+                    print("delete_database_table(): {}".format(err))
+                else:
+                    raise
             else:
-                result = items.fetchone()
-                if result:
+                if items.fetchone():
                     return True
                 else:
                     return False

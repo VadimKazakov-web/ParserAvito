@@ -43,24 +43,7 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
         self.data = None
         self._continue = "continue"
         self._connection_failure = "connection failure"
-        # удалить
-        self.test_num = 0
-        try:
-            self.__call__()
-        except (PushStopButton, PushUpdate, PushExit) as err:
-            print(err)
-            self.driver.quit()
-            EventsConnector.window_close()
-        except Exception as err:
-            err_info = str(err)[0:100]
-            if re.search(r'no such window|session deleted|'
-                         r'cannot determine loading status|unknown error: net::ERR_CONNECTION_CLOSED', err_info):
-                print(err_info)
-                self._channel_put.put(Events.window_close_event)
-                self.driver.quit()
-                EventsConnector.window_close()
-            else:
-                raise err
+        self.__call__()
 
     def __str__(self):
         return "WorkFlow"
@@ -68,11 +51,34 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
     def __call__(self, *args, **kwargs):
         data = EventsConnector.variables_wait()
         self.data = data
-        self._start_gen(*args, **kwargs)
+        while True:
+            try:
+                self._start_gen(*args, **kwargs)
+            except (PushStopButton, PushUpdate, PushExit) as err:
+                print(err)
+                self.driver.quit()
+                EventsConnector.window_close()
+                return
+            except Exception as err:
+                err_info = str(err)[0:130]
+                print("\033[33m{}".format(err_info))
+                print("\033[0m")
+                if re.search(r'no such window|session deleted|cannot determine loading status', err_info):
+                    self._channel_put.put(Events.window_close_event)
+                    EventsConnector.window_close()
+                    return
+                elif re.search(r'unknown error: net::ERR_CONNECTION_CLOSED', err_info):
+                    self.driver.quit()
+                    self.driver: Chrome = self.create_driver()
+                    self.driver.request_interceptor = InterceptorHeaders.request_interceptor
+                    self.driver.response_interceptor = InterceptorHeaders.response_interceptor
+                else:
+                    raise
+            else:
+                return
 
     def _start_gen(self, *args, **kwargs):
         while True:
-            self.test_num += 2
             for step in self._work_flow(advertisement=self._open_advertisement_global_counter):
                 if step == self._connection_failure:
                     break

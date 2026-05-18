@@ -26,19 +26,16 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
         self._channel_get: queue.Queue = kwargs.get("channel_get")
         self._start = Event()
         self._lock = Lock()
-        self.data = {}
         self.__call__()
 
     def __str__(self):
         return "BackendManager"
 
-    def _show_result(self):
+    def _show_result(self, var_obj: Variables):
         if not self.check_count_item():
             return
-        if not self.data:
-            return
         with self._lock:
-            result_html = ResultInHtml(file_name=self.data.get_filename(), count=self.count_row_in_database())
+            result_html = ResultInHtml(file_name=var_obj.get_filename(), count=self.count_row_in_database())
             result_gen = self.extraction_and_sorting_generator()
             # порядок выдачи отсортированных результатов:
             # по просмотрам за всё время
@@ -51,7 +48,7 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
             data = next(result_gen)
             result_html.write_result(flag="reviews", data=data)
             # открыть файл с результатами в браузере по умолчанию
-            webbrowser.open(self.data.get_filename())
+            webbrowser.open(var_obj.get_filename())
 
     def _receiver_for_main(self):
         from tkinter_frontend.utils import new_flow_btn, update_progress
@@ -63,7 +60,6 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
             # print("data in BackendManager's _receiver_for_main: {}".format(data))
             if isinstance(data, Variables):
                 print("data from connector: {}".format(data.variables))
-                self.create_table()
                 self.data = data
                 self._start.set()
                 EventsConnector.variables_put(data.variables)
@@ -75,38 +71,25 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
                 print("data from connector: {}".format(data))
                 new_flow_btn()
                 EventsConnector.push_stop()
-                self._show_result()
-                self.delete_database_table()
-                EventsConnector.window_close_wait()
 
             elif data == Events.exit_event:
                 print("data from connector: {}".format(data))
                 EventsConnector.push_exit()
-                self._show_result()
-                self.delete_database_table()
-                # дождаться закрытия браузера, иначе когда завершается программа, браузер остаётся открытым
-                EventsConnector.window_close_wait()
                 EventsConnector.destroy_tkinter()
 
             elif data == Events.window_close_event:
                 print("data from connector: {}".format(data))
                 new_flow_btn()
-                self._show_result()
-                self.delete_database_table()
-                EventsConnector.window_close_wait()
 
             elif data == Events.start_again_event:
                 print("data from connector: {}".format(data))
-                EventsConnector.window_close_wait()
                 self._start.set()
                 EventsConnector.variables_put(self.data)
 
             elif data == Events.exit_after_update_event:
                 from main import PROCESS_PID
                 print("data from connector: {}".format(data))
-                self._show_result()
                 EventsConnector.push_update()
-                EventsConnector.window_close_wait()
                 kill_process(PROCESS_PID)
 
     def __call__(self, *args, **kwargs):
@@ -115,6 +98,7 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
         while True:
             print("-" * 10, "waiting for the start", "-" * 10)
             self._start.wait()
+            self.create_table()
             try:
                 # при указании параметра name в Process, процесс BackendManager.__call__() вызывался рекурсивно
                 thread = Thread(target=WorkFlow, kwargs={
@@ -125,3 +109,6 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
                 thread.join()
             finally:
                 self._start.clear()
+                EventsConnector.window_close_wait()
+                self._show_result(self.data)
+                self.delete_database_table()

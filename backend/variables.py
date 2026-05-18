@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-from settings import BASE_DIR, WIDTH_LABEL
-import textwrap
+from settings import BASE_DIR
 
 
 def check_var(data: dict):
@@ -15,7 +14,6 @@ class Variables:
 
     def __init__(self, data):
         self.variables = check_var(data)
-        self.width_label = WIDTH_LABEL
 
     def get_url(self) -> str:
         value = self.variables.get("url")
