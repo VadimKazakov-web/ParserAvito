@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import threading
+import time
+
 from exceptions import PushStopButton, PushExit, PushUpdate
 
 
@@ -19,66 +21,78 @@ class MutexVar:
 
 
 class EventsConnector:
-    push_stop_event = threading.Event()
-    push_exit_event = threading.Event()
-    push_update_event = threading.Event()
-    window_close_event = threading.Event()
-    destroy_tkinter_event = threading.Event()
-    var_event = threading.Event()
+    _push_stop_event = threading.Event()
+    _push_exit_event = threading.Event()
+    _push_update_event = threading.Event()
+    _window_close_event = threading.Event()
+    _destroy_tkinter_event = threading.Event()
+    _work_done_event = threading.Event()
+    _var_event = threading.Event()
     var = MutexVar(None)
 
     @classmethod
     def push_stop(cls):
-        cls.push_stop_event.set()
+        cls._push_stop_event.set()
 
     @classmethod
     def push_update(cls):
-        cls.push_update_event.set()
+        cls._push_update_event.set()
 
     @classmethod
     def push_exit(cls):
-        cls.push_exit_event.set()
+        cls._push_exit_event.set()
 
     @classmethod
     def events_handler(cls):
-        if cls.push_stop_event.is_set():
-            cls.push_stop_event.clear()
+        if cls._push_stop_event.is_set():
+            cls._push_stop_event.clear()
             raise PushStopButton
-        elif cls.push_exit_event.is_set():
-            cls.push_exit_event.clear()
+        elif cls._push_exit_event.is_set():
+            cls._push_exit_event.clear()
             raise PushExit
-        elif cls.push_update_event.is_set():
-            cls.push_update_event.clear()
+        elif cls._push_update_event.is_set():
+            cls._push_update_event.clear()
             raise PushUpdate
 
     @classmethod
     def destroy_tkinter(cls):
-        cls.destroy_tkinter_event.set()
+        cls._destroy_tkinter_event.set()
 
     @classmethod
     def destroy_tkinter_wait(cls):
-        cls.destroy_tkinter_event.wait(timeout=6)
-        cls.destroy_tkinter_event.clear()
+        while True:
+            # Чтобы не блокировать главный процесс
+            if cls._destroy_tkinter_event.is_set():
+                cls._destroy_tkinter_event.clear()
+                return
+            # time.sleep(1)
 
     @classmethod
     def window_close(cls):
-        cls.window_close_event.set()
+        cls._window_close_event.set()
 
     @classmethod
     def window_close_wait(cls):
-        cls.window_close_event.wait()
-        cls.window_close_event.clear()
+        cls._window_close_event.wait()
+        cls._window_close_event.clear()
 
     @classmethod
-    def variables_wait(cls):
-        cls.var_event.wait()
-        cls.var_event.clear()
-        return cls.var.get()
+    def work_done(cls):
+        cls._work_done_event.set()
+
+    @classmethod
+    def work_wait(cls):
+        cls._work_done_event.wait()
+        cls._work_done_event.clear()
 
     @classmethod
     def variables_put(cls, data):
         cls.var.set(data)
-        cls.var_event.set()
+        cls._var_event.set()
 
-
+    @classmethod
+    def variables_wait(cls):
+        cls._var_event.wait()
+        cls._var_event.clear()
+        return cls.var.get()
 

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 import subprocess
 from threading import Event, Thread, Lock
 from backend import (Variables, DataBaseMixin, ResultInHtml, CreateDriverMixin)
@@ -7,6 +8,7 @@ import webbrowser
 from tkinter_frontend.events import Events, ProgressUpdateEvent
 from backend.work_flow import WorkFlow
 import queue
+from tkinter_frontend.window_root.build import window
 
 
 def kill_process(pid: str):
@@ -72,14 +74,20 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
                 new_flow_btn()
                 EventsConnector.push_stop()
 
-            elif data == Events.exit_event:
-                print("data from connector: {}".format(data))
-                EventsConnector.push_exit()
-                EventsConnector.destroy_tkinter()
-
             elif data == Events.window_close_event:
                 print("data from connector: {}".format(data))
                 new_flow_btn()
+
+            elif data == Events.exit_event:
+                print("data from connector: {}".format(data))
+                EventsConnector.push_exit()
+                if self._start.is_set():
+                    EventsConnector.work_wait()
+                    # программа завершается корректно только так
+                    os._exit(0)
+                else:
+                    # программа завершается корректно только так
+                    os._exit(0)
 
             elif data == Events.start_again_event:
                 print("data from connector: {}".format(data))
@@ -112,3 +120,5 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
                 EventsConnector.window_close_wait()
                 self._show_result(self.data)
                 self.delete_database_table()
+                EventsConnector.work_done()
+                print("WorkFlow.__call__() finally")

@@ -31,13 +31,16 @@ class WindowRoot:
         self.root.mainloop()
 
     def exit(self, *args, **kwargs):
+        # отправляется событие в connector, который слушается в  BackendManager._receiver_for_main
         connector.put(Events.exit_event)
-        self.root.destroy()
-        EventsConnector.destroy_tkinter_wait()
+        # после закомментирования этого вызова, стали приходить данные в connector что было не всегда
+        # перемещён в BackendManager._receiver_for_main
+        # self.root.destroy()
         try:
             shutil.rmtree(APP_TEMPORARY)
         except FileNotFoundError:
             pass
+        # этот вызов перемещён намеренно в BackendManager._receiver_for_main
         # программа завершается корректно только так
-        os._exit(0)
+        # os._exit(0)
 
