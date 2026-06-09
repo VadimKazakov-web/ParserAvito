@@ -10,6 +10,13 @@ from update.utills.utills import (check_current_version_and_new_tag, get_datetim
 from utills.utils import get_version_prog
 
 
+def run_new_app():
+    command_run_task = f"schtasks /run /tn {SCHTASKS_NAME}"
+    run_command_subprocess(command_run_task)
+    command_delete_task = f"schtasks /delete /tn {SCHTASKS_NAME} -f"
+    run_command_subprocess(command_delete_task)
+
+
 class Update:
     APP_TEMPORARY.mkdir(exist_ok=True)
     _pattern_tags = re.compile(r'href="/VadimKazakov-web/ParserAvito/releases/tag/(?P<tag>.+?)"')
@@ -58,12 +65,6 @@ class Update:
 
         command_create_task = "schtasks /create /tn {name} /xml {path}".format(name=SCHTASKS_NAME, path=cls._xml_path)
         run_command_subprocess(command_create_task)
-
-        command_run_task = f"schtasks /run /tn {SCHTASKS_NAME}"
-        run_command_subprocess(command_run_task)
-
-        command_delete_task = f"schtasks /delete /tn {SCHTASKS_NAME} -f"
-        run_command_subprocess(command_delete_task)
         connector.put(Events.exit_after_update_event)
 
     @classmethod

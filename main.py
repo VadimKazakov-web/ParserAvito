@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import os
-import sys
 from threading import Thread
 import logging.handlers
 from backend.backend_manager import BackendManager
@@ -17,9 +16,9 @@ def main(*args, **kwargs):
     logging_settings(file_handler=False)
     logging.info("start program")
 
-    # запуск серверной части в отдельном процессе
+    # запуск серверной части в отдельном потоке
     thread = Thread(target=BackendManager, kwargs={
-        # процесс будет получать данные из канала
+        # поток будет получать данные из канала
         "channel_get": connector,
     })
     thread.start()

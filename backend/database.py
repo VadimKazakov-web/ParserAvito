@@ -54,7 +54,7 @@ class DataBaseMixin:
             """
             try:
                 cursor.execute(
-                "DROP TABLE {}".format(self._table_name))
+                    "DROP TABLE {}".format(self._table_name))
             except sqlite3.OperationalError as err:
                 if re.search(r"no such table", str(err)):
                     print("delete_database_table(): {}".format(err))
@@ -106,7 +106,7 @@ class DataBaseMixin:
         with Connection() as cursor:
             try:
                 items = cursor.execute("SELECT * FROM {};".format(
-                self._table_name))
+                    self._table_name))
             except sqlite3.OperationalError as err:
                 if re.search(r"no such table", str(err)):
                     print("delete_database_table(): {}".format(err))
