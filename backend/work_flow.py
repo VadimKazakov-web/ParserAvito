@@ -78,7 +78,8 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
 
     def _start_gen(self, *args, **kwargs):
         while True:
-            for step in self._work_flow(advertisement=self._open_advertisement_global_counter):
+            for step in self._work_flow(pages=self._open_pages_global_counter,
+                                        advertisement=self._open_advertisement_global_counter):
                 if step == self._connection_failure:
                     break
                 EventsConnector.events_handler()
@@ -89,8 +90,8 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
     def _work_flow(self, pages=0, advertisement=0):
         # создание ссылок на страницы
         creating_links_gen = CreatingLinks(url=self.data.get("url"), pages=self.data.get("pages"))
-        # # перемотка вперёд, если нужно
-        # creating_links_gen = rewind_gen(pages, creating_links_gen())
+        # перемотка вперёд, если нужно
+        creating_links_gen = rewind_gen(pages, creating_links_gen())
         # переход на каждую страницу
         for url_page in creating_links_gen():
             flag_page = yield from self._open_page_script(url_page)

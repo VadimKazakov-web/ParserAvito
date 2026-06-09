@@ -2,7 +2,7 @@
 import os
 import subprocess
 import time
-from threading import Event, Thread, Lock
+from threading import Thread, Lock
 from backend import (Variables, DataBaseMixin, ResultInHtml, CreateDriverMixin)
 from backend.events import EventsConnector
 import webbrowser
@@ -79,11 +79,9 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
 
             elif data == Events.exit_event:
                 print("data from connector: {}".format(data))
-                if not self.data:
-                    # программа завершается корректно только так
-                    os._exit(0)
-                EventsConnector.push_exit()
-                EventsConnector.work_wait()
+                if self.data:
+                    EventsConnector.push_exit()
+                    EventsConnector.work_wait()
                 # программа завершается корректно только так
                 os._exit(0)
 
@@ -93,15 +91,12 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
 
             elif data == Events.exit_after_update_event:
                 print("data from connector: {}".format(data))
-                if not self.data:
-                    run_new_app()
-                    os._exit(0)
-                else:
+                if self.data:
                     EventsConnector.push_update()
                     EventsConnector.work_wait()
-                    run_new_app()
-                    time.sleep(1)
-                    os._exit(0)
+                run_new_app()
+                time.sleep(1)
+                os._exit(0)
 
     def __call__(self, *args, **kwargs):
         receiver_1 = Thread(target=self._receiver_for_main, daemon=True)
