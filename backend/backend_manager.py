@@ -107,20 +107,15 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
         receiver_1 = Thread(target=self._receiver_for_main, daemon=True)
         receiver_1.start()
         while True:
-            EventsConnector.events_clear()
+            EventsConnector.work_unset()
             print("-" * 10, "waiting for the start", "-" * 10)
             self.create_table()
             try:
-                thread = Thread(target=WorkFlow, kwargs={
-                    # поток будет отправлять данные в канал
-                    "channel_put": self._channel_get,
-                })
-                thread.start()
-                thread.join()
+                work_flow = WorkFlow(channel_put=self._channel_get)
+                work_flow()
             finally:
                 self._show_result(self.data)
                 self.delete_database_table()
                 self.data = None
-                EventsConnector.window_close_wait()
                 EventsConnector.work_done()
-                print("WorkFlow.__call__() finally")
+                print("work_flow() finally")

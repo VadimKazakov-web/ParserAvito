@@ -55,11 +55,6 @@ class EventsConnector:
             raise PushUpdate
 
     @classmethod
-    def events_clear(cls):
-        cls._window_close_event.clear()
-        cls._work_done_event.clear()
-
-    @classmethod
     def destroy_tkinter(cls):
         cls._destroy_tkinter_event.set()
 
@@ -83,6 +78,10 @@ class EventsConnector:
     @classmethod
     def work_done(cls):
         cls._work_done_event.set()
+
+    @classmethod
+    def work_unset(cls):
+        cls._work_done_event.clear()
 
     @classmethod
     def work_wait(cls):

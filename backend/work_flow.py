@@ -40,7 +40,6 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
         self.data = None
         self._continue = "continue"
         self._connection_failure = "connection failure"
-        self.__call__()
 
     def _driver_init(self):
         self.driver: Chrome = self.create_driver()
@@ -60,7 +59,6 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
             except (PushStopButton, PushUpdate, PushExit) as err:
                 print(err)
                 self.driver.quit()
-                EventsConnector.window_close()
                 return
             except Exception as err:
                 err_info = str(err)[0:130]
@@ -69,7 +67,6 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
                 if re.search(r'no such window|session deleted|cannot determine loading status', err_info):
                     self.driver.quit()
                     self._channel_put.put(Events.window_close_event)
-                    EventsConnector.window_close()
                     return
                 elif re.search(r'unknown error: net::ERR_CONNECTION_CLOSED', err_info):
                     self.driver.quit()
