@@ -4,18 +4,23 @@ import time
 
 
 class TimeoutMixin:
+
+    """
+    Класс используется для задания таймаута на странице. В месте yield метода _timeout проверяются некоторые события,
+    сделано для повышения отзывчивости программы
+    """
+
     start = 4
     stop = 7
 
-    def __init__(self, *args, **kwargs):
-        self._events_handler = lambda: None
+    @classmethod
+    def _choice_num(cls) -> float:
+        return round(random.uniform(cls.start, cls.stop), 2)
 
-    def _choice_num(self) -> float:
-        return round(random.uniform(self.start, self.stop), 2)
-    
-    def _timeout(self) -> None:
-        part = 15
-        chunk = self._choice_num() / part
+    @classmethod
+    def _timeout(cls) -> None:
+        part = 10
+        chunk = cls._choice_num() / part
         for i in range(0, part):
             time.sleep(chunk)
             yield

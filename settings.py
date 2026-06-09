@@ -70,5 +70,7 @@ DEFAULT_AVITO_CATEGORY = random.choice(
     ]
 )
 
+DRIVER_IMPLICITLY_WAIT = 30
+
 
 

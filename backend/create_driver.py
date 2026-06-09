@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from selenium.webdriver.chrome.options import ChromiumOptions as Options
 from seleniumwire.webdriver import Chrome
+from settings import DRIVER_IMPLICITLY_WAIT
 
 
 def setup_options() -> Options:
@@ -37,7 +38,7 @@ def create_driver() -> Chrome:
     """
     options = setup_options()
     driver = Chrome(options=options)
-    driver.implicitly_wait(30)
+    driver.implicitly_wait(DRIVER_IMPLICITLY_WAIT)
     return driver
 
 

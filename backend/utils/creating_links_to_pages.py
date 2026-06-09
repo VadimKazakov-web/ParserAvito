@@ -4,8 +4,7 @@ from typing import Generator
 
 
 def check_url(url):
-    match = re.search(r'[?]', url)
-    if match:
+    if re.search(r'[?]', url):
         return url
     else:
         return url + '?'
@@ -29,6 +28,4 @@ class CreatingLinks:
 
     def __call__(self, *args, **kwargs) -> Generator[str, None, None]:
         url = check_url(self._url)
-        gen = self._create_result(url)
-        for elem in gen:
-            yield elem
+        yield from self._create_result(url)
