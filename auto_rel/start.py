@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 import sys
 import subprocess
+import time
 from pathlib import Path
 sys.path.append("")
 from auto_rel.settings import VERSION_PROG_FILE
 from auto_rel.utils import new_icon
-import os
 
 """
-Модуль для автоматизации рутинных команд для релиза, добавлен в репозиторий чтобы не забыть.
-Первый аргумент - тег, второй аргумент - сообщение коммита
+Модуль автоматизации рутинных команд для публикации новой версии программы, добавлен в репозиторий чтобы не забыть.
+Первый аргумент - тег, второй аргумент - сообщение коммита, например:
+auto_rel\start.py 1.0.1.b "bagfix"
 """
 
 
@@ -17,21 +18,18 @@ def run_command(command_list):
     complete_process = subprocess.run(command_list, capture_output=True, shell=True)
     if complete_process.returncode == 0:
         print(complete_process.stdout.decode(encoding='oem'))
-        print(f'{command_list} done')
+        print(f'{" ".join(command_list)} done')
     else:
         print(complete_process.stdout.decode(encoding='oem'))
         print(complete_process.stderr.decode(encoding='oem'))
-        print(f'{command_list} error')
+        print(f'{" ".join(command_list)} error')
 
 
-icon_origin = Path("icon_origin.ico")
-icon_new = Path("icon.png")
-icon_new.unlink()
-icon_new = Path("icon.png")
 argv = sys.argv
 new_tag = argv[1]
 commit_message = argv[2]
-
+icon_origin = Path("icon_origin.ico")
+icon_new = Path("icon.png")
 text = f'version = "{new_tag}"'
 VERSION_PROG_FILE.write_text(text)
 
@@ -57,3 +55,6 @@ run_command(git_push)
 
 git_push_tags = ["git", "push", "origin", "--tags"]
 run_command(git_push_tags)
+
+icon_new.unlink()
+time.sleep(2)

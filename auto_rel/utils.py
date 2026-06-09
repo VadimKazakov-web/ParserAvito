@@ -1,7 +1,16 @@
+# -*- coding: utf-8 -*-
 from PIL import Image, ImageDraw
+from pathlib import Path
 
 
-def new_icon(tag, path, new_path):
+def new_icon(tag: str, path: Path, new_path: Path) -> None:
+    """
+    Функция наносит на иконку тег/версию программы
+    :param tag: тег/версия программы
+    :param path: путь до исходного изображения
+    :param new_path: новый путь до изображения
+    :return: None
+    """
     length_tag = len(tag)
     if length_tag == 7:
         offset = 4

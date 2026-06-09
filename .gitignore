@@ -6,7 +6,6 @@ __pycache__
 *.html
 *.wav
 *.pyc
-auto_rel/publish_s3_bucket.py
 icon.png
 /build
 /dist
@@ -14,3 +13,5 @@ icon.png
 /proxi_extension
 /selenium
 /seleniumwire
+.env
+/**/.env
