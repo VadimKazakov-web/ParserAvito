@@ -3,8 +3,10 @@ import queue
 import re
 import threading
 import time
+import webbrowser
+
 from backend import CreateDriverMixin, DataBaseMixin, \
-    SearchLinks
+    SearchLinks, ResultInHtml, Variables
 from backend.collect_data import CollectData
 from backend.interceptor_headers import InterceptorHeaders
 from backend.open_url import OpenUrl
@@ -41,6 +43,18 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
         self._continue = "continue"
         self._connection_failure = "connection failure"
 
+    def __enter__(self):
+        EventsConnector.work_unset()
+        self.create_table()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.data:
+            self._show_result(self.data)
+            self.data = None
+        self.delete_database_table()
+        EventsConnector.work_done()
+
     def _driver_init(self):
         self.driver: Chrome = self.create_driver()
         self.driver.request_interceptor = InterceptorHeaders.request_interceptor
@@ -51,7 +65,7 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
 
     def __call__(self, *args, **kwargs):
         data = EventsConnector.variables_wait()
-        self.data = data
+        self.data: Variables = data
         self._driver_init()
         while True:
             try:
@@ -89,11 +103,11 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
 
     def _work_flow(self, pages=0, advertisement=0):
         # создание ссылок на страницы
-        creating_links_gen = CreatingLinks(url=self.data.get("url"), pages=self.data.get("pages"))
+        creating_links_gen = CreatingLinks(url=self.data.get_url(), pages=self.data.get_pages())
         # перемотка вперёд, если нужно
         creating_links_gen = rewind_gen(pages, creating_links_gen())
         # переход на каждую страницу
-        for url_page in creating_links_gen():
+        for url_page in creating_links_gen:
             flag_page = yield from self._open_page_script(url_page)
             if flag_page == self._continue:
                 continue
@@ -165,3 +179,26 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
         if result == OpenAdvertisement.page_not_found:
             self.driver.switch_to.window(self.driver.window_handles[0])
             return self._continue
+
+    def _show_result(self, var_obj: Variables) -> None:
+        """
+        Получение объявлений из базы данных, запись в html файл, открытие файла в браузере по умолчанию
+        :param var_obj:
+        :return:
+        """
+        if not self.check_count_item():
+            return
+        result_html = ResultInHtml(file_name=var_obj.get_filename(), count=self.count_row_in_database())
+        result_gen = self.extraction_and_sorting_generator()
+        # порядок выдачи отсортированных результатов:
+        # по просмотрам за всё время
+        data = next(result_gen)
+        result_html.write_result(flag="total_views", data=data)
+        # по просмотрам сегодня
+        data = next(result_gen)
+        result_html.write_result(flag="today_views", data=data)
+        # по отзывам
+        data = next(result_gen)
+        result_html.write_result(flag="reviews", data=data)
+        # открыть файл с результатами в браузере по умолчанию
+        webbrowser.open(var_obj.get_filename())

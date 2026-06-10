@@ -16,11 +16,9 @@ def main(*args, **kwargs):
     logging_settings(file_handler=False)
     logging.info("start program")
 
+    backend_manager = BackendManager(channel_get=connector)
     # запуск серверной части в отдельном потоке
-    thread = Thread(target=BackendManager, kwargs={
-        # поток будет получать данные из канала
-        "channel_get": connector,
-    })
+    thread = Thread(target=backend_manager)
     thread.start()
 
     # создание всех элементов интерфейса tkinter

@@ -2,7 +2,6 @@
 import re
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
-from settings import DRIVER_IMPLICITLY_WAIT
 from seleniumwire.webdriver import Chrome
 
 
@@ -33,6 +32,7 @@ class CloseAuthPopupMixin:
         block.click()
 
     def close_popup(self, *args, **kwargs) -> None:
+        from settings import DRIVER_IMPLICITLY_WAIT
         self._driver.implicitly_wait(2)
         block = self._find()
         if block:

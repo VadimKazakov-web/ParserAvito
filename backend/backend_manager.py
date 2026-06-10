@@ -2,19 +2,17 @@
 import os
 import subprocess
 import time
-from threading import Thread, Lock
-from backend import (Variables, DataBaseMixin, ResultInHtml, CreateDriverMixin)
+from threading import Thread
+from backend import (Variables, DataBaseMixin, CreateDriverMixin)
 from backend.events import EventsConnector
-import webbrowser
 from tkinter_frontend.events import Events, ProgressUpdateEvent
 from backend.work_flow import WorkFlow
 import queue
 from update.update_classs import run_new_app
 
 
-def kill_process(pid: str):
-    if not isinstance(pid, str):
-        pid = str(pid)
+def kill_process(pid: str) -> None:
+    pid = str(pid)
     complete_process = subprocess.run(["taskkill", "/F", "/PID", pid], capture_output=True, shell=True)
     if complete_process.returncode == 0:
         print(complete_process.stdout.decode(encoding='oem'))
@@ -25,35 +23,14 @@ def kill_process(pid: str):
 class BackendManager(DataBaseMixin, CreateDriverMixin):
 
     def __init__(self, *args, **kwargs):
-        # канал получения данных из main в поток BackendManager
+        # канал получения данных из tkinter в поток BackendManager
         self._channel_get: queue.Queue = kwargs.get("channel_get")
-        self._lock = Lock()
         self.data = None
-        self.__call__()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "BackendManager"
 
-    def _show_result(self, var_obj: Variables):
-        if not self.check_count_item():
-            return
-        with self._lock:
-            result_html = ResultInHtml(file_name=var_obj.get_filename(), count=self.count_row_in_database())
-            result_gen = self.extraction_and_sorting_generator()
-            # порядок выдачи отсортированных результатов:
-            # по просмотрам за всё время
-            data = next(result_gen)
-            result_html.write_result(flag="total_views", data=data)
-            # по просмотрам сегодня
-            data = next(result_gen)
-            result_html.write_result(flag="today_views", data=data)
-            # по отзывам
-            data = next(result_gen)
-            result_html.write_result(flag="reviews", data=data)
-            # открыть файл с результатами в браузере по умолчанию
-            webbrowser.open(var_obj.get_filename())
-
-    def _receiver_for_main(self):
+    def _receiver_for_main(self) -> None:
         from tkinter_frontend.utils import new_flow_btn, update_progress
         """
         Метод получает данные из потока main
@@ -63,7 +40,7 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
             if isinstance(data, Variables):
                 print("data from connector: {}".format(data.variables))
                 self.data = data
-                EventsConnector.variables_put(data.variables)
+                EventsConnector.variables_put(data)
 
             elif isinstance(data, ProgressUpdateEvent):
                 update_progress(data=(data.text, data.num))
@@ -98,19 +75,10 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
                 time.sleep(1)
                 os._exit(0)
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs) -> None:
         receiver_1 = Thread(target=self._receiver_for_main, daemon=True)
         receiver_1.start()
         while True:
-            EventsConnector.work_unset()
             print("-" * 10, "waiting for the start", "-" * 10)
-            self.create_table()
-            try:
-                work_flow = WorkFlow(channel_put=self._channel_get)
+            with WorkFlow(channel_put=self._channel_get) as work_flow:
                 work_flow()
-            finally:
-                self._show_result(self.data)
-                self.delete_database_table()
-                self.data = None
-                EventsConnector.work_done()
-                print("work_flow() finally")
