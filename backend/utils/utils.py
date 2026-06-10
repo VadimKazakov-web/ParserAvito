@@ -52,7 +52,7 @@ def app_work_dir(work_dir: str) -> Path:
         logging.warning(completed_process.stderr.decode(encoding="utf-8"))
 
 
-def get_drive_path():
+def get_drive_path() -> Path:
     """
     Нахождение текущего имя диска в пути
     :return:
@@ -66,7 +66,7 @@ def get_drive_path():
         raise PlatformError
 
 
-def get_desktop_path():
+def get_desktop_path() -> str:
     """
     Нахождение полного пути до рабочего стола
     :return:
@@ -88,7 +88,7 @@ def get_desktop_path():
         winreg.CloseKey(winreg.HKEY_CURRENT_USER)
 
 
-def get_version_prog(path: Path):
+def get_version_prog(path: Path) -> str:
     text = path.read_text()
     match = re.search(r'"(?P<tag>.+)"', text)
     tag = match.group("tag")

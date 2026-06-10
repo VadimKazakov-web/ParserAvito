@@ -14,14 +14,14 @@ class TimeoutMixin:
     stop = 7
 
     @classmethod
-    def _choice_num(cls) -> float:
-        return round(random.uniform(cls.start, cls.stop), 2)
+    def _choice_num(cls) -> int:
+        return random.randint(cls.start, cls.stop)
 
     @classmethod
     def _timeout(cls) -> None:
-        part = 10
-        chunk = cls._choice_num() / part
-        for i in range(0, part):
+        num = cls._choice_num()
+        part = int(num / num)
+        for chunk in range(0, part):
             time.sleep(chunk)
             yield
             
