@@ -64,8 +64,8 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
         return "WorkFlow"
 
     def __call__(self, *args, **kwargs):
-        data = EventsConnector.variables_wait()
-        self.data: Variables = data
+        print("-" * 10, "waiting for the start", "-" * 10)
+        self.data: Variables = EventsConnector.variables_wait()
         self._driver_init()
         while True:
             try:

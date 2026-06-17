@@ -38,23 +38,38 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
         while True:
             data = self._channel_get.get()
             if isinstance(data, Variables):
+                """
+                Получение ссылки, названия файла и кол-во страниц для сканирования из интерфейса tkinter
+                """
                 print("data from connector: {}".format(data.variables))
                 self.data = data
                 EventsConnector.variables_put(data)
 
             elif isinstance(data, ProgressUpdateEvent):
+                """
+                Отправка данных прогресса в интерфейс tkinter: заголовок страницы и кол-во обработанных объявлений
+                """
                 update_progress(data=(data.text, data.num))
 
             elif data == Events.push_stop_event:
+                """
+                Нажатие кнопки "stop"
+                """
                 print("data from connector: {}".format(data))
                 new_flow_btn()
                 EventsConnector.push_stop()
 
             elif data == Events.window_close_event:
+                """
+                Закрытие окна браузера
+                """
                 print("data from connector: {}".format(data))
                 new_flow_btn()
 
             elif data == Events.exit_event:
+                """
+                Закрытие главного окна программы
+                """
                 print("data from connector: {}".format(data))
                 if self.data:
                     EventsConnector.push_exit()
@@ -67,6 +82,10 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
                 EventsConnector.variables_put(self.data)
 
             elif data == Events.exit_after_update_event:
+                """
+                Действия, которые происходят после обновления программы: запуск новой программы
+                с помощью утилиты windows schtasks /run, и закрытия старой программы
+                """
                 print("data from connector: {}".format(data))
                 if self.data:
                     EventsConnector.push_update()
@@ -76,9 +95,14 @@ class BackendManager(DataBaseMixin, CreateDriverMixin):
                 os._exit(0)
 
     def __call__(self, *args, **kwargs) -> None:
+        """
+        Запуск слушателя событий из канала в отдельном потоке, которые приходят из интерфейса tkinter
+        """
         receiver_1 = Thread(target=self._receiver_for_main, daemon=True)
         receiver_1.start()
         while True:
-            print("-" * 10, "waiting for the start", "-" * 10)
+            """
+            Запуск основной работы программы: открытия страниц, объявлений, сбор информации
+            """
             with WorkFlow(channel_put=self._channel_get) as work_flow:
                 work_flow()

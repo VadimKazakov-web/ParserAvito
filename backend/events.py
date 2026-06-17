@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 import threading
-import time
-
 from exceptions import PushStopButton, PushExit, PushUpdate
 
 
