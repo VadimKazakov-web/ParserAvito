@@ -164,17 +164,14 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
 
     def _open_page_script(self, url_page):
         print("current page: {}".format(self._open_pages_global_counter + 1))
-        open_url = OpenUrl(driver=self.driver, url=url_page,
-                           update_progress=self._update_progress,
-                           events_handler=EventsConnector.events_handler)
+        open_url = OpenUrl(driver=self.driver, url=url_page)
         result = yield from open_url()
         return result
 
     def _open_adv_script(self, url_advertisement):
         # открытие ссылки в новой вкладке
         open_adv = OpenAdvertisement(driver=self.driver, url=url_advertisement,
-                                     update_progress=self._update_progress,
-                                     events_handler=EventsConnector.events_handler)
+                                     update_progress=self._update_progress)
         result = yield from open_adv()
         if result == OpenAdvertisement.page_not_found:
             self.driver.switch_to.window(self.driver.window_handles[0])

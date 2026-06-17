@@ -3,6 +3,9 @@ from backend.open_url import OpenUrl
 
 
 class OpenAdvertisement(OpenUrl):
+    """
+    Класс реализует открытие каждого объявления
+    """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -15,4 +18,3 @@ class OpenAdvertisement(OpenUrl):
 
     def __call__(self, *args, **kwargs):
         return super().__call__()
-
