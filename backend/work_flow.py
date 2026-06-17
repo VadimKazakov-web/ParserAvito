@@ -4,7 +4,6 @@ import re
 import threading
 import time
 import webbrowser
-
 from backend import CreateDriverMixin, DataBaseMixin, \
     SearchLinks, ResultInHtml, Variables
 from backend.collect_data import CollectData
@@ -33,6 +32,10 @@ def rewind_gen(num, gen):
 
 
 class WorkFlow(CreateDriverMixin, DataBaseMixin):
+
+    """
+    Класс реализует основную логику работы программы
+    """
 
     def __init__(self, *args, **kwargs):
         self._channel_put: queue.Queue = kwargs.get("channel_put")
@@ -94,9 +97,14 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
         while True:
             for step in self._work_flow(pages=self._open_pages_global_counter,
                                         advertisement=self._open_advertisement_global_counter):
+                # если произошёл обрыв соединения, прекращается текущий проход по генератору,
+                # закрывается окно браузера и создаётся новое, генератор перематывается вперёд на
+                # нужное кол-во страниц и объявлений
                 if step == self._connection_failure:
                     break
+                # проверка, не произошли ли события нажатия на кнопки stop, exit и т.д...
                 EventsConnector.events_handler()
+                # актуализация прогресса
                 self._update_progress(self.driver)
             else:
                 return
@@ -124,6 +132,7 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
                 if flag_adv == self._continue:
                     continue
                 print("\ntitle: {}".format(self.driver.title))
+                # проверка на обрыв соединения
                 flag_conn = yield from self._connection_failure_script()
                 if flag_conn:
                     yield flag_conn
@@ -148,6 +157,9 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
             self._open_pages_global_counter += 1
 
     def _connection_failure_script(self):
+        """
+        Проверка, не произошёл ли обрыв соединения
+        """
         if self.driver.title == "www.avito.ru":
             print("connection failure, restart...")
             # добавить в диапазон таймаута по одной секунде в начало и в конец
@@ -170,8 +182,7 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
 
     def _open_adv_script(self, url_advertisement):
         # открытие ссылки в новой вкладке
-        open_adv = OpenAdvertisement(driver=self.driver, url=url_advertisement,
-                                     update_progress=self._update_progress)
+        open_adv = OpenAdvertisement(driver=self.driver, url=url_advertisement)
         result = yield from open_adv()
         if result == OpenAdvertisement.page_not_found:
             self.driver.switch_to.window(self.driver.window_handles[0])
@@ -180,8 +191,6 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
     def _show_result(self, var_obj: Variables) -> None:
         """
         Получение объявлений из базы данных, запись в html файл, открытие файла в браузере по умолчанию
-        :param var_obj:
-        :return:
         """
         if not self.check_count_item():
             return
