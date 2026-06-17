@@ -44,6 +44,10 @@ def create_driver() -> Chrome:
 
 class CreateDriverMixin:
 
+    """
+    Создание драйвера selenium
+    """
+
     @classmethod
     def create_driver(cls):
         cls.driver = create_driver()
