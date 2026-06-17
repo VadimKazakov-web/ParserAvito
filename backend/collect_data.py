@@ -16,13 +16,13 @@ class CollectData:
     pattern_id = re.compile(r'data-marker="item-view/item-id">\D+?(?P<id>\d+?)\D', flags=re.DOTALL)
     pattern_date = re.compile(r'data-marker="item-view/item-date">.*?·(?P<date>.+?)</span>', flags=re.DOTALL)
     pattern_total_views = re.compile(r'data-marker="item-view/total-views">(?P<total_views>\d+?)\D+?</span>',
-                                          flags=re.DOTALL)
+                                     flags=re.DOTALL)
     pattern_today_views = re.compile(r'data-marker="item-view/today-views">.+?(?P<today_views>\d+?)\D+?</span>',
-                                          flags=re.DOTALL)
+                                     flags=re.DOTALL)
     pattern_title = re.compile(r'<h1.+?data-marker="item-view/title-info">(?P<title>.+?)</h1>', flags=re.DOTALL)
     pattern_rating = re.compile(r'<meta.+?"ratingValue" content="(?P<rating>.+?)">', flags=re.DOTALL)
     pattern_reviews = re.compile(r'<a data-marker="rating-caption/rating".+?>(?P<reviews>\d*?)\D*?</a>',
-                                      flags=re.DOTALL)
+                                 flags=re.DOTALL)
     counter_stale_element_exception = 3
 
     def __init__(self, driver: Chrome):
@@ -57,7 +57,7 @@ class CollectData:
 
     def _collect_data(self, blocks: dict) -> dict | None:
         """
-        Поиск нужных данных на странице обьявления
+        Поиск нужных данных на странице объявления
         """
         block_left, block_right = blocks.get("left"), blocks.get("right")
         result = {}
@@ -66,7 +66,7 @@ class CollectData:
         if result_title:
             title = result_title.group("title")
             result["title"] = title
-            # используются end_point на html странице, для поиска по шаблону по "цепочке"
+            # используются end_point на html странице, для поиска по по "цепочке"
             end_point = result_title.end()
 
         result_id = self.pattern_id.search(block_left[end_point:])
