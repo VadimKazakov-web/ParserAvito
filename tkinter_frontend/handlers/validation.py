@@ -3,7 +3,6 @@ import logging
 import random
 import re
 from typing import Any
-from settings import DEFAULT_AVITO_CATEGORY
 
 log = logging.getLogger(__name__)
 
@@ -12,17 +11,6 @@ class ValidationVarClass:
     """
     Класс проверяет необходимые переменные для парсера
     """
-    url = random.choice(
-        [
-            "https://www.avito.ru/moskva/hobbi_i_otdyh",
-            "https://www.avito.ru/moskva/mototsikly_i_mototehnika?radius=0&searchRadius=0",
-            "https://www.avito.ru/moskva/avtomobili/novyy/mazda-ASgBAgICAkSGFMbmAeC2DeaYKA?context=H4sIAAAAAAAA_wEmANn_YToxOntzOjE6InkiO3M6MTY6InRocnBrd3FkS2k0QWl2dzUiO31UmhE6JgAAAA&localPriority=0&radius=0&searchRadius=0",
-            "https://www.avito.ru/moskva/chasy_i_ukrasheniya/chasy-ASgBAgICAUTQAYYG",
-            "https://www.avito.ru/moskva/chasy_i_ukrasheniya/yuvelirnye_izdeliya-ASgBAgICAUTQAYgG",
-            "https://www.avito.ru/moskva/krasota_i_zdorove/ukhod_i_gigiena-ASgBAgICAUSEAqoJ",
-            "https://www.avito.ru/moskva/zapchasti_i_aksessuary?context=H4sIAAAAAAAA_wFRAK7_YToyOntzOjg6ImZyb21QYWdlIjtzOjE0OiJjYXRlZ29yeVdpZGdldCI7czo5OiJmcm9tX3BhZ2UiO3M6MTQ6ImNhdGVnb3J5V2lkZ2V0Ijt9inXVTFEAAAA&f=ASgBAgICAkQKJooL_JwB&geoCoords=55.755814%2C37.617635",
-        ]
-    )
     file_name = 'result'
     pages = 2
     max_pages = 100
@@ -34,6 +22,8 @@ class ValidationVarClass:
     _pattern_reverse_feature_2 = re.compile(r'[/]')
     _pattern_dangerous_func_1 = re.compile(r'exec')
     _pattern_dangerous_func_2 = re.compile(r'eval')
+    _no_num = "no num"
+    _limit_num = "limit num"
 
     @classmethod
     def _random_category(cls):
@@ -54,7 +44,7 @@ class ValidationVarClass:
     def validation_url(cls, text: str) -> bool | str:
         if text == '':
             return cls._random_category()
-        if ValidationVarClass._pattern_for_check_url.match(string=text):
+        if cls._pattern_for_check_url.match(string=text):
             return text
         else:
             return False
@@ -76,10 +66,10 @@ class ValidationVarClass:
         try:
             num = int(text)
         except ValueError:
-            return 'ValueError'
+            return cls._no_num
         else:
             if num > cls.max_pages:
-                return 'Limit'
+                return cls._limit_num
             elif num == 0:
                 return 0
             else:
