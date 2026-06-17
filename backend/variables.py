@@ -11,6 +11,10 @@ def check_var(data: dict):
 
 
 class Variables:
+    """
+    Класс используется для инициализации для последующей передачи в очереди, и получение необходимых переменных для
+    работы программы
+    """
 
     def __init__(self, data):
         self.variables = check_var(data)
