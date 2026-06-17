@@ -1,6 +1,5 @@
 import re
 from backend.index import base
-from settings import BASE_DIR, TOP_ANNOUNCEMENT
 
 
 class ResultInHtml:
@@ -87,5 +86,3 @@ class ResultInHtml:
             self._write(pattern=self._today_views_pattern, data=data)
         elif flag == "reviews":
             self._write(pattern=self._review_count_pattern, data=data)
-
-
