@@ -5,6 +5,11 @@ from seleniumwire.request import Request, Response
 
 class InterceptorHeaders:
 
+    """
+    Класс актуализирует cookies в запросах, используются возможности seleniumwire.
+    https://github.com/wkeeling/selenium-wire#:~:text=Selenium%20Wire-,Selenium%20Wire,-extends%20Selenium%27s%20Python
+    """
+
     # словарь предварительно заполнен, чтобы избежать проверок на True в каждом запросе
     cookie_dict = {
         "foo": "bar",
@@ -13,10 +18,7 @@ class InterceptorHeaders:
 
     # cSyncDp104v3=1776189919; expires=Tue, 28-Apr-26 18:05:19 GMT; path=/; Secure; SameSite=None; domain=.acint.net
     # Acint.net — это интернет-счётчик, который предоставляет инструменты для сбора,
-    # обработки и анализа данных о посетителях онлайн-ресурсов,
-    # cookie c префиксом cSyncDp не учитываются в данном классе
-
-    # interesting_cookie_list = ["preadspector", "cSyncDp186v2", "VID", "uid"]
+    # обработки и анализа данных о посетителях онлайн-ресурсов
 
     @classmethod
     def request_interceptor(cls, request: Request) -> None:
@@ -46,19 +48,15 @@ class InterceptorHeaders:
 
         del request.headers['referer']
         request.headers['referer'] = cls.referer
-        # print(request.headers['referer'])
 
         del request.headers["cache-control"]
         request.headers["cache-control"] = "no-cache"
 
         del request.headers['user-agent']
-        # print("\033[36m\033[6m{}".format(cls._user_agent))
-        # print("\033[0m", end="")
         request.headers['user-agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36'
         # request.headers['user-agent'] = 'Mozilla/5.0 (Android 8.0.0; SM-G955U Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Mobile Safari/537.36'
         del request.headers['cookie']
         request.headers['cookie'] = cls._cookie_dict_in_str()
-        # print(request.headers['cookie'])
 
     @classmethod
     def response_interceptor(cls, request: Request, response: Response) -> None:
@@ -68,11 +66,9 @@ class InterceptorHeaders:
 
     @classmethod
     def _update_cookie_dict(cls, text: str) -> None:
-        # print(text)
         match = re.match(r"(?P<cookie>.+?);.*", text, flags=re.DOTALL)
         if match:
             cookie = match.group("cookie")
-            # print(cookie)
             cls._str_in_cookie_dict(cookie)
 
     @classmethod
@@ -81,8 +77,6 @@ class InterceptorHeaders:
         # _yasc=LsdFI8ooV1++Xd/aXDuyF3ZAzjLf2B971h9sDpzmWq9qaXBZgyhCcUMwZL44envByT8=
         match = re.match(r"(?P<key>.+?)=(?P<val>.*)", text)
         key, val = match.group("key"), match.group("val")
-        # if re.match(r"cSyncDp", key):
-        #     return
         if not cls.cookie_dict.get(key):
             cls.cookie_dict[key] = val
 

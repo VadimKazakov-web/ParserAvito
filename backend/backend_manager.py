@@ -20,7 +20,7 @@ def kill_process(pid: str) -> None:
         print(complete_process.stderr.decode(encoding='oem'))
 
 
-class BackendManager(DataBaseMixin, CreateDriverMixin):
+class BackendManager:
 
     def __init__(self, *args, **kwargs):
         # канал получения данных из tkinter в поток BackendManager
