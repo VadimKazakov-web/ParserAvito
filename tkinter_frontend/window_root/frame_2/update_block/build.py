@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-from objects import connector
-from tkinter_frontend.utils import ActiveInactiveButton
-from tkinter_frontend.classes.label import Label, LabelForUpdate
+from tkinter_frontend.classes.label import LabelForUpdate
 from tkinter_frontend.classes.button import Button, ButtonForUpdate
 from tkinter_frontend.window_root.frame_2.build import frame_2
 from update.update_thread import CheckUpdateProgThread

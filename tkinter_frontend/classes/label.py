@@ -7,7 +7,7 @@ class Label(Base):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.text = kwargs.get("text")
-        self.instance = ttk.Label(master=self.master, text=self.text, font=Base.font,
+        self.instance = ttk.Label(master=self.master, text=self.text, font=self.font,
                                   background=self.BACKGROUND_COLOR,
                                   foreground=self.FOREGROUND_COLOR,
                                   width=self.WIDTH_LABEL)

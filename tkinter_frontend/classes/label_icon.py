@@ -12,7 +12,7 @@ class LabelIcon(Base):
         self.style_default.configure(style="IconUnchecked.TLabel", foreground="#FF0000")
         self.style_verified = ttk.Style()
         self.style_verified.configure(style="IconValid.TLabel", foreground="#00FF00")
-        self.instance = ttk.Label(master=self.master, text=self.text, font=Base.font, style="IconUnchecked.TLabel",
+        self.instance = ttk.Label(master=self.master, text=self.text, font=self.font, style="IconUnchecked.TLabel",
                                   background=self.BACKGROUND_COLOR)
 
     def build(self):
@@ -22,9 +22,7 @@ class LabelIcon(Base):
     def make_verified(self):
         self.instance["style"] = "IconValid.TLabel"
         self.instance["text"] = "✔"
-        return self.instance
 
     def make_unchecked(self):
         self.instance["style"] = "IconUnchecked.TLabel"
         self.instance["text"] = "❓"
-        return self.instance

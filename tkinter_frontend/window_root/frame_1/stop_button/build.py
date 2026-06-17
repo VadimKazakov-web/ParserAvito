@@ -5,8 +5,6 @@ from tkinter_frontend.window_root.frame_1.frame_for_buttons.build import frame_f
 from tkinter_frontend.classes.button import Button
 from tkinter_frontend.events import Events
 from tkinter_frontend.utils import ActiveInactiveButton
-from objects import connector
-import functools
 
 button_custom = Button(master=frame_for_buttons, text="Stop", column=1, row=0)
 button_custom.build()

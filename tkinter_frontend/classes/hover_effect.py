@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
-from tkinter_frontend.classes.config_class import ConfigClass
+from settings import BACKGROUND_COLOR_BTN
+from tkinter_frontend.classes.config_class import ConfigClassMixin
 
 
-class HoverEffectMixin(ConfigClass):
+class HoverEffectMixin(ConfigClassMixin):
 
     def __init__(self, *args, **kwargs):
         super().__init__()
         self.instance = kwargs.get("instance")
         self.background = self.COLOR_FOR_HOVER
-        self.default_color = kwargs.get("default_color", "white")
+        self.default_color = BACKGROUND_COLOR_BTN
 
     def make_hover(self):
         self.instance.bind("<Enter>", func=self.hover_effect)

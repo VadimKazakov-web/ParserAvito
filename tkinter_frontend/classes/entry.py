@@ -9,18 +9,17 @@ class Entry(Base, HoverEffectMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.text = StringVar()
-        self.instance = EntryStock(master=self.master, font=Base.font,
+        self.instance = EntryStock(master=self.master, font=self.font,
                                    background=self.BACKGROUND_COLOR_ENTRY,
                                    foreground=self.FOREGROUND_COLOR_ENTRY,
                                    cursor="hand2",
                                    textvariable=self.text,
                                    width=self.WIDTH_LABEL)
-        HoverEffectMixin.__init__(self, instance=self.instance, default_color=self.BACKGROUND_COLOR_ENTRY)
+        super(Base, self).__init__(self, instance=self.instance)
 
     def build(self):
         self.instance.grid(column=self.column, row=self.row, sticky=W + E)
         self.padding_configure()
-        return self.text
 
     def get_textvariable(self):
         return self.text

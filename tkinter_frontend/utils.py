@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 import _tkinter
-
-from objects import connector
 from tkinter_frontend.classes.button import ButtonForUpdate
 from update.update_thread import UpdateProgThread
 
@@ -25,10 +23,6 @@ def unbind_return(*args, **kwargs):
         elem.unbind("<Return>")
 
 
-def create_progress(*args):
-    import tkinter_frontend.window_root.frame_1.progress_bar.build
-
-
 def update_progress(*args, **kwargs):
     from tkinter_frontend.window_root.frame_1.progress_bar.build import label_progress_origin, label_title_page_origin
     title, progr = kwargs.get("data")
@@ -39,24 +33,13 @@ def update_progress(*args, **kwargs):
         pass
 
 
-def update_version(*args, **kwargs):
-    from tkinter_frontend.window_root.frame_2.update_block.build import label_instance
-    label_instance["text"] = connector.get_version()
-
-
 def create_install_prog_btn(*args, **kwargs):
     from tkinter_frontend.window_root.frame_2.build import frame_2
-    from update.update_classs import Update
     button_custom = ButtonForUpdate(master=frame_2, text="загрузить новую версию", column=0, row=2)
     button_custom.build()
     button_custom.make_hover()
     button_instance = button_custom.get_instance()
     button_instance.bind("<ButtonPress-1>", func=UpdateProgThread.start)
-
-
-def update_time(*args, **kwargs):
-    from tkinter_frontend.window_root.frame_1.progress_bar.build import label_time_origin
-    label_time_origin["text"] = connector.get_time()
 
 
 class ActiveInactiveButton:

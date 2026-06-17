@@ -8,7 +8,6 @@ import random
 from pathlib import Path
 from exceptions import ManyExeFile
 import string
-from objects import connector
 
 
 def search_file(path: Path, suffix) -> Path:

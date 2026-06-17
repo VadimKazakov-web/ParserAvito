@@ -11,9 +11,3 @@ class Frame(Base):
 
     def build(self):
         self.instance.grid(column=self.column, row=self.row, sticky=W + E + N + S)
-
-
-class FrameForUpdate(Frame):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)

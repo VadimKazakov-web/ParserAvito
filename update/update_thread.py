@@ -1,9 +1,7 @@
 import datetime
 import threading
 from tkinter_frontend.classes.label import Label
-from tkinter_frontend.window_root.build import window
 from update.update_classs import Update
-from objects import connector
 
 
 class CheckUpdateProgThread:

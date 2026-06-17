@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from tkinter import W, E, font
+from tkinter import W
 from tkinter import ttk
 from tkinter_frontend.classes.base import Base
 from tkinter_frontend.classes.hover_effect import HoverEffectMixin
@@ -9,11 +9,11 @@ class Button(Base, HoverEffectMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.text = kwargs.get("text")
-        self.instance = ttk.Label(master=self.master, text=self.text, font=Base.font,
+        self.instance = ttk.Label(master=self.master, text=self.text, font=self.font,
                                   background=self.BACKGROUND_COLOR_BTN,
                                   foreground=self.FOREGROUND_COLOR_BTN,
                                   anchor="center", cursor="hand2", style="Button.TLabel")
-        HoverEffectMixin.__init__(self, instance=self.instance, default_color=self.BACKGROUND_COLOR_BTN)
+        super(Base, self).__init__(self, instance=self.instance)
 
     def build(self):
         self.instance.grid(column=self.column, row=self.row, sticky=W)
@@ -24,5 +24,5 @@ class Button(Base, HoverEffectMixin):
 class ButtonForUpdate(Button):
 
     def __init__(self, *args, **kwargs):
-        Button.__init__(self, *args, **kwargs)
+        super().__init__(self, *args, **kwargs)
         self.instance["font"] = Base.font_small
