@@ -19,11 +19,14 @@ class MutexVar:
 
 
 class EventsConnector:
+    """
+    Класс для синхронизации действий интерфейса tkinter и backend с помощью событий.
+    Например, при нажатии кнопки "stop" метод events_handler бросает исключение PushStopButton в генератор, где
+    происходит основная работа программы, далее можно это исключение обработать нужным образом
+    """
     _push_stop_event = threading.Event()
     _push_exit_event = threading.Event()
     _push_update_event = threading.Event()
-    _window_close_event = threading.Event()
-    _destroy_tkinter_event = threading.Event()
     _work_done_event = threading.Event()
     _var_event = threading.Event()
     var = MutexVar(None)
@@ -51,27 +54,6 @@ class EventsConnector:
         elif cls._push_update_event.is_set():
             cls._push_update_event.clear()
             raise PushUpdate
-
-    @classmethod
-    def destroy_tkinter(cls):
-        cls._destroy_tkinter_event.set()
-
-    @classmethod
-    def destroy_tkinter_wait(cls):
-        while True:
-            # Чтобы не блокировать главный процесс
-            if cls._destroy_tkinter_event.is_set():
-                cls._destroy_tkinter_event.clear()
-                return
-            # time.sleep(1)
-
-    @classmethod
-    def window_close(cls):
-        cls._window_close_event.set()
-
-    @classmethod
-    def window_close_wait(cls):
-        cls._window_close_event.wait()
 
     @classmethod
     def work_done(cls):
