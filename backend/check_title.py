@@ -15,9 +15,6 @@ class CheckTitleMixin:
     _pattern_problem_ip = re.compile(r'Доступ ограничен|доступ ограничен')
     _show_problem_ip_title = False
 
-    def __init__(self, *args, **kwargs):
-        pass
-
     @classmethod
     def check_title(cls, driver: Chrome) -> bool | None:
         while True:
