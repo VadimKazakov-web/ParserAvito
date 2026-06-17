@@ -13,5 +13,6 @@ icon.png
 /proxi_extension
 /selenium
 /seleniumwire
+/blinker-1.7.0
 .env
 /**/.env
