@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 from pathlib import Path
 from version import version
-from backend.utils.utils import get_desktop_path, get_drive_path, app_work_dir
-import random
+from backend.utils.utils import get_desktop_path, app_work_dir
 
 APP_NAME = "ParserAvito"
 
@@ -10,7 +9,6 @@ VERSION = version
 
 SCHTASKS_NAME = "parser_avito"
 
-DRIVE_PATH = get_drive_path()
 BASE_DIR = Path(get_desktop_path()) / Path("ParserAvitoOutput")
 BASE_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -57,18 +55,6 @@ RIGHT_BLOCK_ANNOUNCEMENT_CSS = "._58fc8f170622acf7"
 URL_S3_BUCKET_PROG = "https://s3.twcstorage.ru/parser-avito-download/ParserAvito.exe"
 URL_S3_BUCKET_XML = "https://s3.twcstorage.ru/parser-avito-download/parser.xml"
 URL_S3_BUCKET_VERSION_PROG = "https://s3.twcstorage.ru/parser-avito-download/version.py"
-
-DEFAULT_AVITO_CATEGORY = random.choice(
-    [
-        "https://www.avito.ru/moskva/hobbi_i_otdyh",
-        "https://www.avito.ru/moskva/mototsikly_i_mototehnika?radius=0&searchRadius=0",
-        "https://www.avito.ru/moskva/avtomobili/novyy/mazda-ASgBAgICAkSGFMbmAeC2DeaYKA?context=H4sIAAAAAAAA_wEmANn_YToxOntzOjE6InkiO3M6MTY6InRocnBrd3FkS2k0QWl2dzUiO31UmhE6JgAAAA&localPriority=0&radius=0&searchRadius=0",
-        "https://www.avito.ru/moskva/chasy_i_ukrasheniya/chasy-ASgBAgICAUTQAYYG",
-        "https://www.avito.ru/moskva/chasy_i_ukrasheniya/yuvelirnye_izdeliya-ASgBAgICAUTQAYgG",
-        "https://www.avito.ru/moskva/krasota_i_zdorove/ukhod_i_gigiena-ASgBAgICAUSEAqoJ",
-        "https://www.avito.ru/moskva/zapchasti_i_aksessuary?context=H4sIAAAAAAAA_wFRAK7_YToyOntzOjg6ImZyb21QYWdlIjtzOjE0OiJjYXRlZ29yeVdpZGdldCI7czo5OiJmcm9tX3BhZ2UiO3M6MTQ6ImNhdGVnb3J5V2lkZ2V0Ijt9inXVTFEAAAA&f=ASgBAgICAkQKJooL_JwB&geoCoords=55.755814%2C37.617635",
-    ]
-)
 
 DRIVER_IMPLICITLY_WAIT = 30
 

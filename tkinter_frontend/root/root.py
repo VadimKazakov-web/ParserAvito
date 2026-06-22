@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-import shutil
 from tkinter import *
-from settings import APP_TEMPORARY
 from backend import connector
 from tkinter_frontend.events import Events
 
@@ -35,7 +33,3 @@ class WindowRoot:
     def exit(self, *args, **kwargs):
         # отправляется событие в connector, который слушается в  BackendManager._receiver_for_main
         connector.put(Events.exit_event)
-        try:
-            shutil.rmtree(APP_TEMPORARY)
-        except FileNotFoundError:
-            pass

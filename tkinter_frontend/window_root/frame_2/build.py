@@ -3,6 +3,10 @@ import logging
 from tkinter_frontend.classes.frame import Frame
 from tkinter_frontend.window_root.build import window
 
+"""
+Создание фрейма в колонке 2 главного окна
+"""
+
 ROOT = window.get_root()
 frame_custom = Frame(column=2, row=0, master=ROOT)
 frame_2 = frame_custom.get_instance()

@@ -6,6 +6,10 @@ from tkinter_frontend.window_root.build import ROOT
 from backend import connector, Variables
 from tkinter_frontend.events import Events
 
+"""
+Создание фрейма в колонке 1 главного окна
+"""
+
 frame_custom = Frame(column=1, row=0, master=ROOT)
 frame_custom.build()
 frame = frame_custom.get_instance()
