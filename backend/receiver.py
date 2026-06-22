@@ -5,7 +5,7 @@ import time
 from backend import Variables
 from backend.events import EventsConnector
 from settings import APP_TEMPORARY
-from tkinter_frontend.events import ProgressUpdateEvent, Events
+from tkinter_frontend.events import ProgressData, Events
 from update.update_classs import run_new_app
 
 
@@ -24,7 +24,7 @@ def recv(self) -> None:
             self.data = data
             EventsConnector.variables_put(data)
 
-        elif isinstance(data, ProgressUpdateEvent):
+        elif isinstance(data, ProgressData):
             """
             Отправка данных прогресса в интерфейс tkinter: заголовок страницы и кол-во обработанных объявлений
             """

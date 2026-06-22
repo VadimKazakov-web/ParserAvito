@@ -7,6 +7,10 @@ from tkinter_frontend.classes.label_icon import LabelIcon
 import functools
 from tkinter_frontend.handlers.input_handlers import HandlersClass
 
+"""
+Блок получения имени файла
+"""
+
 label = Label(master=frame, text="Введите название файла", column=0, row=2)
 label.build()
 

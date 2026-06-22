@@ -6,6 +6,10 @@ from tkinter_frontend.window_root.frame_1.frame_for_buttons.build import frame_f
 from tkinter_frontend.classes.button import Button
 from tkinter_frontend.window_root.frame_1.build import frame
 
+"""
+Создание кнопки Start
+"""
+
 button_custom = Button(master=frame_for_buttons, text="Start", column=0, row=0)
 button_custom.build()
 button_custom.make_hover()
@@ -13,10 +17,6 @@ button_instance = button_custom.get_instance()
 active_inactive_start_button = ActiveInactiveButton(button_custom, button_instance,
                                                     lambda _: frame.event_generate(Events.push_start_event))
 active_inactive_start_button.make_active_button()
+# событие генерируется в tkinter_frontend.handlers.input_handlers.HandlersClass.valid_all_vars
 button_instance.bind(Events.post_var_event, func=lambda _: active_inactive_start_button.make_inactive_button())
-#
-# connector.set_callbacks_for_start_prog(active_inactive_start_button.make_inactive_button)
-# connector.set_callbacks_for_stop_prog(active_inactive_start_button.make_active_button)
-#
-# button_instance.bind(connector.push_button_event, active_inactive_start_button.make_inactive_button)
 logging.info("{}: done".format(__name__))

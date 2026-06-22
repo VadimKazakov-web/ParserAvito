@@ -13,7 +13,7 @@ from backend.open_advertisement import OpenAdvertisement
 from backend.utils import CreatingLinks
 from backend.utils.scroll_page import scroll_page
 from backend.events import EventsConnector
-from tkinter_frontend.events import Events, ProgressUpdateEvent
+from tkinter_frontend.events import Events, ProgressData
 from backend.utils.timeout import TimeoutMixin
 from seleniumwire.webdriver import Chrome
 from exceptions import PushStopButton, PushExit, PushUpdate
@@ -171,7 +171,7 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
             yield self._connection_failure
 
     def _update_progress(self, driver):
-        progr_upd = ProgressUpdateEvent((driver.title, self._open_advertisement_global_counter))
+        progr_upd = ProgressData(driver.title, self._open_advertisement_global_counter)
         self._channel_put.put(progr_upd)
 
     def _open_page_script(self, url_page):

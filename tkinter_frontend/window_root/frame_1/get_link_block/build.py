@@ -7,6 +7,9 @@ from tkinter_frontend.classes.label_icon import LabelIcon
 import functools
 from tkinter_frontend.handlers.input_handlers import HandlersClass
 
+"""
+Блок получения url категории
+"""
 
 label = Label(master=frame, text="Вставьте ссылку: ", column=0, row=0)
 label.build()

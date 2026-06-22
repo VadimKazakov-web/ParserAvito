@@ -5,8 +5,8 @@ from update.update_thread import UpdateProgThread
 
 
 def new_flow_btn(*args, **kwargs):
-    from tkinter_frontend.window_root.frame_1.stop_button.build import active_inactive_stop_button
-    from tkinter_frontend.window_root.frame_1.start_button.build import active_inactive_start_button
+    from tkinter_frontend.window_root.frame_1.frame_for_buttons.stop_button.build import active_inactive_stop_button
+    from tkinter_frontend.window_root.frame_1.frame_for_buttons.start_button.build import active_inactive_start_button
     active_inactive_stop_button.make_inactive_button()
     active_inactive_start_button.make_active_button()
 

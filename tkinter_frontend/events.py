@@ -4,6 +4,11 @@ from settings import WIDTH_LABEL
 
 
 class Events:
+
+    """
+    Константы для генерации пользовательских событий
+    """
+
     post_var_event = "<<PostVarEvent>>"
     push_start_event = "<<PushStartEvent>>"
     push_stop_event = "<<PushStopEvent>>"
@@ -15,26 +20,21 @@ class Events:
     exit_after_update_event = "<<ExitAfterUpdateEvent>>"
 
 
-class InfoUpdateEvent:
+class ProgressData:
+
+    """
+    Класс служит для хранения и последующей передачи в канал информации прогресса, а именно заголовка страницы
+    и кол-ва отсканированных объявлений
+    """
+
     width_label = WIDTH_LABEL
 
-    def __init__(self, data):
-        self.text = self.transformation(data)
+    def __init__(self, text, num):
+        self.text = self.transformation(text)
+        self.num = num
 
-    def transformation(self, *args, **kwargs):
-        text = ""
-        if isinstance(args[0], tuple):
-            if isinstance(args[0][0], str):
-                text = args[0][0]
-        elif isinstance(args[0], str):
-            text = args[0]
+    def transformation(self, text):
+        # Переносит один абзац в text (строку) так, чтобы длина каждой строки не превышала width_label символов
         # https://docs.python.org/3/library/textwrap.html#textwrap.TextWrapper.wrap
-        data = textwrap.fill(text=text, width=self.width_label)
-        return data
-
-
-class ProgressUpdateEvent(InfoUpdateEvent):
-
-    def __init__(self, data):
-        super().__init__(data)
-        self.num = data[1]
+        text = textwrap.fill(text=text, width=self.width_label)
+        return text

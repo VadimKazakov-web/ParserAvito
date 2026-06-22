@@ -6,6 +6,10 @@ from tkinter import ttk, font
 from tkinter_frontend.window_root.frame_1.build import frame
 from settings import FONT_SIZE
 
+"""
+Создание фрейма и лейбла для отображения информации
+"""
+
 frame_custom = Frame(column=0, row=7, master=frame)
 frame_custom.build()
 frame_for_info = frame_custom.get_instance()
