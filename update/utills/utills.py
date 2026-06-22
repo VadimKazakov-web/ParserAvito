@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
-import re
-import shutil
 import subprocess
 import datetime
 import random
 from pathlib import Path
-from exceptions import ManyExeFile
 import string
+
+from settings import SCHTASKS_NAME
 
 
 def random_str(num):
@@ -61,5 +60,12 @@ def run_command_subprocess(command):
         # сработала только кодировка "oem"
         logging.warning(completed_process.stderr.decode(encoding="oem", errors="replace"))
     else:
-        print(command, "complete")
+        print(command, ", complete")
+
+
+def run_new_app():
+    command_run_task = f"schtasks /run /tn {SCHTASKS_NAME}"
+    run_command_subprocess(command_run_task)
+    command_delete_task = f"schtasks /delete /tn {SCHTASKS_NAME} -f"
+    run_command_subprocess(command_delete_task)
 

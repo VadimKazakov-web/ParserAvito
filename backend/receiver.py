@@ -6,7 +6,7 @@ from backend import Variables
 from backend.events import EventsConnector
 from settings import APP_TEMPORARY
 from tkinter_frontend.events import ProgressData, Events
-from update.update_classs import run_new_app
+from update.utills.utills import run_new_app
 
 
 def recv(self) -> None:
