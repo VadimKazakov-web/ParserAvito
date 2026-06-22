@@ -1,12 +1,19 @@
 # -*- coding: utf-8 -*-
 import logging
+import re
 import subprocess
 import datetime
 import random
 from pathlib import Path
 import string
-
 from settings import SCHTASKS_NAME
+
+
+def get_version_prog(path: Path):
+    text = path.read_text()
+    match = re.search(r'"(?P<tag>.+)"', text)
+    tag = match.group("tag")
+    return tag
 
 
 def random_str(num):

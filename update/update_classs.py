@@ -7,7 +7,7 @@ import re
 from tkinter_frontend.events import Events
 from backend import connector
 from update.utills.utills import (check_current_version_and_new_ver, get_datetime, rename_path, run_command_subprocess)
-from utills.utils import get_version_prog
+from update.utills.utills import get_version_prog
 from backend.utils.utils import get_desktop_path
 
 

@@ -69,7 +69,6 @@ def get_drive_path() -> Path:
 def get_desktop_path() -> str:
     """
     Нахождение полного пути до рабочего стола
-    :return:
     """
 
     # Путь к ключу
