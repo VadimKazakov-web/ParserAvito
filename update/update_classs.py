@@ -6,7 +6,7 @@ import requests
 import re
 from tkinter_frontend.events import Events
 from backend import connector
-from update.utills.utills import (check_current_version_and_new_tag, get_datetime, rename_path, run_command_subprocess)
+from update.utills.utills import (check_current_version_and_new_ver, get_datetime, rename_path, run_command_subprocess)
 from utills.utils import get_version_prog
 
 
@@ -41,7 +41,7 @@ class Update:
         from tkinter_frontend.window_root.frame_2.update_block.build import label_instance
         ver = cls._get_version()
         if ver:
-            if not check_current_version_and_new_tag(ver, VERSION):
+            if not check_current_version_and_new_ver(ver, VERSION):
                 label_instance["text"] = f'доступна новая версия: {ver}'
                 cls._program_path = APP_TEMPORARY / Path(f'{cls._repo_name}[{ver}].exe')
                 create_install_prog_btn()

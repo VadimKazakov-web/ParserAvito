@@ -5,25 +5,27 @@ from update.update_thread import UpdateProgThread
 
 
 def new_flow_btn(*args, **kwargs):
+    """
+    Сделать кнопку stop неактивной, а кнопку start активной
+    """
     from tkinter_frontend.window_root.frame_1.frame_for_buttons.stop_button.build import active_inactive_stop_button
     from tkinter_frontend.window_root.frame_1.frame_for_buttons.start_button.build import active_inactive_start_button
     active_inactive_stop_button.make_inactive_button()
     active_inactive_start_button.make_active_button()
 
 
-def update_info(data):
+def update_info(data: str) -> None:
+    """
+    Отобразить информацию в лейбле для информации
+    """
     from tkinter_frontend.window_root.frame_1.frame_for_info.build import label_text_info
     label_text_info["text"] = data
 
 
-def unbind_return(*args, **kwargs):
-    event = args[0]
-    widget = event.widget
-    for elem in widget.winfo_children():
-        elem.unbind("<Return>")
-
-
 def update_progress(*args, **kwargs):
+    """
+    Отобразить информацию о заголовке и отсканированных объявлениях в соответствующих лейблах
+    """
     from tkinter_frontend.window_root.frame_1.progress_bar.build import label_progress_origin, label_title_page_origin
     title, progr = kwargs.get("data")
     try:
@@ -34,6 +36,9 @@ def update_progress(*args, **kwargs):
 
 
 def create_install_prog_btn(*args, **kwargs):
+    """
+    Создать кнопку для загрузки новой версии программы
+    """
     from tkinter_frontend.window_root.frame_2.build import frame_2
     button_custom = ButtonForUpdate(master=frame_2, text="загрузить новую версию", column=0, row=2)
     button_custom.build()
@@ -43,6 +48,10 @@ def create_install_prog_btn(*args, **kwargs):
 
 
 class ActiveInactiveButton:
+
+    """
+    Класс служит для осуществления активности/не активности кнопок start/stop
+    """
 
     def __init__(self, button_custom, button_instance, callback):
         self.button_custom = button_custom
@@ -60,5 +69,3 @@ class ActiveInactiveButton:
         self.button_instance["cursor"] = "hand2"
         self.button_custom.make_hover()
         self.button_instance.bind("<ButtonPress-1>", func=self.callback)
-
-

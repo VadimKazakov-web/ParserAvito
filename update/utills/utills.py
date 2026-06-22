@@ -10,12 +10,6 @@ from exceptions import ManyExeFile
 import string
 
 
-def search_file(path: Path, suffix) -> Path:
-    for child in path.iterdir():
-        if child.suffix == suffix:
-            return Path(child)
-
-
 def random_str(num):
     result = "".join(random.choices(string.ascii_lowercase, k=num))
     return result
@@ -25,73 +19,40 @@ def rename_path(path: Path) -> Path:
     parent = path.parent
     stem = path.stem
     suffix = path.suffix
+    # присоединение к имени файла случайной строки, для гарантирования уникальности имени,
+    # если такое имя файла уже существует
     stem += f'_{random_str(7)}{suffix}'
     new_path = parent / stem
     return path.rename(new_path)
 
 
-def reach_new_path(path: Path, desktop) -> Path:
-    counter = 5
-    while counter:
-        try:
-            logging.info("old path: {}".format(path))
-            logging.info("new path: {}".format(desktop))
-            new_path = shutil.move(src=path, dst=desktop)
-        except shutil.Error as err:
-            if re.search(r'already exists', err.args[0]):
-                path = rename_path(path)
-                counter -= 1
-            else:
-                raise err
-        else:
-            return Path(new_path)
-    else:
-        raise ManyExeFile
-
-
-def check_current_version_and_new_tag(tag: str, curver: str) -> bool:
-    if tag != curver:
+def check_current_version_and_new_ver(new_ver: str, curver: str) -> bool:
+    """
+    Проверить полученную строку о новой версии с текущей версией программы
+    """
+    if new_ver != curver:
         logging.info("A new version has been discovered")
         return False
     else:
         return True
 
 
-def extra_vision_var(tag: str) -> str:
-    """Не используется"""
-    url = f'https://github.com/VadimKazakov-web/ParserAvito/archive/refs/tags/{tag}.zip'
-    return url
-
-
 def get_datetime():
+    """
+    Получение необходимых даты и времени для внесения в xml файл настройки для создания задачи через schtasks
+    """
     delta = datetime.timedelta(minutes=2)
     result = datetime.datetime.now() + delta
     _time = result.time()
     date = result.date()
-    month = str(date.month)
-    if len(month) < 2:
-        month = "0" + month
-    date_str = f"{date.year}-{month}-{date.day}"
-    time_str = norm_hours_and_minute(str(_time.hour), str(_time.minute))
-    return date_str, time_str
-
-
-def norm_hours_and_minute(hour, minute):
-    result = ""
-    if len(hour) > 1:
-        result += hour
-    elif len(hour) == 1:
-        result += f"0{hour}"
-    result += ":"
-    if len(minute) > 1:
-        result += minute
-    elif len(minute) == 1:
-        result += f"0{minute}"
-    result += ":00"
-    return result
+    time_str = _time.strftime("%H:%M:00")
+    return str(date), str(time_str)
 
 
 def run_command_subprocess(command):
+    """
+    Выполнение необходимой команды
+    """
     logging.info("run command: \n{}".format(command))
     completed_process = subprocess.run(
         command, shell=True,
@@ -100,5 +61,5 @@ def run_command_subprocess(command):
         # сработала только кодировка "oem"
         logging.warning(completed_process.stderr.decode(encoding="oem", errors="replace"))
     else:
-        print(command)
+        print(command, "complete")
 
