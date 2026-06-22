@@ -6,15 +6,6 @@ import queue
 from backend.receiver import recv
 
 
-def kill_process(pid: str) -> None:
-    pid = str(pid)
-    complete_process = subprocess.run(["taskkill", "/F", "/PID", pid], capture_output=True, shell=True)
-    if complete_process.returncode == 0:
-        print(complete_process.stdout.decode(encoding='oem'))
-    else:
-        print(complete_process.stderr.decode(encoding='oem'))
-
-
 class BackendManager:
 
     def __init__(self, *args, **kwargs):
@@ -32,8 +23,8 @@ class BackendManager:
         """
         Запуск слушателя событий из канала в отдельном потоке, которые приходят из интерфейса tkinter
         """
-        receiver_1 = Thread(target=self._receiver, daemon=True)
-        receiver_1.start()
+        receiver = Thread(target=self._receiver, daemon=True)
+        receiver.start()
         while True:
             """
             Запуск основной работы программы: открытия страниц, объявлений, сбор информации
