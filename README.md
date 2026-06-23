@@ -8,6 +8,6 @@
 Данная программа скомпилирована из исходного кода в один exe-файл <br>
 с помощью [pyinstaller](https://pypi.org/project/pyinstaller/) и находится в хранилище S3.
 
-<img src="https://s3.twcstorage.ru/parser-avito-download/parser_avito.png" width="500">
+<img style="margin: 0 auto;" src="https://s3.twcstorage.ru/parser-avito-download/parser_avito.png" width="500">
 
 
