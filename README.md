@@ -11,7 +11,7 @@
     <img src="https://s3.twcstorage.ru/parser-avito-download/githab_image/parser_avito.png" width="500" alt="интерфейс программы">
     <figcaption>пользовательский интерфейс программы</figcaption>
 </figure>
-
+<br>
 <h2>Коротко о дизайне</h2>
 Пользовательский интерфейс запускается только в главном потоке программы - это ограничение tkinter.
 Серверная часть запускается в отдельном потоке python, <br> 
@@ -24,7 +24,7 @@
     <img src="https://s3.twcstorage.ru/parser-avito-download/githab_image/hierarchy_interface.png" width="300" alt="иерархия пакетов">
     <figcaption>иерархия элементов интерфейса</figcaption>
 </figure>
-
+<br>
 Действия над виджитами порождают как встроенные, так и пользовательские события tkinter, <br>
 которые обрабатываются определёнными методами и функциями. Необходимые пользовательские события, <br>
 которые выражены в виде констант, а также переменные,
