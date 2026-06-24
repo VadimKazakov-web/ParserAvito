@@ -42,7 +42,7 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
         self._open_pages_global_counter = 0
         self._open_advertisement_global_counter = 0
         self._start = threading.Event()
-        self.data = None
+        self.data: Variables = kwargs.get("data")
         self._continue = "continue"
         self._connection_failure = "connection failure"
 
@@ -54,7 +54,6 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.data:
             self._show_result(self.data)
-            self.data = None
         self.delete_database_table()
         EventsConnector.work_done()
 
@@ -67,31 +66,27 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
         return "WorkFlow"
 
     def __call__(self, *args, **kwargs):
-        print("-" * 10, "waiting for the start", "-" * 10)
-        self.data: Variables = EventsConnector.variables_wait()
         self._driver_init()
-        while True:
-            try:
-                self._start_gen(*args, **kwargs)
-            except (PushStopButton, PushUpdate, PushExit) as err:
-                print(err)
-                self.driver.quit()
+        try:
+            self._start_gen(*args, **kwargs)
+        except (PushStopButton, PushUpdate, PushExit) as err:
+            print(err)
+            return
+        except Exception as err:
+            err_info = str(err)[0:130]
+            print("\033[33m{}".format(err_info))
+            print("\033[0m")
+            if re.search(r'no such window|session deleted|cannot determine loading status', err_info):
+                self._channel_put.put(Events.window_close_event)
                 return
-            except Exception as err:
-                err_info = str(err)[0:130]
-                print("\033[33m{}".format(err_info))
-                print("\033[0m")
-                if re.search(r'no such window|session deleted|cannot determine loading status', err_info):
-                    self.driver.quit()
-                    self._channel_put.put(Events.window_close_event)
-                    return
-                elif re.search(r'unknown error: net::ERR_CONNECTION_CLOSED', err_info):
-                    self.driver.quit()
-                    self._driver_init()
-                else:
-                    raise
+            elif re.search(r'unknown error: net::ERR_CONNECTION_CLOSED', err_info):
+                self._driver_init()
             else:
-                return
+                raise
+        else:
+            return
+        finally:
+            self.driver.quit()
 
     def _start_gen(self, *args, **kwargs):
         while True:

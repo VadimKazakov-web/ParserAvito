@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 import subprocess
 from threading import Thread
+
+from backend import Variables
+from backend.events import EventsConnector
 from backend.work_flow import WorkFlow
 import queue
 from backend.receiver import recv
@@ -29,5 +32,7 @@ class BackendManager:
             """
             Запуск основной работы программы: открытия страниц, объявлений, сбор информации
             """
-            with WorkFlow(channel_put=self._channel_get) as work_flow:
+            print("-" * 10, "waiting for the start", "-" * 10)
+            self.data: Variables = EventsConnector.variables_wait()
+            with WorkFlow(data=self.data, channel_put=self._channel_get) as work_flow:
                 work_flow()

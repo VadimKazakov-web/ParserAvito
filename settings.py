@@ -41,9 +41,6 @@ FOREGROUND_COLOR_BTN = "#000000"
 COLOR_FOR_HOVER = "#778899"
 WIDTH_LABEL = 50
 
-REPOSITORY = "https://github.com/VadimKazakov-web/ParserAvito.git"
-REPOSITORY_TAGS = "https://github.com/VadimKazakov-web/ParserAvito/tags"
-
 APP_TEMPORARY = app_work_dir("parser_avito_temp")
 APP_TEMPORARY.mkdir(exist_ok=True)
 

@@ -1,6 +1,6 @@
 import datetime
 import threading
-from tkinter_frontend.classes.label import Label
+from tkinter_frontend.events import Events
 from update.update_classs import Update
 
 
@@ -31,9 +31,16 @@ class CheckUpdateProgThread:
 
     @classmethod
     def start(cls, *args, **kwargs):
+        cls.widget = args[0].widget
         if cls.check_jackass():
-            t = threading.Thread(target=Update.check_update, daemon=True)
+            t = threading.Thread(target=Update.check_update, daemon=True, args=(cls._update_widget,))
             t.start()
+
+    @classmethod
+    def _update_widget(cls, text, flag):
+        cls.widget["text"] = text
+        if flag:
+            cls.widget.event_generate(Events.create_download_btn_event)
 
 
 class UpdateProgThread:
@@ -63,10 +70,8 @@ class UpdateProgThread:
 
     @classmethod
     def _create_plug(cls):
-        from tkinter_frontend.window_root.frame_1.build import frame
-        label = Label(master=frame, text="Загрузка...", column=0, row=0)
-        label.build()
-        cls.plug = label.get_instance()
+        from tkinter_frontend.window_root.frame_2.plug.build import plug
+        cls.plug = plug
 
     @classmethod
     def start(cls, *args, **kwargs):

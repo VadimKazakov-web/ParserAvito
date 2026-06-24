@@ -16,30 +16,33 @@ class Update:
     Класс служит для проверки новой версии программы, загрузки программы во временную папку, перемещения её на рабочий стол,
     и дальнейший запуск
     """
-    _repo_name = Path(REPOSITORY).stem
+    _app_name = APP_NAME
     _program_path = None
     _xml_path = APP_TEMPORARY / Path("parser.xml")
     _version_prog_path = APP_TEMPORARY / Path("version.py")
 
     @classmethod
     def check_update(cls, *args, **kwargs):
-        from tkinter_frontend.utils import create_install_prog_btn
-        from tkinter_frontend.window_root.frame_2.update_block.build import label_instance
-        cls._download_file(URL_S3_BUCKET_VERSION_PROG, cls._version_prog_path)
-        _version = get_version_prog(cls._version_prog_path)
-        if _version:
-            if not check_current_version_and_new_ver(_version, VERSION):
-                label_instance["text"] = f'доступна новая версия: {_version}'
-                cls._program_path = APP_TEMPORARY / Path(f'{cls._repo_name}[{_version}].exe')
-                create_install_prog_btn()
-            else:
-                label_instance["text"] = 'нет новой версии'
+        callback = args[0]
+        if cls._download_file(URL_S3_BUCKET_VERSION_PROG, cls._version_prog_path):
+            _version = get_version_prog(cls._version_prog_path)
+            if _version:
+                if not check_current_version_and_new_ver(_version, VERSION):
+                    cls._new_version = _version
+                    text = _version
+                    callback(text, True)
+                else:
+                    cls._new_version = None
+                    text = 'нет новой версии'
+                    callback(text, False)
 
     @classmethod
     def update(cls, *args, **kwargs):
         from update.update_thread import UpdateProgThread
-        for _ in cls._update_gen():
-            UpdateProgThread.update_plug(num=3)
+        if cls._new_version:
+            cls._program_path = APP_TEMPORARY / Path(f'{cls._app_name}[{cls._new_version}].exe')
+            for _ in cls._update_gen():
+                UpdateProgThread.update_plug(num=3)
 
     @classmethod
     def _update_gen(cls):
@@ -75,10 +78,16 @@ class Update:
         cls._xml_path.write_text(xml_string, encoding="utf-16")
     
     @classmethod
-    def _download_file(cls, url: str, path_file: Path) -> None:
-        response = requests.get(url)
-        if response.status_code == 200:
-            logging.info("write in {}".format(path_file))
-            path_file.write_bytes(response.content)
+    def _download_file(cls, url: str, path_file: Path) -> bool:
+        try:
+            response = requests.get(url)
+        except requests.exceptions.ReadTimeout:
+            print("не удаётся получить доступ к s3.twcstorage.ru")
+            return False
         else:
-            logging.info("status code in _download_file: {}".format(response.status_code))
+            if response.status_code == 200:
+                logging.info("write in {}".format(path_file))
+                path_file.write_bytes(response.content)
+                return True
+            else:
+                logging.info("status code in _download_file: {}".format(response.status_code))

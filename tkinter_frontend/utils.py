@@ -35,16 +35,11 @@ def update_progress(*args, **kwargs):
         pass
 
 
-def create_install_prog_btn(*args, **kwargs):
+def create_download_prog_btn(*args, **kwargs):
     """
     Создать кнопку для загрузки новой версии программы
     """
-    from tkinter_frontend.window_root.frame_2.build import frame_2
-    button_custom = ButtonForUpdate(master=frame_2, text="загрузить новую версию", column=0, row=2)
-    button_custom.build()
-    button_custom.make_hover()
-    button_instance = button_custom.get_instance()
-    button_instance.bind("<ButtonPress-1>", func=UpdateProgThread.start)
+    import tkinter_frontend.window_root.frame_2.download_block.build
 
 
 class ActiveInactiveButton:

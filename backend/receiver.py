@@ -21,7 +21,6 @@ def recv(self) -> None:
             Получение ссылки, названия файла и кол-во страниц для сканирования из интерфейса tkinter
             """
             print("data from connector: {}".format(data.variables))
-            self.data = data
             EventsConnector.variables_put(data)
 
         elif isinstance(data, ProgressData):

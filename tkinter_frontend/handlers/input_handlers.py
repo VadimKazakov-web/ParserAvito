@@ -77,14 +77,14 @@ class HandlersClass(ValidationVarClass):
 
     @classmethod
     def valid_all_vars(cls, *args, **kwargs):
-        master = kwargs.get("master")
         if cls.data.get("url") and cls.data.get("filename") and cls.data.get("pages"):
             from tkinter_frontend.window_root.frame_1.frame_for_buttons.start_button.build import button_instance as start_btn
             from tkinter_frontend.window_root.frame_1.frame_for_buttons.stop_button.build import button_instance as stop_btn
+            from tkinter_frontend.window_root.build import ROOT
+            ROOT.event_generate(Events.post_var_event)
             cls.data["default_filename"] = cls.default_filename()
-            master.event_generate(Events.post_var_event)
-            start_btn.event_generate(Events.post_var_event)
-            stop_btn.event_generate(Events.post_var_event)
+            start_btn.event_generate(Events.post_var_event_btn)
+            stop_btn.event_generate(Events.post_var_event_btn)
             return True
         else:
             return False

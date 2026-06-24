@@ -26,3 +26,4 @@ class ButtonForUpdate(Button):
     def __init__(self, *args, **kwargs):
         super().__init__(self, *args, **kwargs)
         self.instance["font"] = Base.font_small
+        self.instance["width"] = 13
