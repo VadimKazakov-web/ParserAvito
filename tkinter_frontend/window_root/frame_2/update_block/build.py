@@ -14,7 +14,7 @@ label_instance = label.get_instance()
 label_instance["width"] = 33
 label.build()
 
-button_custom = ButtonForUpdate(master=frame_2, text="?", column=0, row=1)
+button_custom = ButtonForUpdate(master=frame_2, text="???", column=0, row=1)
 button_custom.build()
 button_custom.make_hover()
 button_instance = button_custom.get_instance()

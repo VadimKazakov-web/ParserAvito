@@ -70,7 +70,7 @@ class UpdateProgThread:
 
     @classmethod
     def _create_plug(cls):
-        from tkinter_frontend.window_root.frame_2.plug.build import plug
+        from tkinter_frontend.window_root.plug.build import plug
         cls.plug = plug
 
     @classmethod
