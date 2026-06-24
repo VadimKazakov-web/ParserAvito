@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-import subprocess
 from threading import Thread
-
 from backend import Variables
 from backend.events import EventsConnector
 from backend.work_flow import WorkFlow
@@ -14,7 +12,6 @@ class BackendManager:
     def __init__(self, *args, **kwargs):
         # канал получения данных из tkinter в поток BackendManager
         self._channel_get: queue.Queue = kwargs.get("channel_get")
-        self.data = None
 
     def __str__(self) -> str:
         return "BackendManager"
