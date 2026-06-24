@@ -49,8 +49,9 @@ def recv(self) -> None:
             Закрытие главного окна программы
             """
             print("data from connector: {}".format(data))
-            EventsConnector.push_exit()
-            EventsConnector.work_wait()
+            if self.data:
+                EventsConnector.push_exit()
+                EventsConnector.work_wait()
             try:
                 shutil.rmtree(APP_TEMPORARY)
             except FileNotFoundError:

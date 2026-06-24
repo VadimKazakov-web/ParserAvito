@@ -19,7 +19,6 @@ class HandlersClass(ValidationVarClass):
         val = entry.get()
         label = kwargs.get("label")
         icon = kwargs.get("icon")
-        icon.make_unchecked()
         entry.set('')
         url = cls.validation_url(text=val)
         if url:
@@ -27,6 +26,7 @@ class HandlersClass(ValidationVarClass):
             label["text"] = f'Ccылка введена: \n{url[0:cls.width_text]}\n{url[cls.width_text:]}'
             cls.data["url"] = url
         else:
+            icon.make_unchecked()
             label["text"] = "Недействительная ссылка, введите еще раз"
 
     @classmethod
@@ -59,7 +59,6 @@ class HandlersClass(ValidationVarClass):
         val = entry.get()
         label = kwargs.get("label")
         icon = kwargs.get("icon")
-        icon.make_unchecked()
         entry.set('')
         result = cls.validation_pages(text=val)
         match result:
@@ -68,11 +67,14 @@ class HandlersClass(ValidationVarClass):
                 label["text"] = f'Количество страниц для сканирования: {val}'
                 cls.data["pages"] = int(val)
             case cls._no_num:
+                icon.make_unchecked()
                 label["text"] = "Значение не является целым числом, введите еще раз"
             case cls._limit_num:
+                icon.make_unchecked()
                 label["text"] = (f'Количество страниц превышает \nмаксимальное значение '
                                  f'{cls.max_pages}, введите еще раз')
             case 0:
+                icon.make_unchecked()
                 label["text"] = "Недопустимое количество"
 
     @classmethod

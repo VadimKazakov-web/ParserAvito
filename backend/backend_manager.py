@@ -12,6 +12,7 @@ class BackendManager:
     def __init__(self, *args, **kwargs):
         # канал получения данных из tkinter в поток BackendManager
         self._channel_get: queue.Queue = kwargs.get("channel_get")
+        self.data = None
 
     def __str__(self) -> str:
         return "BackendManager"
