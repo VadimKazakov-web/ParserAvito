@@ -56,5 +56,5 @@ run_command(git_push)
 git_push_tags = ["git", "push", "origin", "--tags"]
 run_command(git_push_tags)
 
-# icon_new.unlink()
+icon_new.unlink()
 time.sleep(2)
