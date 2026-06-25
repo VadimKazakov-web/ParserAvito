@@ -20,7 +20,8 @@ class TimeoutMixin:
     @classmethod
     def _timeout(cls) -> None:
         num = cls._choice_num()
-        part = int(num / num)
+        divider = num * 2
+        part = int(num / divider)
         for chunk in range(0, part):
             time.sleep(chunk)
             yield
