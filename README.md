@@ -64,10 +64,10 @@
 нажатие кнопки "Stop" или закрытие окна программы, собранные данные извлекаются из базы данных и **сортируются**, затем записываются в html файл <br>
 и отображаются в браузере по умолчанию.
 
-<figure>
-    <img src="https://s3.twcstorage.ru/parser-avito-download/githab_image/result_prog.png" width="700" alt="результат">
-    <figcaption>результирующий файл</figcaption>
-</figure>
+  <figure>
+      <img src="https://s3.twcstorage.ru/parser-avito-download/githab_image/result_prog.png" width="700" alt="результат">
+      <figcaption>результирующий файл</figcaption>
+  </figure>
 
 
 
