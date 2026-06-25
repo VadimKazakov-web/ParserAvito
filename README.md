@@ -87,6 +87,11 @@
           # актуализация прогресса
           self._update_progress(self.driver)
 
+* Для отправки cookies c каждым запросом и их актуализации с каждым ответом от www.avito.ru,
+  используется проект [Selenium Wire](https://github.com/wkeeling/selenium-wire), который расширяет **Selenium**.
+  Реализация перехватчика запросов/ответов выполнена в backend/interceptor_headers.py
+  
+
 
 
 
