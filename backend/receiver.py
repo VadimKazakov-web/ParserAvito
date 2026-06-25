@@ -56,6 +56,7 @@ def recv(self) -> None:
                 shutil.rmtree(APP_TEMPORARY)
             except FileNotFoundError:
                 pass
+            time.sleep(1)
             os._exit(0)
 
         elif data == Events.start_again_event:

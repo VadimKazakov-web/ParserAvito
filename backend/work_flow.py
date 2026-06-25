@@ -41,6 +41,7 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
         self._channel_put: queue.Queue = kwargs.get("channel_put")
         self._open_pages_global_counter = 0
         self._open_advertisement_global_counter = 0
+        self._open_advertisement_in_page = 0
         self._start = threading.Event()
         self.data: Variables = kwargs.get("data")
         self._continue = "continue"
@@ -91,7 +92,7 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
     def _start_gen(self, *args, **kwargs):
         while True:
             for step in self._work_flow(pages=self._open_pages_global_counter,
-                                        advertisement=self._open_advertisement_global_counter):
+                                        advertisement=self._open_advertisement_in_page):
                 # если произошёл обрыв соединения, прекращается текущий проход по генератору,
                 # закрывается окно браузера и создаётся новое, генератор перематывается вперёд на
                 # нужное кол-во страниц и объявлений
@@ -126,7 +127,7 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
                 flag_adv = yield from self._open_adv_script(url_advertisement)
                 if flag_adv == self._continue:
                     continue
-                print("\ntitle: {}".format(self.driver.title))
+                # print("\ntitle: {}".format(self.driver.title))
                 # проверка на обрыв соединения
                 flag_conn = yield from self._connection_failure_script()
                 if flag_conn:
@@ -137,10 +138,11 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
                 # сбор данных из объявления
                 collect_data = CollectData(self.driver)
                 result = collect_data()
-                print("data adv: {}\n".format(result))
+                # print("data adv: {}\n".format(result))
                 # внесение объявления в базу данных
                 self.insert_in_database(result)
                 self._open_advertisement_global_counter += 1
+                self._open_advertisement_in_page += 1
                 yield
                 # закрыть вкладку
                 self.driver.close()
@@ -150,6 +152,7 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
                 # прокрутка страницы
                 yield from scroll_page(driver=self.driver, height=340)
             self._open_pages_global_counter += 1
+            self._open_advertisement_in_page = 0
 
     def _connection_failure_script(self):
         """
