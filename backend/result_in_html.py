@@ -2,7 +2,7 @@ import re
 from backend.index import base
 
 
-class ResultInHtml:
+class ResultInHtmlMixin:
     """
     Запись результатов в html файл
     """
@@ -12,11 +12,12 @@ class ResultInHtml:
     _review_count_pattern = re.compile(r'[{]review_count_content[}]')
     _str_base_html = base
 
-    def __init__(self, file_name, count):
-        self._file_name = file_name
-        self._count = count
-        with open(self._file_name, 'w', encoding='utf-8') as file:
-            content = self._header_content_pattern.sub(self._preparation_title(self._count), self._str_base_html)
+    @classmethod
+    def create_result_file(cls, file_name, count):
+        cls._file_name = file_name
+        cls._count = count
+        with open(cls._file_name, 'w', encoding='utf-8') as file:
+            content = cls._header_content_pattern.sub(cls._preparation_title(cls._count), cls._str_base_html)
             file.write(content)
             file.flush()
 

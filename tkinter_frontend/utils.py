@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 import _tkinter
-from tkinter_frontend.classes.button import ButtonForUpdate
-from update.update_thread import UpdateProgThread
 
 
 def new_flow_btn(*args, **kwargs):

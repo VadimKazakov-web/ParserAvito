@@ -4,7 +4,7 @@ import logging
 
 def build_tk_interface():
     """
-    Построение всех элементов интерфейса tkinter
+    Построение основных элементов интерфейса tkinter
     """
     import tkinter_frontend.window_root.frame_0.build
     import tkinter_frontend.window_root.frame_1.build

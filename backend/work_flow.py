@@ -5,7 +5,7 @@ import threading
 import time
 import webbrowser
 from backend import CreateDriverMixin, DataBaseMixin, \
-    SearchLinks, ResultInHtml, Variables
+    SearchLinks, ResultInHtmlMixin, Variables
 from backend.collect_data import CollectData
 from backend.interceptor_headers import InterceptorHeaders
 from backend.open_url import OpenUrl
@@ -31,7 +31,7 @@ def rewind_gen(num, gen):
     return gen
 
 
-class WorkFlow(CreateDriverMixin, DataBaseMixin):
+class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
 
     """
     Класс реализует основную логику работы программы
@@ -189,17 +189,17 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin):
         """
         if not self.check_count_item():
             return
-        result_html = ResultInHtml(file_name=var_obj.get_filename(), count=self.count_row_in_database())
+        self.create_result_file(file_name=var_obj.get_filename(), count=self.count_row_in_database())
         result_gen = self.extraction_and_sorting_generator()
         # порядок выдачи отсортированных результатов:
         # по просмотрам за всё время
         data = next(result_gen)
-        result_html.write_result(flag="total_views", data=data)
+        self.write_result(flag="total_views", data=data)
         # по просмотрам сегодня
         data = next(result_gen)
-        result_html.write_result(flag="today_views", data=data)
+        self.write_result(flag="today_views", data=data)
         # по отзывам
         data = next(result_gen)
-        result_html.write_result(flag="reviews", data=data)
+        self.write_result(flag="reviews", data=data)
         # открыть файл с результатами в браузере по умолчанию
         webbrowser.open(var_obj.get_filename())
