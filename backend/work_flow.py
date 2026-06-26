@@ -60,34 +60,38 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
 
     def _driver_init(self):
         self.driver: Chrome = self.create_driver()
-        self.driver.request_interceptor = InterceptorHeaders.request_interceptor
-        self.driver.response_interceptor = InterceptorHeaders.response_interceptor
+        self.interceptor_headers = InterceptorHeaders()
+        self.driver.request_interceptor = self.interceptor_headers.request_interceptor
+        self.driver.response_interceptor = self.interceptor_headers.response_interceptor
 
     def __str__(self):
         return "WorkFlow"
 
     def __call__(self, *args, **kwargs):
-        self._driver_init()
-        try:
-            self._start_gen(*args, **kwargs)
-        except (PushStopButton, PushUpdate, PushExit) as err:
-            print(err)
-            return
-        except Exception as err:
-            err_info = str(err)[0:130]
-            print("\033[33m{}".format(err_info))
-            print("\033[0m")
-            if re.search(r'no such window|session deleted|cannot determine loading status', err_info):
-                self._channel_put.put(Events.window_close_event)
+        while True:
+            self._driver_init()
+            try:
+                self._start_gen(*args, **kwargs)
+            except (PushStopButton, PushUpdate, PushExit) as err:
+                print(err)
+                self.interceptor_headers.write_cookie()
+                self.driver.quit()
                 return
-            elif re.search(r'unknown error: net::ERR_CONNECTION_CLOSED', err_info):
-                self._driver_init()
-            else:
-                raise
-        else:
-            return
-        finally:
-            self.driver.quit()
+            except Exception as err:
+                err_info = str(err)[0:130]
+                print(err_info)
+                if re.search(r'no such window|session deleted|cannot determine loading status', err_info):
+                    self._channel_put.put(Events.window_close_event)
+                    self.interceptor_headers.write_cookie()
+                    self.driver.quit()
+                    return
+                elif re.search(r'unknown error: net::ERR_CONNECTION_CLOSED', err_info):
+                    self.driver.quit()
+                    self.interceptor_headers.cookie_dict = {}
+                    print("90% of the problem is incorrect cookies")
+                    time.sleep(3)
+                else:
+                    raise
 
     def _start_gen(self, *args, **kwargs):
         while True:

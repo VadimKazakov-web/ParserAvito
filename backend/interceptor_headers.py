@@ -1,6 +1,13 @@
 # -*- coding: utf-8 -*-
 import re
 from seleniumwire.request import Request, Response
+from settings import COOKIE_FILE
+
+
+def read_file(path):
+    with open(path, "r") as file:
+        text = file.read()
+        return text
 
 
 class InterceptorHeaders:
@@ -10,18 +17,29 @@ class InterceptorHeaders:
     https://github.com/wkeeling/selenium-wire#:~:text=Selenium%20Wire-,Selenium%20Wire,-extends%20Selenium%27s%20Python
     """
 
-    # словарь предварительно заполнен, чтобы избежать проверок на True в каждом запросе
-    cookie_dict = {
-        "foo": "bar",
-    }
     referer = 'https://www.avito.ru'
 
-    # cSyncDp104v3=1776189919; expires=Tue, 28-Apr-26 18:05:19 GMT; path=/; Secure; SameSite=None; domain=.acint.net
-    # Acint.net — это интернет-счётчик, который предоставляет инструменты для сбора,
-    # обработки и анализа данных о посетителях онлайн-ресурсов
+    def __init__(self):
+        self.cookie_dict = self.setup_cookie()
 
-    @classmethod
-    def request_interceptor(cls, request: Request) -> None:
+    def setup_cookie(self):
+        cookie_dict = {}
+        try:
+            text = read_file(COOKIE_FILE)
+        except FileNotFoundError:
+            return cookie_dict
+        else:
+            cookie_list = text.split("; ")
+            for pair in cookie_list:
+                self._set_cookie(pair, cookie_dict)
+            return cookie_dict
+
+    def write_cookie(self):
+        text = self._dict_in_str(self.cookie_dict)
+        with open(COOKIE_FILE, "w") as file:
+            file.write(text)
+
+    def request_interceptor(self, request: Request) -> None:
 
         del request.headers['accept']
         request.headers['accept'] = ('text/html,application/xhtml+xml,application/xml;q=0.9,'
@@ -47,44 +65,42 @@ class InterceptorHeaders:
         request.headers['accept-language'] = 'ru,en;q=0.9'
 
         del request.headers['referer']
-        request.headers['referer'] = cls.referer
+        request.headers['referer'] = self.referer
 
         del request.headers["cache-control"]
         request.headers["cache-control"] = "no-cache"
 
         del request.headers['user-agent']
         request.headers['user-agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36'
-        # request.headers['user-agent'] = 'Mozilla/5.0 (Android 8.0.0; SM-G955U Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Mobile Safari/537.36'
-        del request.headers['cookie']
-        request.headers['cookie'] = cls._cookie_dict_in_str()
 
-    @classmethod
-    def response_interceptor(cls, request: Request, response: Response) -> None:
+        del request.headers['cookie']
+        request.headers['cookie'] = self._dict_in_str(self.cookie_dict)
+
+    def response_interceptor(self, request: Request, response: Response) -> None:
         for key, val in response.headers.items():
             if key == "set-cookie" or key == "Set-Cookie":
-                cls._update_cookie_dict(text=val)
+                self._update_cookie_dict(text=val, dict_obj=self.cookie_dict)
 
-    @classmethod
-    def _update_cookie_dict(cls, text: str) -> None:
+    def _update_cookie_dict(self, text: str, dict_obj: dict) -> None:
         match = re.match(r"(?P<cookie>.+?);.*", text, flags=re.DOTALL)
         if match:
             cookie = match.group("cookie")
-            cls._str_in_cookie_dict(cookie)
+            self._set_cookie(cookie, dict_obj)
 
-    @classmethod
-    def _str_in_cookie_dict(cls, text: str) -> None:
+    @staticmethod
+    def _set_cookie(text: str, dict_obj: dict) -> None:
         # метод text.split("=") не подходит, так как в значении cookies может быть знак "=", например:
         # _yasc=LsdFI8ooV1++Xd/aXDuyF3ZAzjLf2B971h9sDpzmWq9qaXBZgyhCcUMwZL44envByT8=
         match = re.match(r"(?P<key>.+?)=(?P<val>.*)", text)
         key, val = match.group("key"), match.group("val")
-        if not cls.cookie_dict.get(key):
-            cls.cookie_dict[key] = val
+        if not dict_obj.get(key):
+            dict_obj[key] = val
 
-    @classmethod
-    def _cookie_dict_in_str(cls) -> str:
-        if cls.cookie_dict:
+    @staticmethod
+    def _dict_in_str(dict_obj: dict) -> str:
+        if dict_obj:
             result = ""
-            for key, val in cls.cookie_dict.items():
+            for key, val in dict_obj.items():
                 result += f"{key}={val}; "
             return result[0:-2]
         else:

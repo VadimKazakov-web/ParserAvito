@@ -9,6 +9,9 @@ VERSION = version
 
 SCHTASKS_NAME = "parser_avito"
 
+APP_TEMPORARY = app_work_dir("parser_avito_temp")
+APP_TEMPORARY.mkdir(exist_ok=True)
+
 BASE_DIR = Path(get_desktop_path()) / Path("ParserAvitoOutput")
 BASE_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -17,7 +20,9 @@ LOG_DIR.mkdir(parents=True, exist_ok=True)
 
 LOG_FILE = Path("logbook.log")
 
-DATABASE_DIR = BASE_DIR / Path('database')
+COOKIE_FILE = BASE_DIR / Path("cookie") / Path("cookie.txt")
+
+DATABASE_DIR = APP_TEMPORARY / Path('database')
 DATABASE_DIR.mkdir(parents=True, exist_ok=True)
 
 DATABASE = DATABASE_DIR / Path('data.db')
@@ -40,9 +45,6 @@ BACKGROUND_COLOR_BTN = "white"
 FOREGROUND_COLOR_BTN = "#000000"
 COLOR_FOR_HOVER = "#778899"
 WIDTH_LABEL = 50
-
-APP_TEMPORARY = app_work_dir("parser_avito_temp")
-APP_TEMPORARY.mkdir(exist_ok=True)
 
 # parsing
 LEFT_BLOCK_ANNOUNCEMENT_CSS = ".d9134745e0e171a2"
