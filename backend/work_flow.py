@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 import queue
 import re
 import threading
@@ -17,6 +18,7 @@ from tkinter_frontend.events import Events, ProgressData
 from backend.utils.timeout import TimeoutMixin
 from seleniumwire.webdriver import Chrome
 from exceptions import PushStopButton, PushExit, PushUpdate
+from tkinter_frontend.utils import update_info
 
 
 # экспериментальный, более низкоуровневый способ закрытия окна браузера
@@ -58,9 +60,9 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
         self.delete_database_table()
         EventsConnector.work_done()
 
-    def _driver_init(self):
+    def _driver_init(self, read_cookie=True):
         self.driver: Chrome = self.create_driver()
-        self.interceptor_headers = InterceptorHeaders()
+        self.interceptor_headers = InterceptorHeaders(read_cookie)
         self.driver.request_interceptor = self.interceptor_headers.request_interceptor
         self.driver.response_interceptor = self.interceptor_headers.response_interceptor
 
@@ -68,18 +70,19 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
         return "WorkFlow"
 
     def __call__(self, *args, **kwargs):
+        update_info("загрузка и запуск chromedriver")
+        self._driver_init()
         while True:
-            self._driver_init()
             try:
                 self._start_gen(*args, **kwargs)
             except (PushStopButton, PushUpdate, PushExit) as err:
-                print(err)
+                logging.warning(err)
                 self.interceptor_headers.write_cookie()
                 self.driver.quit()
                 return
             except Exception as err:
                 err_info = str(err)[0:130]
-                print(err_info)
+                logging.warning(err_info)
                 if re.search(r'no such window|session deleted|cannot determine loading status', err_info):
                     self._channel_put.put(Events.window_close_event)
                     self.interceptor_headers.write_cookie()
@@ -87,9 +90,9 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
                     return
                 elif re.search(r'unknown error: net::ERR_CONNECTION_CLOSED', err_info):
                     self.driver.quit()
-                    self.interceptor_headers.cookie_dict = {}
-                    print("90% of the problem is incorrect cookies")
-                    time.sleep(3)
+                    self._driver_init(read_cookie=False)
+                    logging.warning("90% of the problem is incorrect cookies")
+                    time.sleep(2)
                 else:
                     raise
 
@@ -116,6 +119,7 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
         creating_links_gen = rewind_gen(pages, creating_links_gen())
         # переход на каждую страницу
         for url_page in creating_links_gen:
+            update_info("переход по web страницам")
             flag_page = yield from self._open_page_script(url_page)
             if flag_page == self._continue:
                 continue
@@ -163,7 +167,7 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
         Проверка, не произошёл ли обрыв соединения
         """
         if self.driver.title == "www.avito.ru":
-            print("connection failure, restart...")
+            logging.warning("connection failure, restart...")
             # добавить в диапазон таймаута по одной секунде в начало и в конец
             TimeoutMixin.timeout_add_one()
             # закрыть окно браузера

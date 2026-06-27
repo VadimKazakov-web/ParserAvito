@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 import re
 import time
 from seleniumwire.webdriver import Chrome
@@ -20,7 +21,7 @@ class CheckTitleMixin:
         while True:
             if cls._pattern_problem_ip.search(driver.title):
                 if not cls._show_problem_ip_title:
-                    print(driver.title)
+                    logging.warning(driver.title)
                     cls._show_problem_ip_title = True
                     # добавить в диапазон таймаута по одной секунде в начало и в конец
                     TimeoutMixin.timeout_add_one()
@@ -29,5 +30,7 @@ class CheckTitleMixin:
                 cls._show_problem_ip_title = False
                 return None
             else:
-                cls._show_problem_ip_title = False
+                if cls._show_problem_ip_title:
+                    logging.warning("капча решена")
+                    cls._show_problem_ip_title = False
                 return True

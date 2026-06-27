@@ -14,7 +14,6 @@ def main(*args, **kwargs):
     print("process pid: {}".format(PROCESS_PID))
     # настройка ведения журнала
     logging_settings(file_handler=False)
-    logging.info("start program")
 
     backend_manager = BackendManager(channel_get=connector)
     # запуск серверной части в отдельном потоке

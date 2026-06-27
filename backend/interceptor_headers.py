@@ -19,8 +19,11 @@ class InterceptorHeaders:
 
     referer = 'https://www.avito.ru'
 
-    def __init__(self):
-        self.cookie_dict = self.setup_cookie()
+    def __init__(self, read_cookie=True):
+        if read_cookie:
+            self.cookie_dict = self.setup_cookie()
+        else:
+            self.cookie_dict = {}
 
     def setup_cookie(self):
         cookie_dict = {}

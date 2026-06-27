@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import textwrap
+from settings import WIDTH_LABEL
 import _tkinter
 
 
@@ -17,7 +19,7 @@ def update_info(data: str) -> None:
     Отобразить информацию в лейбле для информации
     """
     from tkinter_frontend.window_root.frame_1.frame_for_info.build import label_text_info
-    label_text_info["text"] = data
+    label_text_info["text"] = textwrap.fill(text=data, width=WIDTH_LABEL)
 
 
 def update_progress(*args, **kwargs):
