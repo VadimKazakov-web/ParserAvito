@@ -6,6 +6,7 @@ from backend import Variables
 from backend.events import EventsConnector
 from settings import APP_TEMPORARY
 from tkinter_frontend.events import ProgressData, Events
+from tkinter_frontend.utils import update_info
 from update.utills.utills import run_new_app
 
 
@@ -49,6 +50,7 @@ def recv(self) -> None:
             Закрытие главного окна программы
             """
             print("data from connector: {}".format(data))
+            update_info("ожидайте завершения программы")
             if self.data:
                 EventsConnector.push_exit()
                 EventsConnector.work_wait()

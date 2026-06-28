@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import time
 from tkinter import *
 from backend import connector, Variables
 from tkinter_frontend.events import Events
@@ -38,6 +37,5 @@ class WindowRoot:
         self.root.mainloop()
 
     def exit(self, *args, **kwargs):
-        from tkinter_frontend.window_root import frame
         # отправляется событие в connector, который слушается в  BackendManager._receiver_for_main
         connector.put(Events.exit_event)
