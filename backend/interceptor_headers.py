@@ -2,6 +2,10 @@
 import re
 from seleniumwire.request import Request, Response
 from settings import COOKIE_FILE
+import os
+
+TEST_COUNTER = 0
+test_list = []
 
 
 def read_file(path):
@@ -16,12 +20,15 @@ class InterceptorHeaders:
     Класс актуализирует cookies в запросах, используются возможности seleniumwire.
     https://github.com/wkeeling/selenium-wire#:~:text=Selenium%20Wire-,Selenium%20Wire,-extends%20Selenium%27s%20Python
     """
-
     referer = 'https://www.avito.ru'
+    # Если cookies c такими ключами "просрочены", сайт блокирует запросы.
+    # Исключены из использования.
+    unnecessary_cookies = ["PVID", "VID"]
 
     def __init__(self, read_cookie=True):
         if read_cookie:
             self.cookie_dict = self.setup_cookie()
+            # self.cookie_dict = self.setup_cookie_bulkhead()
         else:
             self.cookie_dict = {}
 
@@ -35,6 +42,32 @@ class InterceptorHeaders:
             cookie_list = text.split("; ")
             for pair in cookie_list:
                 self._set_cookie(pair, cookie_dict)
+            return cookie_dict
+
+    def setup_cookie_bulkhead(self):
+        cookie_dict = {}
+        try:
+            text = read_file(COOKIE_FILE)
+        except FileNotFoundError:
+            return cookie_dict
+        else:
+            cookie_list = text.split("; ")
+
+            _lem_cookie_list = len(cookie_list)
+            global TEST_COUNTER, test_list
+            if TEST_COUNTER < _lem_cookie_list:
+                test_list.append(cookie_list[TEST_COUNTER])
+                print(cookie_list[TEST_COUNTER])
+                print(TEST_COUNTER, "/", _lem_cookie_list)
+                TEST_COUNTER += 1
+            else:
+                os._exit(0)
+
+            for chunk in cookie_list:
+                if chunk in test_list:
+                    continue
+                self._set_cookie(chunk, cookie_dict)
+            print(test_list)
             return cookie_dict
 
     def write_cookie(self):
@@ -85,18 +118,20 @@ class InterceptorHeaders:
                 self._update_cookie_dict(text=val, dict_obj=self.cookie_dict)
 
     def _update_cookie_dict(self, text: str, dict_obj: dict) -> None:
-        match = re.match(r"(?P<cookie>.+?);.*", text, flags=re.DOTALL)
+        match = re.match(r"(?P<cookie>.+?);", text, flags=re.DOTALL)
         if match:
             cookie = match.group("cookie")
             self._set_cookie(cookie, dict_obj)
 
-    @staticmethod
-    def _set_cookie(text: str, dict_obj: dict) -> None:
+    @classmethod
+    def _set_cookie(cls, text: str, dict_obj: dict) -> None:
         # метод text.split("=") не подходит, так как в значении cookies может быть знак "=", например:
         # _yasc=LsdFI8ooV1++Xd/aXDuyF3ZAzjLf2B971h9sDpzmWq9qaXBZgyhCcUMwZL44envByT8=
+
+        # значение ключа может быть пустым
         match = re.match(r"(?P<key>.+?)=(?P<val>.*)", text)
         key, val = match.group("key"), match.group("val")
-        if not dict_obj.get(key):
+        if not dict_obj.get(key) and key not in cls.unnecessary_cookies:
             dict_obj[key] = val
 
     @staticmethod

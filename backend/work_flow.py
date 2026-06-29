@@ -92,7 +92,10 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
                     self.driver.quit()
                     self._driver_init(read_cookie=False)
                     logging.warning("90% of the problem is incorrect cookies")
-                    time.sleep(2)
+                    time.sleep(1)
+                elif re.search(r'no such element', err_info):
+                    update_info("необходимые данные на странице не найдены")
+                    raise
                 else:
                     raise
 
