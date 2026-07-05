@@ -5,6 +5,7 @@ from selenium.webdriver.common.by import By
 import re
 from settings import LEFT_BLOCK_ANNOUNCEMENT_CSS, RIGHT_BLOCK_ANNOUNCEMENT_CSS
 from seleniumwire.webdriver import Chrome
+from backend.utils.decorators import stale_element_decorator
 
 
 class CollectData:
@@ -29,20 +30,14 @@ class CollectData:
         self._driver = driver
 
     @classmethod
+    @stale_element_decorator
     def _find_block(cls, driver: Chrome, target_block: str) -> str:
         """
         Поиск блока html по селектору
         """
-        counter = cls.counter_stale_element_exception
-        while counter:
-            try:
-                block = driver.find_element(by=By.CSS_SELECTOR, value=target_block)
-                html = block.get_attribute('innerHTML')
-            except selenium.common.exceptions.StaleElementReferenceException:
-                logging.warning("StaleElementReferenceException in\nfind_block(self)")
-                counter -= 1
-            else:
-                return html
+        block = driver.find_element(by=By.CSS_SELECTOR, value=target_block)
+        html = block.get_attribute('innerHTML')
+        return html
 
     @classmethod
     def _find_blocks(cls, driver) -> dict:

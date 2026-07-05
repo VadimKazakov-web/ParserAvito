@@ -17,3 +17,4 @@ __pycache__
 /blinker-1.7.0
 .env
 /**/.env
+/**/exp

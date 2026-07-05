@@ -34,7 +34,7 @@ class OpenUrl(CloseAuthPopupMixin, TimeoutMixin, CheckTitleMixin):
         # закрытия всплывающего окна с предложением авторизоваться, если оно есть
         self.close_popup()
         # задержка случайным таймаутом
-        yield from self.timeout()
+        # yield from self.timeout()
         return True
 
     def __call__(self, *args, **kwargs) -> bool:

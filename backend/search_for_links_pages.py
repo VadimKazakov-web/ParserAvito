@@ -3,8 +3,12 @@ from collections.abc import Generator
 from selenium.webdriver.common.by import By
 from seleniumwire.webdriver import Chrome
 from selenium.webdriver.remote.webelement import WebElement
+import selenium.common
+import logging
+from backend.utils.decorators import stale_element_decorator
 
 
+@stale_element_decorator
 def how_to_search(block: WebElement) -> WebElement:
     link = block.find_element(by=By.TAG_NAME, value='h2').find_element(by=By.TAG_NAME, value='a')
     return link
@@ -23,6 +27,7 @@ class SearchLinks:
     def __init__(self, driver: Chrome):
         self._driver = driver
 
+    @stale_element_decorator
     def _find_blocks(self) -> list[WebElement]:
         """
         Поиск блока html по селектору

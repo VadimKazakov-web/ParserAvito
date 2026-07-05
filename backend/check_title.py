@@ -3,7 +3,10 @@ import logging
 import re
 import time
 from seleniumwire.webdriver import Chrome
+from selenium.webdriver.common.by import By
 from backend.utils.timeout import TimeoutMixin
+from auto_gui.main import AutoGuiCapcha
+import selenium.common
 
 
 class CheckTitleMixin:
@@ -23,6 +26,17 @@ class CheckTitleMixin:
                 if not cls._show_problem_ip_title:
                     logging.warning(driver.title)
                     cls._show_problem_ip_title = True
+                    time.sleep(2)
+                    try:
+                        btn = driver.find_element(by=By.CSS_SELECTOR, value=".button")
+                    except selenium.common.exceptions.NoSuchElementException:
+                        pass
+                    else:
+                        btn.click()
+                        time.sleep(3)
+                        auto_capcha = AutoGuiCapcha()
+                        auto_capcha.start()
+                        time.sleep(5)
                     # добавить в диапазон таймаута по одной секунде в начало и в конец
                     TimeoutMixin.timeout_add_one()
                 time.sleep(3)

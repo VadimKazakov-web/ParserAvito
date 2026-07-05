@@ -65,7 +65,7 @@ class EventsConnector:
 
     @classmethod
     def work_wait(cls):
-        cls._work_done_event.wait()
+        cls._work_done_event.wait(timeout=20)
 
     @classmethod
     def variables_put(cls, data):
