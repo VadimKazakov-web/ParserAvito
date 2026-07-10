@@ -57,5 +57,19 @@ URL_S3_BUCKET_VERSION_PROG = "https://s3.twcstorage.ru/parser-avito-download/ver
 
 DRIVER_IMPLICITLY_WAIT = 30
 
+CATEGORY_DEFAULT = [
+                "https://www.avito.ru/moskva/odezhda_obuv_aksessuary/obuv_muzhskaya-ASgBAgICAUTeArqp1gI",
+                "https://www.avito.ru/moskva/telefony/smart_chasy_i_fitnes_braslety-ASgBAgICAUSwwQ3IxpsD",
+                "https://www.avito.ru/moskva/mebel_i_interer/kuhonnye_garnitury/kukhni-ASgBAgICAkRazk_W6hKMso0D",
+                "https://www.avito.ru/moskva/mebel_i_interer/myagkaya-mebel/krovati-ASgBAgICAkRaqgKMvg3~rTU",
+                "https://www.avito.ru/moskva/hobbi_i_otdyh",
+                "https://www.avito.ru/moskva/mototsikly_i_mototehnika?radius=0&searchRadius=0",
+                "https://www.avito.ru/moskva/avtomobili/novyy/mazda-ASgBAgICAkSGFMbmAeC2DeaYKA?context=H4sIAAAAAAAA_wEmANn_YToxOntzOjE6InkiO3M6MTY6InRocnBrd3FkS2k0QWl2dzUiO31UmhE6JgAAAA&localPriority=0&radius=0&searchRadius=0",
+                "https://www.avito.ru/moskva/chasy_i_ukrasheniya/chasy-ASgBAgICAUTQAYYG",
+                "https://www.avito.ru/moskva/chasy_i_ukrasheniya/yuvelirnye_izdeliya-ASgBAgICAUTQAYgG",
+                "https://www.avito.ru/moskva/krasota_i_zdorove/ukhod_i_gigiena-ASgBAgICAUSEAqoJ",
+                "https://www.avito.ru/moskva/zapchasti_i_aksessuary?context=H4sIAAAAAAAA_wFRAK7_YToyOntzOjg6ImZyb21QYWdlIjtzOjE0OiJjYXRlZ29yeVdpZGdldCI7czo5OiJmcm9tX3BhZ2UiO3M6MTQ6ImNhdGVnb3J5V2lkZ2V0Ijt9inXVTFEAAAA&f=ASgBAgICAkQKJooL_JwB&geoCoords=55.755814%2C37.617635",
+            ]
+
 
 

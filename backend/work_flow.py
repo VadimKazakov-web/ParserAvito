@@ -38,7 +38,7 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
     """
 
     CONTINUE = "continue"
-    CONNECTION_FAILURE = "connection failure"
+    DONE = "done"
 
     def __init__(self, *args, **kwargs):
         self._channel_put: queue.Queue = kwargs.get("channel_put")
@@ -47,14 +47,22 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
         self._open_advertisement_in_page = 0
         self._start = threading.Event()
         self.data: Variables = kwargs.get("data")
+        self._tasks = []
         self.stop = False
+        self.connection_failure = False
 
     async def _check_flags(self):
         while True:
             if self.stop:
-                logging.warning("stop")
+                self._tasks_cancel()
                 self.driver.quit()
             await asyncio.sleep(0)
+
+    def _tasks_cancel(self):
+        if self._tasks:
+            for task in self._tasks:
+                task.cancel()
+                self._tasks.remove(task)
 
     def __enter__(self):
         EventsConnector.work_unset()
@@ -99,24 +107,22 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
                 raise
 
     async def _start_coro(self, *args, **kwargs):
-        # актуализация прогресса
-        upd_progress_task = asyncio.create_task(self._update_progress(self.driver))
-        # проверка, не произошли ли события нажатия на кнопки stop, exit и т.д...
-        # events_check_task = asyncio.create_task(EventsConnector.events_check())
-        # проверка, не произошли ли события нажатия на кнопки stop, exit и т.д...
-        check_flags = asyncio.create_task(self._check_flags())
         while True:
-            async for result in self._work_flow(pages=self._open_pages_global_counter,
-                                                advertisement=self._open_advertisement_in_page):
-                # если произошёл обрыв соединения, прекращается текущий проход по генератору,
-                # закрывается окно браузера и создаётся новое, генератор перематывается вперёд на
-                # нужное кол-во страниц и объявлений
-                if result == self.CONNECTION_FAILURE:
-                    # закрыть окно браузера
-                    self.driver.quit()
-                    # создать новое окно браузера
-                    self.driver = self.create_driver()
-                    break
+            self.connection_failure = False
+            # проверка, не произошли ли события нажатия на кнопки stop, exit и т.д...
+            self._tasks.append(asyncio.create_task(self._check_flags()))
+            # актуализация прогресса
+            self._tasks.append(asyncio.create_task(self._update_progress(self.driver)))
+            work_task = asyncio.create_task(self._work_flow(pages=self._open_pages_global_counter,
+                                                            advertisement=self._open_advertisement_in_page))
+            work_task.add_done_callback(self._tasks.remove)
+            self._tasks.append(work_task)
+            try:
+                result = await work_task
+            except asyncio.CancelledError:
+                return
+            finally:
+                self._tasks_cancel()
 
     async def _work_flow(self, pages=0, advertisement=0):
         # создание ссылок на страницы
@@ -126,10 +132,11 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
         # переход на каждую страницу
         for url_page in creating_links_gen:
             update_info("переход по web страницам")
+            logging.warning("current page: {}".format(self._open_pages_global_counter + 1))
             flag_page = await self._open_page_script(url_page)
             if flag_page == self.CONTINUE:
                 continue
-            yield
+            await asyncio.sleep(0)
             # установка заголовка "referer"
             InterceptorHeaders.referer = url_page
             # поиск ссылок на каждое объявление
@@ -143,8 +150,8 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
                     continue
                 # проверка на обрыв соединения
                 if self._connection_failure_script():
-                    yield self.CONNECTION_FAILURE
-                yield
+                    return
+                await asyncio.sleep(0)
                 # прокрутка страницы
                 await scroll_page(driver=self.driver, height=1200)
                 # сбор данных из объявления
@@ -155,7 +162,7 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
                 self.insert_in_database(result)
                 self._open_advertisement_global_counter += 1
                 self._open_advertisement_in_page += 1
-                yield
+                await asyncio.sleep(0)
                 # закрыть вкладку
                 self.driver.close()
                 # вернуться на вкладку страницы
@@ -165,24 +172,34 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
                 await scroll_page(driver=self.driver, height=340)
             self._open_pages_global_counter += 1
             self._open_advertisement_in_page = 0
+        return self.DONE
 
     def _connection_failure_script(self):
+        # if self._open_advertisement_global_counter == 1:
+        #     logging.warning("connection failure, restart...(TEST!)")
+        #     self.connection_failure = True
+        #     # закрыть окно браузера
+        #     self.driver.quit()
+        #     self._driver_init(read_cookie=False)
+        #     return True
         """
         Проверка, не произошёл ли обрыв соединения
         """
         if self.driver.title == "www.avito.ru":
             logging.warning("connection failure, restart...")
-            return self.CONNECTION_FAILURE
+            # закрыть окно браузера
+            self.driver.quit()
+            self._driver_init(read_cookie=False)
+            return True
 
     async def _update_progress(self, driver):
-        while True:
+        while not self.stop and not self.connection_failure:
             progr_upd = ProgressData(driver.title, self._open_advertisement_global_counter)
             self._channel_put.put(progr_upd)
             await asyncio.sleep(0)
 
     async def _open_page_script(self, url_page):
         # открытие страницы
-        logging.warning("current page: {}".format(self._open_pages_global_counter + 1))
         open_url = OpenUrl(driver=self.driver, url=url_page)
         result = await open_url()
         return result

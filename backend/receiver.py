@@ -37,7 +37,6 @@ def recv(self) -> None:
             print("data from connector: {}".format(data))
             self.work_instance.stop = True
             new_flow_btn()
-            EventsConnector.push_stop()
 
         elif data == Events.window_close_event:
             """
@@ -53,7 +52,7 @@ def recv(self) -> None:
             print("data from connector: {}".format(data))
             update_info("ожидайте завершения программы")
             if self.data:
-                EventsConnector.push_exit()
+                self.work_instance.stop = True
                 EventsConnector.work_wait()
             try:
                 shutil.rmtree(APP_TEMPORARY)
@@ -62,10 +61,6 @@ def recv(self) -> None:
             time.sleep(1)
             os._exit(0)
 
-        elif data == Events.start_again_event:
-            print("data from connector: {}".format(data))
-            EventsConnector.variables_put(self.data)
-
         elif data == Events.exit_after_update_event:
             """
             Действия, которые происходят после обновления программы: запуск новой программы
@@ -73,7 +68,7 @@ def recv(self) -> None:
             """
             print("data from connector: {}".format(data))
             if self.data:
-                EventsConnector.push_update()
+                self.work_instance.stop = True
                 EventsConnector.work_wait()
             run_new_app()
             time.sleep(1)

@@ -27,8 +27,8 @@ class TimeoutMixin:
     @classmethod
     async def timeout(cls) -> None:
         num = choice_num(cls.start, cls.stop)
-        for t in range(0, num):
-            await asyncio.sleep(t)
+        for t in range(0, num * 2):
+            await asyncio.sleep(0.5)
 
     @classmethod
     def timeout_add_one(cls):
