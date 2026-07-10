@@ -13,12 +13,10 @@ class CloseAuthPopupMixin:
 
     _selector = ".css-89rnpj"
 
-    def __init__(self, driver: Chrome):
-        self._driver = driver
-
-    def _find(self, *args, **kwargs) -> WebElement | None:
+    @classmethod
+    def _find(cls, driver: Chrome) -> WebElement | None:
         try:
-            block = self._driver.find_element(by=By.CSS_SELECTOR, value=self._selector)
+            block = driver.find_element(by=By.CSS_SELECTOR, value=cls._selector)
         except Exception as err:
             if re.search(r"no such element", str(err)):
                 return None
@@ -31,11 +29,12 @@ class CloseAuthPopupMixin:
     def _click(cls, block: WebElement) -> None:
         block.click()
 
-    def close_popup(self, *args, **kwargs) -> None:
+    @classmethod
+    def close_popup(cls, driver: Chrome) -> None:
         from settings import DRIVER_IMPLICITLY_WAIT
-        self._driver.implicitly_wait(2)
-        block = self._find()
+        driver.implicitly_wait(2)
+        block = cls._find(driver)
         if block:
-            self._click(block)
-        self._driver.implicitly_wait(DRIVER_IMPLICITLY_WAIT)
+            cls._click(block)
+        driver.implicitly_wait(DRIVER_IMPLICITLY_WAIT)
 

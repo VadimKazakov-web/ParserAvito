@@ -15,10 +15,9 @@ from backend.utils import CreatingLinks
 from backend.utils.scroll_page import scroll_page
 from backend.events import EventsConnector
 from tkinter_frontend.events import Events, ProgressData
-from backend.utils.timeout import TimeoutMixin
 from seleniumwire.webdriver import Chrome
-from exceptions import PushStopButton, PushExit, PushUpdate
 from tkinter_frontend.utils import update_info
+import asyncio
 
 
 # экспериментальный, более низкоуровневый способ закрытия окна браузера
@@ -34,10 +33,12 @@ def rewind_gen(num, gen):
 
 
 class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
-
     """
     Класс реализует основную логику работы программы
     """
+
+    CONTINUE = "continue"
+    CONNECTION_FAILURE = "connection failure"
 
     def __init__(self, *args, **kwargs):
         self._channel_put: queue.Queue = kwargs.get("channel_put")
@@ -46,12 +47,20 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
         self._open_advertisement_in_page = 0
         self._start = threading.Event()
         self.data: Variables = kwargs.get("data")
-        self._continue = "continue"
-        self._connection_failure = "connection failure"
+        self.stop = False
+
+    async def _check_flags(self):
+        while True:
+            if self.stop:
+                logging.warning("stop")
+                self.driver.quit()
+            await asyncio.sleep(0)
 
     def __enter__(self):
         EventsConnector.work_unset()
         self.create_table()
+        update_info("загрузка и запуск chromedriver")
+        self._driver_init()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -69,53 +78,47 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
     def __str__(self):
         return "WorkFlow"
 
-    def __call__(self, *args, **kwargs):
-        update_info("загрузка и запуск chromedriver")
-        self._driver_init()
-        while True:
-            try:
-                self._start_gen(*args, **kwargs)
-            except (PushStopButton, PushUpdate, PushExit) as err:
-                logging.warning(err)
-                self.interceptor_headers.write_cookie()
+    async def __call__(self, *args, **kwargs):
+        try:
+            await self._start_coro(*args, **kwargs)
+        except Exception as err:
+            err_info = str(err)[0:130]
+            logging.warning(err_info)
+            if re.search(r'no such window|session deleted|cannot determine loading status', err_info):
+                self._channel_put.put(Events.window_close_event)
                 self.driver.quit()
                 return
-            except Exception as err:
-                err_info = str(err)[0:130]
-                logging.warning(err_info)
-                if re.search(r'no such window|session deleted|cannot determine loading status', err_info):
-                    self._channel_put.put(Events.window_close_event)
-                    self.interceptor_headers.write_cookie()
-                    self.driver.quit()
-                    return
-                elif re.search(r'unknown error: net::ERR_CONNECTION_CLOSED', err_info):
-                    self.driver.quit()
-                    self._driver_init(read_cookie=False)
-                    logging.warning("90% of the problem is incorrect cookies")
-                    time.sleep(1)
-                elif re.search(r'no such element', err_info):
-                    update_info("необходимые данные на странице не найдены")
-                    raise
-                else:
-                    raise
+            elif re.search(r'unknown error: net::ERR_CONNECTION_CLOSED', err_info):
+                self.driver.quit()
+                self._driver_init(read_cookie=False)
+                time.sleep(1)
+            elif re.search(r'no such element', err_info):
+                update_info("необходимые данные на странице не найдены")
+                raise
+            else:
+                raise
 
-    def _start_gen(self, *args, **kwargs):
+    async def _start_coro(self, *args, **kwargs):
+        # актуализация прогресса
+        upd_progress_task = asyncio.create_task(self._update_progress(self.driver))
+        # проверка, не произошли ли события нажатия на кнопки stop, exit и т.д...
+        # events_check_task = asyncio.create_task(EventsConnector.events_check())
+        # проверка, не произошли ли события нажатия на кнопки stop, exit и т.д...
+        check_flags = asyncio.create_task(self._check_flags())
         while True:
-            for step in self._work_flow(pages=self._open_pages_global_counter,
-                                        advertisement=self._open_advertisement_in_page):
+            async for result in self._work_flow(pages=self._open_pages_global_counter,
+                                                advertisement=self._open_advertisement_in_page):
                 # если произошёл обрыв соединения, прекращается текущий проход по генератору,
                 # закрывается окно браузера и создаётся новое, генератор перематывается вперёд на
                 # нужное кол-во страниц и объявлений
-                if step == self._connection_failure:
+                if result == self.CONNECTION_FAILURE:
+                    # закрыть окно браузера
+                    self.driver.quit()
+                    # создать новое окно браузера
+                    self.driver = self.create_driver()
                     break
-                # проверка, не произошли ли события нажатия на кнопки stop, exit и т.д...
-                EventsConnector.events_handler()
-                # актуализация прогресса
-                self._update_progress(self.driver)
-            else:
-                return
 
-    def _work_flow(self, pages=0, advertisement=0):
+    async def _work_flow(self, pages=0, advertisement=0):
         # создание ссылок на страницы
         creating_links_gen = CreatingLinks(url=self.data.get_url(), pages=self.data.get_pages())
         # перемотка вперёд, если нужно
@@ -123,8 +126,8 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
         # переход на каждую страницу
         for url_page in creating_links_gen:
             update_info("переход по web страницам")
-            flag_page = yield from self._open_page_script(url_page)
-            if flag_page == self._continue:
+            flag_page = await self._open_page_script(url_page)
+            if flag_page == self.CONTINUE:
                 continue
             yield
             # установка заголовка "referer"
@@ -135,17 +138,15 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
             search_links_gen = rewind_gen(advertisement, search_links_gen())
             # переход на каждое объявление
             for url_advertisement in search_links_gen:
-                flag_adv = yield from self._open_adv_script(url_advertisement)
-                if flag_adv == self._continue:
+                flag_adv = await self._open_adv_script(url_advertisement)
+                if flag_adv == self.CONTINUE:
                     continue
-                # print("\ntitle: {}".format(self.driver.title))
                 # проверка на обрыв соединения
-                flag_conn = yield from self._connection_failure_script()
-                if flag_conn:
-                    yield flag_conn
+                if self._connection_failure_script():
+                    yield self.CONNECTION_FAILURE
                 yield
                 # прокрутка страницы
-                yield from scroll_page(driver=self.driver, height=1200)
+                await scroll_page(driver=self.driver, height=1200)
                 # сбор данных из объявления
                 collect_data = CollectData(self.driver)
                 result = collect_data()
@@ -161,7 +162,7 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
                 self.driver.switch_to.window(self.driver.window_handles[0])
                 time.sleep(0.5)
                 # прокрутка страницы
-                yield from scroll_page(driver=self.driver, height=340)
+                await scroll_page(driver=self.driver, height=340)
             self._open_pages_global_counter += 1
             self._open_advertisement_in_page = 0
 
@@ -171,31 +172,28 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
         """
         if self.driver.title == "www.avito.ru":
             logging.warning("connection failure, restart...")
-            # добавить в диапазон таймаута по одной секунде в начало и в конец
-            TimeoutMixin.timeout_add_one()
-            # закрыть окно браузера
-            self.driver.quit()
-            # создать новое окно браузера
-            self.driver = self.create_driver()
-            yield self._connection_failure
+            return self.CONNECTION_FAILURE
 
-    def _update_progress(self, driver):
-        progr_upd = ProgressData(driver.title, self._open_advertisement_global_counter)
-        self._channel_put.put(progr_upd)
+    async def _update_progress(self, driver):
+        while True:
+            progr_upd = ProgressData(driver.title, self._open_advertisement_global_counter)
+            self._channel_put.put(progr_upd)
+            await asyncio.sleep(0)
 
-    def _open_page_script(self, url_page):
-        print("current page: {}".format(self._open_pages_global_counter + 1))
+    async def _open_page_script(self, url_page):
+        # открытие страницы
+        logging.warning("current page: {}".format(self._open_pages_global_counter + 1))
         open_url = OpenUrl(driver=self.driver, url=url_page)
-        result = yield from open_url()
+        result = await open_url()
         return result
 
-    def _open_adv_script(self, url_advertisement):
+    async def _open_adv_script(self, url_advertisement):
         # открытие ссылки в новой вкладке
         open_adv = OpenAdvertisement(driver=self.driver, url=url_advertisement)
-        result = yield from open_adv()
-        if result == OpenAdvertisement.page_not_found:
+        result = await open_adv()
+        if result == OpenAdvertisement.PAGE_NOT_FOUND:
             self.driver.switch_to.window(self.driver.window_handles[0])
-            return self._continue
+            return self.CONTINUE
 
     def _show_result(self, var_obj: Variables) -> None:
         """

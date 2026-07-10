@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
+import asyncio
 import time
 from seleniumwire.webdriver import Chrome
-from typing import Generator
 
 
-def scroll_page(driver: Chrome, height: int) -> Generator[None, None, None]:
+async def scroll_page(driver: Chrome, height: int) -> None:
     """
     Прокрутка страницы на заданную высоту
     :param driver: драйвер selenium
@@ -16,4 +16,4 @@ def scroll_page(driver: Chrome, height: int) -> Generator[None, None, None]:
         driver.execute_script(f"window.scrollBy(0, {step});")
         height -= step
         time.sleep(0.01)
-        yield
+        await asyncio.sleep(0)

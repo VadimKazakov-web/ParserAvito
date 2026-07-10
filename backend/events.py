@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import threading
 from exceptions import PushStopButton, PushExit, PushUpdate
+from backend.utils.await_obj import AwaitObj
 
 
 class MutexVar:
@@ -44,16 +45,19 @@ class EventsConnector:
         cls._push_exit_event.set()
 
     @classmethod
-    def events_handler(cls):
-        if cls._push_stop_event.is_set():
-            cls._push_stop_event.clear()
-            raise PushStopButton
-        elif cls._push_exit_event.is_set():
-            cls._push_exit_event.clear()
-            raise PushExit
-        elif cls._push_update_event.is_set():
-            cls._push_update_event.clear()
-            raise PushUpdate
+    async def events_check(cls):
+        while True:
+            if cls._push_stop_event.is_set():
+                cls._push_stop_event.clear()
+                raise PushStopButton
+            elif cls._push_exit_event.is_set():
+                cls._push_exit_event.clear()
+                raise PushExit
+            elif cls._push_update_event.is_set():
+                cls._push_update_event.clear()
+                raise PushUpdate
+            else:
+                await AwaitObj()
 
     @classmethod
     def work_done(cls):

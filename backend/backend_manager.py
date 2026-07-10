@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import asyncio
 from threading import Thread
 from backend import Variables
 from backend.events import EventsConnector
@@ -13,6 +14,7 @@ class BackendManager:
         # канал получения данных из tkinter в поток BackendManager
         self._channel_get: queue.Queue = kwargs.get("channel_get")
         self.data = None
+        self.work_instance = None
 
     def __str__(self) -> str:
         return "BackendManager"
@@ -33,4 +35,5 @@ class BackendManager:
             print("-" * 10, "waiting for the start", "-" * 10)
             self.data: Variables = EventsConnector.variables_wait()
             with WorkFlow(data=self.data, channel_put=self._channel_get) as work_flow:
-                work_flow()
+                self.work_instance = work_flow
+                asyncio.run(work_flow())

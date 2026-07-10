@@ -35,6 +35,7 @@ def recv(self) -> None:
             Нажатие кнопки "stop"
             """
             print("data from connector: {}".format(data))
+            self.work_instance.stop = True
             new_flow_btn()
             EventsConnector.push_stop()
 

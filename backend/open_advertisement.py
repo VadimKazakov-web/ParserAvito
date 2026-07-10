@@ -15,6 +15,3 @@ class OpenAdvertisement(OpenUrl):
 
     def _switch_to(self):
         self._driver.switch_to.window(self._driver.window_handles[1])
-
-    def __call__(self, *args, **kwargs):
-        return super().__call__()

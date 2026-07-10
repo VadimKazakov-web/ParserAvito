@@ -9,6 +9,13 @@ from auto_gui.main import AutoGuiCapcha
 import selenium.common
 
 
+def auto_gui_capcha():
+    time.sleep(3)
+    auto_capcha = AutoGuiCapcha()
+    auto_capcha.start()
+    time.sleep(5)
+
+
 class CheckTitleMixin:
 
     """
@@ -33,10 +40,7 @@ class CheckTitleMixin:
                         pass
                     else:
                         btn.click()
-                        time.sleep(3)
-                        auto_capcha = AutoGuiCapcha()
-                        auto_capcha.start()
-                        time.sleep(5)
+                        # auto_gui_capcha()
                     # добавить в диапазон таймаута по одной секунде в начало и в конец
                     TimeoutMixin.timeout_add_one()
                 time.sleep(3)

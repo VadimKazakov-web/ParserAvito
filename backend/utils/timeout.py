@@ -1,12 +1,23 @@
 # -*- coding: utf-8 -*-
+import asyncio
 import random
-import time
+
+
+def choice_num(a: int, b: int) -> int:
+    """
+    Возвращает случайное число от a до b
+
+    :param a: int, нижняя граница диапазона (включительно)
+    :param b: int, верхняя граница диапазона (включительно)
+    :return: int, случайное число в заданном диапазоне
+    """
+    return random.randint(a, b)
 
 
 class TimeoutMixin:
 
     """
-    Класс используется для задания таймаута на странице. В месте yield метода _timeout проверяются некоторые события,
+    Класс используется для задания таймаута на странице. В месте yield метода timeout проверяются некоторые события,
     сделано для повышения отзывчивости программы
     """
 
@@ -14,24 +25,12 @@ class TimeoutMixin:
     stop = 7
 
     @classmethod
-    def _choice_num(cls) -> int:
-        return random.randint(cls.start, cls.stop)
-
-    @classmethod
-    def _timeout(cls) -> None:
-        num = cls._choice_num()
-        divider = num * 2
-        part = int(num / divider)
-        for chunk in range(0, part):
-            time.sleep(chunk)
-            yield
-            
-    def timeout(self, *args, **kwargs):
-        yield from self._timeout()
+    async def timeout(cls) -> None:
+        num = choice_num(cls.start, cls.stop)
+        for t in range(0, num):
+            await asyncio.sleep(t)
 
     @classmethod
     def timeout_add_one(cls):
         cls.start += 1
         cls.stop += 1
-
-
