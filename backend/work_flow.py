@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
 import queue
-import re
 import threading
 import time
 import webbrowser
@@ -18,6 +17,7 @@ from tkinter_frontend.events import Events, ProgressData
 from seleniumwire.webdriver import Chrome
 from tkinter_frontend.utils import update_info
 import asyncio
+import selenium.common
 
 
 # экспериментальный, более низкоуровневый способ закрытия окна браузера
@@ -77,6 +77,18 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
         self.delete_database_table()
         EventsConnector.work_done()
 
+        print("error type: {}".format(exc_type))
+        # err_info = " ".join(traceback.format_exception(exc_type, exc_val, exc_tb))
+        # logging.warning(err_info)
+        if exc_type == selenium.common.exceptions.NoSuchWindowException:
+            self._channel_put.put(Events.window_close_event)
+            self.driver.quit()
+        elif exc_type == selenium.common.exceptions.NoSuchElementException:
+            update_info("необходимые данные на странице не найдены")
+            raise
+        else:
+            raise
+
     def _driver_init(self, read_cookie=True):
         self.driver: Chrome = self.create_driver()
         self.interceptor_headers = InterceptorHeaders(read_cookie)
@@ -87,24 +99,7 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
         return "WorkFlow"
 
     async def __call__(self, *args, **kwargs):
-        try:
-            await self._start_coro(*args, **kwargs)
-        except Exception as err:
-            err_info = str(err)[0:130]
-            logging.warning(err_info)
-            if re.search(r'no such window|session deleted|cannot determine loading status', err_info):
-                self._channel_put.put(Events.window_close_event)
-                self.driver.quit()
-                return
-            elif re.search(r'unknown error: net::ERR_CONNECTION_CLOSED', err_info):
-                self.driver.quit()
-                self._driver_init(read_cookie=False)
-                time.sleep(1)
-            elif re.search(r'no such element', err_info):
-                update_info("необходимые данные на странице не найдены")
-                raise
-            else:
-                raise
+        await self._start_coro(*args, **kwargs)
 
     async def _start_coro(self, *args, **kwargs):
         while True:
@@ -112,7 +107,7 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
             # проверка, не произошли ли события нажатия на кнопки stop, exit и т.д...
             self._tasks.append(asyncio.create_task(self._check_flags()))
             # актуализация прогресса
-            self._tasks.append(asyncio.create_task(self._update_progress(self.driver)))
+            self._tasks.append(asyncio.create_task(self._update_progress()))
             work_task = asyncio.create_task(self._work_flow(pages=self._open_pages_global_counter,
                                                             advertisement=self._open_advertisement_in_page))
             work_task.add_done_callback(self._tasks.remove)
@@ -175,7 +170,7 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
         return self.DONE
 
     def _connection_failure_script(self):
-        # if self._open_advertisement_global_counter == 1:
+        # if self._open_advertisement_global_counter == 2:
         #     logging.warning("connection failure, restart...(TEST!)")
         #     self.connection_failure = True
         #     # закрыть окно браузера
@@ -192,9 +187,9 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
             self._driver_init(read_cookie=False)
             return True
 
-    async def _update_progress(self, driver):
+    async def _update_progress(self):
         while not self.stop and not self.connection_failure:
-            progr_upd = ProgressData(driver.title, self._open_advertisement_global_counter)
+            progr_upd = ProgressData(self.driver.title, self._open_advertisement_global_counter)
             self._channel_put.put(progr_upd)
             await asyncio.sleep(0)
 

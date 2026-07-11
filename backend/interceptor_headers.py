@@ -23,7 +23,7 @@ class InterceptorHeaders:
     referer = 'https://www.avito.ru'
     # Если cookies c такими ключами "просрочены", сайт блокирует запросы.
     # Исключены из использования.
-    unnecessary_cookies = ["PVID", "VID"]
+    # unnecessary_cookies = ["PVID", "VID"]
 
     def __init__(self, read_cookie=True):
         if read_cookie:
@@ -131,7 +131,7 @@ class InterceptorHeaders:
         # значение ключа может быть пустым
         match = re.match(r"(?P<key>.+?)=(?P<val>.*)", text)
         key, val = match.group("key"), match.group("val")
-        if not dict_obj.get(key) and key not in cls.unnecessary_cookies:
+        if not dict_obj.get(key):
             dict_obj[key] = val
 
     @staticmethod

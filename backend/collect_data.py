@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import logging
-import selenium.common
 from selenium.webdriver.common.by import By
 import re
 from settings import LEFT_BLOCK_ANNOUNCEMENT_CSS, RIGHT_BLOCK_ANNOUNCEMENT_CSS
@@ -31,6 +30,7 @@ class CollectData:
 
     @classmethod
     @stale_element_decorator
+    # @stale_element_decorator
     def _find_block(cls, driver: Chrome, target_block: str) -> str:
         """
         Поиск блока html по селектору
