@@ -149,7 +149,6 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
                 # сбор данных из объявления
                 collect_data = CollectData(self.driver)
                 result = collect_data()
-                # print("data adv: {}\n".format(result))
                 # внесение объявления в базу данных
                 self.insert_in_database(result)
                 self._open_advertisement_global_counter += 1

@@ -47,6 +47,5 @@ class FindElementDecorator:
                 else:
                     cls.raise_err()
                 return result
-
             return _wrapper
         return _decorator
