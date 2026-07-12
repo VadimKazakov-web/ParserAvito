@@ -4,7 +4,7 @@ from selenium.webdriver.common.by import By
 import re
 from settings import LEFT_BLOCK_ANNOUNCEMENT_CSS, RIGHT_BLOCK_ANNOUNCEMENT_CSS
 from seleniumwire.webdriver import Chrome
-from backend.utils.decorators import stale_element_decorator
+from backend.utils.decorators import FindElementDecorator
 
 
 class CollectData:
@@ -29,8 +29,7 @@ class CollectData:
         self._driver = driver
 
     @classmethod
-    @stale_element_decorator
-    # @stale_element_decorator
+    @FindElementDecorator.find_element_decorator()
     def _find_block(cls, driver: Chrome, target_block: str) -> str:
         """
         Поиск блока html по селектору

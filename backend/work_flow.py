@@ -49,13 +49,14 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
         self.data: Variables = kwargs.get("data")
         self._tasks = []
         self.stop = False
-        self.connection_failure = False
 
     async def _check_flags(self):
         while True:
             if self.stop:
-                self._tasks_cancel()
-                self.driver.quit()
+                self.work_task.cancel()
+                return
+            if self.connection_failure:
+                return
             await asyncio.sleep(0)
 
     def _tasks_cancel(self):
@@ -77,16 +78,14 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
         self.delete_database_table()
         EventsConnector.work_done()
 
-        print("error type: {}".format(exc_type))
-        # err_info = " ".join(traceback.format_exception(exc_type, exc_val, exc_tb))
-        # logging.warning(err_info)
-        if exc_type == selenium.common.exceptions.NoSuchWindowException:
+        logging.warning("error type: {}".format(exc_type))
+        if (exc_type == selenium.common.exceptions.NoSuchWindowException
+                or exc_type == selenium.common.exceptions.InvalidSessionIdException):
             self._channel_put.put(Events.window_close_event)
-            self.driver.quit()
         elif exc_type == selenium.common.exceptions.NoSuchElementException:
             update_info("необходимые данные на странице не найдены")
             raise
-        else:
+        elif exc_type:
             raise
 
     def _driver_init(self, read_cookie=True):
@@ -99,25 +98,26 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
         return "WorkFlow"
 
     async def __call__(self, *args, **kwargs):
-        await self._start_coro(*args, **kwargs)
-
-    async def _start_coro(self, *args, **kwargs):
         while True:
             self.connection_failure = False
             # проверка, не произошли ли события нажатия на кнопки stop, exit и т.д...
             self._tasks.append(asyncio.create_task(self._check_flags()))
             # актуализация прогресса
             self._tasks.append(asyncio.create_task(self._update_progress()))
-            work_task = asyncio.create_task(self._work_flow(pages=self._open_pages_global_counter,
-                                                            advertisement=self._open_advertisement_in_page))
-            work_task.add_done_callback(self._tasks.remove)
-            self._tasks.append(work_task)
+            # главная задача
+            self.work_task = asyncio.create_task(self._work_flow(pages=self._open_pages_global_counter,
+                                                                 advertisement=self._open_advertisement_in_page))
+            self._tasks.append(self.work_task)
+            for task in self._tasks:
+                task.add_done_callback(self._tasks.remove)
             try:
-                result = await work_task
+                result = await self.work_task
             except asyncio.CancelledError:
+                self.driver.quit()
                 return
-            finally:
-                self._tasks_cancel()
+            else:
+                self.driver.quit()
+                self._driver_init(read_cookie=False)
 
     async def _work_flow(self, pages=0, advertisement=0):
         # создание ссылок на страницы
@@ -143,8 +143,10 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
                 flag_adv = await self._open_adv_script(url_advertisement)
                 if flag_adv == self.CONTINUE:
                     continue
+                await asyncio.sleep(0)
                 # проверка на обрыв соединения
                 if self._connection_failure_script():
+                    self.connection_failure = True
                     return
                 await asyncio.sleep(0)
                 # прокрутка страницы
@@ -172,7 +174,6 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
     def _connection_failure_script(self):
         # if self._open_advertisement_global_counter == 2:
         #     logging.warning("connection failure, restart...(TEST!)")
-        #     self.connection_failure = True
         #     # закрыть окно браузера
         #     self.driver.quit()
         #     self._driver_init(read_cookie=False)
@@ -182,9 +183,6 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
         """
         if self.driver.title == "www.avito.ru":
             logging.warning("connection failure, restart...")
-            # закрыть окно браузера
-            self.driver.quit()
-            self._driver_init(read_cookie=False)
             return True
 
     async def _update_progress(self):

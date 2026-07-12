@@ -43,7 +43,7 @@ class CheckTitleMixin:
                         # auto_gui_capcha()
                     # добавить в диапазон таймаута по одной секунде в начало и в конец
                     TimeoutMixin.timeout_add_one()
-                time.sleep(3)
+                time.sleep(1)
             elif cls._pattern_404.search(driver.title):
                 cls._show_problem_ip_title = False
                 return None

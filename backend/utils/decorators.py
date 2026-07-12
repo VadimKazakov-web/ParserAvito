@@ -3,7 +3,7 @@ import selenium.common
 import logging
 
 
-class ExceptElementDecorator:
+class FindElementDecorator:
     counter = 3
     result = None
     flag = False
@@ -25,26 +25,28 @@ class ExceptElementDecorator:
     def raise_err(cls):
         raise cls.err_obj
 
+    @classmethod
+    def find_element_decorator(cls):
+        def _decorator(func):
+            def _wrapper(*args, **kwargs):
+                result = None
+                while cls.counter:
+                    try:
+                        result = func(*args, **kwargs)
+                    except selenium.common.exceptions.StaleElementReferenceException as err:
+                        cls.err_obj = err
+                        text = str(err)[:200]
+                        cls.err_handler(text)
+                    except selenium.common.exceptions.NoSuchElementException as err:
+                        cls.err_obj = err
+                        text = str(err)[:200]
+                        cls.err_handler(text)
+                    else:
+                        cls.not_err_handler()
+                        break
+                else:
+                    cls.raise_err()
+                return result
 
-def stale_element_decorator(func):
-    def wrapper(*args, **kwargs):
-        result = None
-        while ExceptElementDecorator.counter:
-            try:
-                result = func(*args, **kwargs)
-            except selenium.common.exceptions.StaleElementReferenceException as err:
-                ExceptElementDecorator.err_obj = err
-                text = str(err)[:200]
-                ExceptElementDecorator.err_handler(text)
-            except selenium.common.exceptions.NoSuchElementException as err:
-                ExceptElementDecorator.err_obj = err
-                text = str(err)[:200]
-                ExceptElementDecorator.err_handler(text)
-            else:
-                ExceptElementDecorator.not_err_handler()
-                break
-        else:
-            ExceptElementDecorator.raise_err()
-        return result
-    return wrapper
-
+            return _wrapper
+        return _decorator
