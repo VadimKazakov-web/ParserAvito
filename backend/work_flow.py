@@ -59,12 +59,6 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
                 return
             await asyncio.sleep(0)
 
-    def _tasks_cancel(self):
-        if self._tasks:
-            for task in self._tasks:
-                task.cancel()
-                self._tasks.remove(task)
-
     def __enter__(self):
         EventsConnector.work_unset()
         self.create_table()
@@ -82,9 +76,11 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
         if (exc_type == selenium.common.exceptions.NoSuchWindowException
                 or exc_type == selenium.common.exceptions.InvalidSessionIdException):
             self._channel_put.put(Events.window_close_event)
+
         elif exc_type == selenium.common.exceptions.NoSuchElementException:
             update_info("необходимые данные на странице не найдены")
             raise
+
         elif exc_type:
             raise
 
@@ -148,7 +144,6 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
                 if self._connection_failure_script():
                     self.connection_failure = True
                     return
-                await asyncio.sleep(0)
                 # прокрутка страницы
                 await scroll_page(driver=self.driver, height=1200)
                 # сбор данных из объявления
@@ -172,15 +167,12 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
         return self.DONE
 
     def _connection_failure_script(self):
-        # if self._open_advertisement_global_counter == 2:
-        #     logging.warning("connection failure, restart...(TEST!)")
-        #     # закрыть окно браузера
-        #     self.driver.quit()
-        #     self._driver_init(read_cookie=False)
-        #     return True
         """
         Проверка, не произошёл ли обрыв соединения
         """
+        # if self._open_advertisement_global_counter == 2:
+        #     logging.warning("connection failure, restart...(TEST!)")
+        #     return True
         if self.driver.title == "www.avito.ru":
             logging.warning("connection failure, restart...")
             return True
