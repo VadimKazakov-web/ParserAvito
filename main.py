@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
 from threading import Thread
-import logging.handlers
 from backend.backend_manager import BackendManager
 from tkinter_frontend.window_root.build import window as tk_window
 from tkinter_frontend.build_tk import build_tk_interface
@@ -15,7 +14,7 @@ def main(*args, **kwargs):
     # настройка ведения журнала
     logging_settings(file_handler=False)
 
-    backend_manager = BackendManager(channel_get=connector)
+    backend_manager = BackendManager()
     # запуск серверной части в отдельном потоке
     thread = Thread(target=backend_manager)
     thread.start()

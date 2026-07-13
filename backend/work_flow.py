@@ -1,23 +1,22 @@
 # -*- coding: utf-8 -*-
 import logging
-import queue
-import threading
 import time
 import webbrowser
 from backend import CreateDriverMixin, DataBaseMixin, \
-    SearchLinks, ResultInHtmlMixin, Variables
+    SearchLinks, ResultInHtmlMixin, Variables, connector
 from backend.collect_data import CollectData
 from backend.interceptor_headers import InterceptorHeaders
 from backend.open_url import OpenUrl
 from backend.open_advertisement import OpenAdvertisement
+from backend.receiver import recv
 from backend.utils import CreatingLinks
 from backend.utils.scroll_page import scroll_page
-from backend.events import EventsConnector
 from tkinter_frontend.events import Events, ProgressData
 from seleniumwire.webdriver import Chrome
-from tkinter_frontend.utils import update_info
 import asyncio
 import selenium.common
+
+from tkinter_frontend.utils import update_info
 
 
 # экспериментальный, более низкоуровневый способ закрытия окна браузера
@@ -41,52 +40,38 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
     DONE = "done"
 
     def __init__(self, *args, **kwargs):
-        self._channel_put: queue.Queue = kwargs.get("channel_put")
         self._open_pages_global_counter = 0
         self._open_advertisement_global_counter = 0
         self._open_advertisement_in_page = 0
-        self._start = threading.Event()
-        self.data: Variables = kwargs.get("data")
+        self._work = asyncio.Event()
+        self._start = asyncio.Event()
+        self.data = None
         self._tasks = []
+        self.work_task = None
         self.stop = False
 
-    async def _check_flags(self):
-        while True:
-            if self.stop:
-                self.work_task.cancel()
-                return
-            if self.connection_failure:
-                return
-            await asyncio.sleep(0)
+    async def _receiver(self) -> None:
+        await recv(self)
 
     def __enter__(self):
-        EventsConnector.work_unset()
+        self._work.clear()
         self.create_table()
-        update_info("загрузка и запуск chromedriver")
+        update_info("Загрузка и запуск chromedriver")
         self._driver_init()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.data:
-            self._show_result(self.data)
-        self.delete_database_table()
-        EventsConnector.work_done()
-
         logging.warning("error type: {}".format(exc_type))
         if (exc_type == selenium.common.exceptions.NoSuchWindowException
                 or exc_type == selenium.common.exceptions.InvalidSessionIdException):
-            self._channel_put.put(Events.window_close_event)
+            connector.put(Events.window_close_event)
         elif exc_type == selenium.common.exceptions.NoSuchElementException:
-            update_info("необходимые данные на странице не найдены")
             raise
         elif exc_type:
             raise
 
-    def _driver_init(self, read_cookie=True):
+    def _driver_init(self):
         self.driver: Chrome = self.create_driver()
-        # self.interceptor_headers = InterceptorHeaders(read_cookie)
-        # self.driver.request_interceptor = self.interceptor_headers.request_interceptor
-        # self.driver.response_interceptor = self.interceptor_headers.response_interceptor
 
     def __str__(self):
         return "WorkFlow"
@@ -94,10 +79,11 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
     async def __call__(self, *args, **kwargs):
         while True:
             self.connection_failure = False
-            # проверка, не произошли ли события нажатия на кнопки stop, exit и т.д...
-            self._tasks.append(asyncio.create_task(self._check_flags()))
             # актуализация прогресса
             self._tasks.append(asyncio.create_task(self._update_progress()))
+            # слушатель
+            self._tasks.append(asyncio.create_task(self._receiver()))
+            await self._start.wait()
             # главная задача
             self.work_task = asyncio.create_task(self._work_flow(pages=self._open_pages_global_counter,
                                                                  advertisement=self._open_advertisement_in_page))
@@ -111,15 +97,24 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
                 return
             except (selenium.common.exceptions.InvalidSessionIdException,
                     selenium.common.exceptions.NoSuchWindowException):
-                self._channel_put.put(Events.window_close_event)
+                connector.put(Events.window_close_event)
                 for task in self._tasks:
                     task.cancel()
                 return
             else:
                 self.driver.quit()
-                self._driver_init(read_cookie=False)
+                self._driver_init()
+            finally:
+                self._show_result(self.data)
+                self.delete_database_table()
+                self._start.clear()
+                # метод set() нужно вызывать только из корутины (задачи).
+                # Вызывать его из других контекстов (например, из обработчика прерывания
+                # или callback другого планировщика) небезопасно.
+                self._work.set()
 
     async def _work_flow(self, pages=0, advertisement=0):
+        from tkinter_frontend.utils import update_info
         # создание ссылок на страницы
         creating_links_gen = CreatingLinks(url=self.data.get_url(), pages=self.data.get_pages())
         # перемотка вперёд, если нужно
@@ -173,18 +168,16 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
         """
         Проверка, не произошёл ли обрыв соединения
         """
-        # if self._open_advertisement_global_counter == 2:
-        #     logging.warning("connection failure, restart...(TEST!)")
-        #     return True
         if self.driver.title == "www.avito.ru":
             logging.warning("connection failure, restart...")
             return True
 
     async def _update_progress(self):
+        from tkinter_frontend.utils import update_progress
         while not self.stop and not self.connection_failure:
             progr_upd = ProgressData(self.driver.title, self._open_advertisement_global_counter)
-            self._channel_put.put(progr_upd)
-            await asyncio.sleep(0)
+            update_progress(data=(progr_upd.text, progr_upd.num))
+            await asyncio.sleep(2)
 
     async def _open_page_script(self, url_page):
         # открытие страницы

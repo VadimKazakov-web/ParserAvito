@@ -29,6 +29,7 @@ class CheckTitleMixin:
     @classmethod
     def check_title(cls, driver: Chrome) -> bool | None:
         while True:
+            time.sleep(2)
             if cls._pattern_problem_ip.search(driver.title):
                 if not cls._show_problem_ip_title:
                     logging.warning(driver.title)
