@@ -112,6 +112,8 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
             except (selenium.common.exceptions.InvalidSessionIdException,
                     selenium.common.exceptions.NoSuchWindowException):
                 self._channel_put.put(Events.window_close_event)
+                for task in self._tasks:
+                    task.cancel()
                 return
             else:
                 self.driver.quit()
