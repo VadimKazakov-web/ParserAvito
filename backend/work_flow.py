@@ -79,31 +79,26 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
     async def __call__(self, *args, **kwargs):
         while True:
             self.connection_failure = False
-            # актуализация прогресса
-            self._tasks.append(asyncio.create_task(self._update_progress()))
             # слушатель
             self._tasks.append(asyncio.create_task(self._receiver()))
+            update_info("Готов к работе")
             await self._start.wait()
             # главная задача
             self.work_task = asyncio.create_task(self._work_flow(pages=self._open_pages_global_counter,
                                                                  advertisement=self._open_advertisement_in_page))
             self._tasks.append(self.work_task)
+            # актуализация прогресса
+            self._tasks.append(asyncio.create_task(self._update_progress()))
             for task in self._tasks:
                 task.add_done_callback(self._tasks.remove)
             try:
                 result = await self.work_task
             except asyncio.CancelledError:
                 self.driver.quit()
-                return
             except (selenium.common.exceptions.InvalidSessionIdException,
-                    selenium.common.exceptions.NoSuchWindowException):
+                    selenium.common.exceptions.NoSuchWindowException, selenium.common.exceptions.WebDriverException):
                 connector.put(Events.window_close_event)
-                for task in self._tasks:
-                    task.cancel()
-                return
-            else:
-                self.driver.quit()
-                self._driver_init()
+                await asyncio.sleep(1)
             finally:
                 self._show_result(self.data)
                 self.delete_database_table()
@@ -112,6 +107,7 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
                 # Вызывать его из других контекстов (например, из обработчика прерывания
                 # или callback другого планировщика) небезопасно.
                 self._work.set()
+                return
 
     async def _work_flow(self, pages=0, advertisement=0):
         from tkinter_frontend.utils import update_info

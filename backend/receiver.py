@@ -13,10 +13,10 @@ from backend.data_queue import connector
 
 
 async def recv(self) -> None:
-    from tkinter_frontend.utils import new_flow_btn
     """
     Метод получает данные из потока main
     """
+    from tkinter_frontend.utils import new_flow_btn
     while True:
         try:
             data = connector.get(block=False)
@@ -47,7 +47,8 @@ async def recv(self) -> None:
                 """
                 print("data from connector: {}".format(data))
                 new_flow_btn()
-
+                self.stop = True
+                return
             elif data == Events.exit_event:
                 """
                 Закрытие главного окна программы
@@ -57,9 +58,9 @@ async def recv(self) -> None:
                 if self._start.is_set():
                     self.stop = True
                     self.work_task.cancel()
-                    await self._work.wait()
                 else:
                     self.driver.quit()
+                await self._work.wait()
                 try:
                     shutil.rmtree(APP_TEMPORARY)
                 except FileNotFoundError:
@@ -73,11 +74,14 @@ async def recv(self) -> None:
                 с помощью утилиты windows schtasks /run, и закрытия старой программы
                 """
                 print("data from connector: {}".format(data))
-                if self.data:
+                if self._start.is_set():
                     self.stop = True
-                    self._work.wait()
+                    self.work_task.cancel()
+                else:
+                    self.driver.quit()
+                await self._work.wait()
                 run_new_app()
-                time.sleep(1)
+                time.sleep(0.5)
                 os._exit(0)
 
         await asyncio.sleep(0)
