@@ -17,7 +17,7 @@ async def recv(self) -> None:
     Метод получает данные из потока main
     """
     from tkinter_frontend.utils import new_flow_btn
-    while True:
+    while not self.stop:
         try:
             data = connector.get(block=False)
         except queue.Empty:
@@ -41,14 +41,6 @@ async def recv(self) -> None:
                 self.work_task.cancel()
                 return
 
-            elif data == Events.window_close_event:
-                """
-                Закрытие окна браузера
-                """
-                print("data from connector: {}".format(data))
-                new_flow_btn()
-                self.stop = True
-                return
             elif data == Events.exit_event:
                 """
                 Закрытие главного окна программы

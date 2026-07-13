@@ -15,8 +15,7 @@ from tkinter_frontend.events import Events, ProgressData
 from seleniumwire.webdriver import Chrome
 import asyncio
 import selenium.common
-
-from tkinter_frontend.utils import update_info
+from tkinter_frontend.utils import update_info, new_flow_btn
 
 
 # экспериментальный, более низкоуровневый способ закрытия окна браузера
@@ -97,8 +96,8 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
                 self.driver.quit()
             except (selenium.common.exceptions.InvalidSessionIdException,
                     selenium.common.exceptions.NoSuchWindowException, selenium.common.exceptions.WebDriverException):
-                connector.put(Events.window_close_event)
-                await asyncio.sleep(1)
+                new_flow_btn()
+                self.stop = True
             finally:
                 self._show_result(self.data)
                 self.delete_database_table()
