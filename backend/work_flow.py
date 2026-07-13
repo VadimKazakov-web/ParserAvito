@@ -76,11 +76,9 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
         if (exc_type == selenium.common.exceptions.NoSuchWindowException
                 or exc_type == selenium.common.exceptions.InvalidSessionIdException):
             self._channel_put.put(Events.window_close_event)
-
         elif exc_type == selenium.common.exceptions.NoSuchElementException:
             update_info("необходимые данные на странице не найдены")
             raise
-
         elif exc_type:
             raise
 
@@ -110,6 +108,10 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
                 result = await self.work_task
             except asyncio.CancelledError:
                 self.driver.quit()
+                return
+            except (selenium.common.exceptions.InvalidSessionIdException,
+                    selenium.common.exceptions.NoSuchWindowException):
+                self._channel_put.put(Events.window_close_event)
                 return
             else:
                 self.driver.quit()

@@ -103,7 +103,7 @@
   используется проект [Selenium Wire](https://github.com/wkeeling/selenium-wire), который расширяет **Selenium**.
   Реализация перехватчика запросов/ответов выполнена в backend/interceptor_headers.py
 
-  >  **ИСПРАВЛЕНО**
+  >  **$\color{yellow}ИСПРАВЛЕНО$**
   > 
   >**Selenium Wire** не используется, вследствие чего повысилась стабильность соединения.
 

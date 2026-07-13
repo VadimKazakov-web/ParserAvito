@@ -33,7 +33,7 @@ class CheckTitleMixin:
                 if not cls._show_problem_ip_title:
                     logging.warning(driver.title)
                     cls._show_problem_ip_title = True
-                    time.sleep(2)
+                    time.sleep(1)
                     try:
                         btn = driver.find_element(by=By.CSS_SELECTOR, value=".button")
                     except selenium.common.exceptions.NoSuchElementException:
