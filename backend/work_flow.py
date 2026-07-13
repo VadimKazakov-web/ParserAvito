@@ -86,9 +86,9 @@ class WorkFlow(CreateDriverMixin, DataBaseMixin, ResultInHtmlMixin):
 
     def _driver_init(self, read_cookie=True):
         self.driver: Chrome = self.create_driver()
-        self.interceptor_headers = InterceptorHeaders(read_cookie)
-        self.driver.request_interceptor = self.interceptor_headers.request_interceptor
-        self.driver.response_interceptor = self.interceptor_headers.response_interceptor
+        # self.interceptor_headers = InterceptorHeaders(read_cookie)
+        # self.driver.request_interceptor = self.interceptor_headers.request_interceptor
+        # self.driver.response_interceptor = self.interceptor_headers.response_interceptor
 
     def __str__(self):
         return "WorkFlow"
